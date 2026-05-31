@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+@theme {
+  --color-forest: #0E3B35;
+  --color-forest-dark: #0c332c;
+  --color-panel: #11463d;
+  --color-panel-hover: #1b594c;
+  --color-cream: #F1EDE3;
+  --color-muted: #9bb6ab;
+  --color-coral: #F0824E;
+  --color-coral-bright: #ff9a6b;
+  --color-green: #1E9E54;
+  --color-pink: #F4C9C2;
+  --color-blue: #3E8B96;
+
+  --font-display: var(--font-quicksand), system-ui, sans-serif;
+  --font-sans: var(--font-figtree), system-ui, sans-serif;
+}
+
+:root {
+  --background: #0c332c;
+  --foreground: #F1EDE3;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbars matching Soniqo branding */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(241, 237, 227, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(241, 237, 227, 0.3);
+}
+
+/* Smooth range slider customizations for Player seek and EQ */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(241, 237, 227, 0.2);
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #F1EDE3;
+  transition: transform 0.1s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #F0824E;
+}
+
+/* Mobile & Capacitor Hybrid Wrapper Optimizations */
+button,
+a,
+input,
+select,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Make ranges highly thumb-responsive without increasing visual thickness */
+input[type="range"] {
+  padding: 6px 0;
+  background-clip: content-box;
+}
+
+@media (max-width: 768px) {
+  html,
+  body {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
+  }
+}
