@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -10,13 +10,18 @@ export const isSupabaseConfigured =
   supabaseAnonKey &&
   supabaseAnonKey !== "your-supabase-anon-key";
 
-// Standard Supabase client (only created if configured, otherwise falls back gracefully)
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+// Prevent multiple GoTrueClient instances during HMR (Hot Module Replacement)
+const getSupabaseClient = (): SupabaseClient | null => {
+  if (!isSupabaseConfigured) return null;
 
-if (!isSupabaseConfigured) {
-  console.warn(
-    "Soniqo: Supabase environment variables are missing or placeholders. Falling back to robust LocalStorage offline database mode."
-  );
-}
+  const globalVar = globalThis as any;
+  if (!globalVar.supabaseClient) {
+    globalVar.supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+  }
+  return globalVar.supabaseClient as SupabaseClient;
+};
+
+// Standard Supabase client (only created if configured, otherwise falls back gracefully)
+export const supabase = getSupabaseClient();
+
+
