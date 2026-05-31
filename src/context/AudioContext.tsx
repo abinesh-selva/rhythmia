@@ -96,6 +96,7 @@ interface AudioContextType {
   reorderPlaylistTracks: (playlistId: string, reorderedTrackIds: string[]) => Promise<void>;
   toggleCollaborative: (playlistId: string) => Promise<void>;
   setView: (viewName: string) => void;
+  refreshTracks: () => Promise<void>;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -233,14 +234,195 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const filterHighRef = useRef<BiquadFilterNode | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
 
+  // Auto-Sync Concurrency Lock
+  const isSyncingRef = useRef(false);
+
   // StrictMode connections safety lock
   const isGraphInitialized = useRef(false);
 
-  // Fetch Tracks and user libraries on load / user switch
-  useEffect(() => {
-    const loadTracksAndLibrary = async () => {
+  const loadTracksAndLibrary = async () => {
+    if (isSupabaseConfigured && supabase) {
+      // Load from DB
+      const { data: dbTracks } = await supabase.from("tracks").select("*");
+      if (dbTracks && dbTracks.length > 0) {
+        const formatted: Track[] = dbTracks.map((t: any) => ({
+          id: t.id,
+          title: t.title,
+          artist: t.artist,
+          album: t.album,
+          audio_url: t.audio_url,
+          cover_colors: t.cover_colors,
+          duration_sec: Number(t.duration_sec),
+        }));
+        setTracks(formatted);
+      }
+
+      if (user) {
+        // Load Likes
+        const { data: dbLikes } = await supabase.from("likes").select("track_id").eq("user_id", user.id);
+        if (dbLikes) {
+          setLikedSongs(new Set(dbLikes.map((l: any) => l.track_id)));
+        }
+
+        // Load Playlists
+        const { data: dbPlaylists } = await supabase
+          .from("playlists")
+          .select(`
+            id, name, cover_colors, is_public,
+            playlist_tracks (track_id, position)
+          `)
+          .eq("owner_id", user.id);
+
+        if (dbPlaylists) {
+          const formattedPlaylists: Playlist[] = dbPlaylists.map((p: any) => {
+            const sortedTracks = [...p.playlist_tracks].sort((a: any, b: any) => a.position - b.position);
+            return {
+              id: p.id,
+              name: p.name,
+              cover_colors: p.cover_colors,
+              is_public: p.is_public,
+              songs: sortedTracks.map((t: any) => t.track_id),
+            };
+          });
+          setPlaylists(formattedPlaylists);
+        }
+
+        // Load History
+        const { data: dbHistory } = await supabase
+          .from("play_history")
+          .select("track_id")
+          .eq("user_id", user.id)
+          .order("played_at", { ascending: false })
+          .limit(20);
+        if (dbHistory) {
+          setRecentlyPlayed(dbHistory.map((h: any) => h.track_id));
+        }
+      }
+    } else {
+      // Offline LocalStorage Mode
+      const localTracks = localStorage.getItem("soniqo_local_tracks");
+      if (localTracks) {
+        setTracks(JSON.parse(localTracks));
+      } else {
+        setTracks(SEED_TRACKS);
+      }
+
+      const localLikes = localStorage.getItem("soniqo_local_likes");
+      if (localLikes) {
+        setLikedSongs(new Set(JSON.parse(localLikes)));
+      } else {
+        setLikedSongs(new Set());
+      }
+
+      const localPlaylists = localStorage.getItem("soniqo_local_playlists");
+      if (localPlaylists) {
+        setPlaylists(JSON.parse(localPlaylists));
+      } else {
+        setPlaylists([]);
+      }
+
+      const localHistory = localStorage.getItem("soniqo_local_history");
+      if (localHistory) {
+        setRecentlyPlayed(JSON.parse(localHistory));
+      } else {
+        setRecentlyPlayed([]);
+      }
+    }
+  };
+
+  const triggerBackgroundAutoSync = async () => {
+    try {
+      const lastSync = localStorage.getItem("soniqo_last_sync_time");
+      const now = Date.now();
+      
+      // Cache Gate Guard: Synced within the last 1 hour (3,600,000 ms)? Skip!
+      if (lastSync && now - Number(lastSync) < 3600000) {
+        console.log("Soniqo Auto-Sync: Skipping background check (recently synchronized)");
+        return;
+      }
+
+      if (isSyncingRef.current) {
+        console.log("Soniqo Auto-Sync: Sync already in progress, skipping.");
+        return;
+      }
+
+      isSyncingRef.current = true;
+      console.log("Soniqo Auto-Sync: Initiating silent background catalog check...");
+      
+      const res = await fetch("/api/cloudinary-sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ auto: true }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.warn("Soniqo Auto-Sync: Background check skipped.", err.error);
+        return;
+      }
+
+      const data = await res.json();
+      if (!data.success || !data.tracks || data.tracks.length === 0) return;
+
+      const fetchedTracks: Track[] = data.tracks;
+      const count = fetchedTracks.length;
+      const batchSize = 100;
+
+      console.log(`Soniqo Auto-Sync: Syncing ${count} tracks silently in background...`);
+
       if (isSupabaseConfigured && supabase) {
-        // Load from DB
+        // Online Supabase Mode: Batch Upsert
+        for (let i = 0; i < count; i += batchSize) {
+          const batch = fetchedTracks.slice(i, i + batchSize);
+          const formatted = batch.map((t) => ({
+            title: t.title,
+            artist: t.artist,
+            album: t.album,
+            audio_url: t.audio_url,
+            cover_colors: t.cover_colors,
+            duration_sec: t.duration_sec,
+          }));
+
+          const { error } = await supabase.from("tracks").upsert(formatted, {
+            onConflict: "audio_url",
+          });
+
+          if (error) {
+            console.error("Soniqo Auto-Sync: Supabase background upsert failed:", error.message);
+            return;
+          }
+        }
+      } else {
+        // Offline LocalStorage Mode
+        const existingTracksLocal = localStorage.getItem("soniqo_local_tracks");
+        let localTracksList: Track[] = [];
+        if (existingTracksLocal) {
+          try {
+            localTracksList = JSON.parse(existingTracksLocal);
+          } catch (e) {}
+        }
+
+        fetchedTracks.forEach((newTrack, idx) => {
+          const dupIdx = localTracksList.findIndex((ex) => ex.audio_url === newTrack.audio_url);
+          const trackWithId = {
+            ...newTrack,
+            id: dupIdx >= 0 ? localTracksList[dupIdx].id : `offline-track-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+          };
+          if (dupIdx >= 0) {
+            localTracksList[dupIdx] = trackWithId;
+          } else {
+            localTracksList.push(trackWithId);
+          }
+        });
+
+        localStorage.setItem("soniqo_local_tracks", JSON.stringify(localTracksList));
+      }
+
+      localStorage.setItem("soniqo_last_sync_time", String(now));
+      console.log("Soniqo Auto-Sync: Silent background check completed successfully!");
+      
+      // Reload catalog tracks into active application state smoothly
+      if (isSupabaseConfigured && supabase) {
         const { data: dbTracks } = await supabase.from("tracks").select("*");
         if (dbTracks && dbTracks.length > 0) {
           const formatted: Track[] = dbTracks.map((t: any) => ({
@@ -254,74 +436,27 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
           }));
           setTracks(formatted);
         }
-
-        if (user) {
-          // Load Likes
-          const { data: dbLikes } = await supabase.from("likes").select("track_id").eq("user_id", user.id);
-          if (dbLikes) {
-            setLikedSongs(new Set(dbLikes.map((l: any) => l.track_id)));
-          }
-
-          // Load Playlists
-          const { data: dbPlaylists } = await supabase
-            .from("playlists")
-            .select(`
-              id, name, cover_colors, is_public,
-              playlist_tracks (track_id, position)
-            `)
-            .eq("owner_id", user.id);
-
-          if (dbPlaylists) {
-            const formattedPlaylists: Playlist[] = dbPlaylists.map((p: any) => {
-              const sortedTracks = [...p.playlist_tracks].sort((a: any, b: any) => a.position - b.position);
-              return {
-                id: p.id,
-                name: p.name,
-                cover_colors: p.cover_colors,
-                is_public: p.is_public,
-                songs: sortedTracks.map((t: any) => t.track_id),
-              };
-            });
-            setPlaylists(formattedPlaylists);
-          }
-
-          // Load History
-          const { data: dbHistory } = await supabase
-            .from("play_history")
-            .select("track_id")
-            .eq("user_id", user.id)
-            .order("played_at", { ascending: false })
-            .limit(20);
-          if (dbHistory) {
-            setRecentlyPlayed(dbHistory.map((h: any) => h.track_id));
-          }
-        }
       } else {
-        // Offline LocalStorage Mode
-        const localLikes = localStorage.getItem("soniqo_local_likes");
-        if (localLikes) {
-          setLikedSongs(new Set(JSON.parse(localLikes)));
-        } else {
-          setLikedSongs(new Set());
-        }
-
-        const localPlaylists = localStorage.getItem("soniqo_local_playlists");
-        if (localPlaylists) {
-          setPlaylists(JSON.parse(localPlaylists));
-        } else {
-          setPlaylists([]);
-        }
-
-        const localHistory = localStorage.getItem("soniqo_local_history");
-        if (localHistory) {
-          setRecentlyPlayed(JSON.parse(localHistory));
-        } else {
-          setRecentlyPlayed([]);
+        const localTracks = localStorage.getItem("soniqo_local_tracks");
+        if (localTracks) {
+          setTracks(JSON.parse(localTracks));
         }
       }
-    };
+    } catch (e) {
+      console.error("Soniqo Auto-Sync: Silent background check failed", e);
+    } finally {
+      isSyncingRef.current = false;
+    }
+  };
 
-    loadTracksAndLibrary();
+  // Fetch Tracks and user libraries on load / user switch
+  useEffect(() => {
+    const startupSequence = async () => {
+      await loadTracksAndLibrary();
+      // Trigger background auto-sync silently in background
+      triggerBackgroundAutoSync();
+    };
+    startupSequence();
   }, [user]);
 
   // 1. Sync Playback Rate (Speed)
@@ -1031,74 +1166,105 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const contextValue = React.useMemo(() => ({
+    tracks,
+    playlists,
+    likedSongs,
+    currentTrack,
+    isPlaying,
+    activePlayer,
+    currentTime,
+    duration,
+    volume,
+    isMuted,
+    isShuffle,
+    isSmartShuffle,
+    repeatMode,
+    crossfadeSec,
+    isPrivateSession,
+    sleepTimer,
+    sleepTimerRemaining,
+    lyrics,
+    queue,
+    recentlyPlayed,
+    view,
+    currentViewPlaylistId,
+    eqLow,
+    eqMid,
+    eqHigh,
+    setEQ,
+    analyserNode: analyserRef.current,
+    playTrack,
+    togglePlay,
+    nextTrack,
+    prevTrack,
+    seek,
+    changeVolume,
+    toggleMute,
+    toggleShuffle,
+    toggleSmartShuffle,
+    cycleRepeatMode,
+    changeCrossfade,
+    togglePrivateSession,
+    setSleepTimer,
+    setSleepTimerOnTrackEnd,
+    updateLyrics,
+    addToQueue,
+    playNext,
+    removeFromQueue,
+    clearQueue,
+    toggleLike,
+    createPlaylist,
+    deletePlaylist,
+    renamePlaylist,
+    addTrackToPlaylist,
+    removeTrackFromPlaylist,
+    reorderPlaylistTracks,
+    toggleCollaborative,
+    setView,
+    searchQuery,
+    setSearchQuery,
+    playbackSpeed,
+    setPlaybackSpeed,
+    isAutoplay,
+    setIsAutoplay,
+    audioNormalization,
+    setAudioNormalization,
+    refreshTracks: loadTracksAndLibrary,
+  }), [
+    tracks,
+    playlists,
+    likedSongs,
+    currentTrack,
+    isPlaying,
+    activePlayer,
+    currentTime,
+    duration,
+    volume,
+    isMuted,
+    isShuffle,
+    isSmartShuffle,
+    repeatMode,
+    crossfadeSec,
+    isPrivateSession,
+    sleepTimer,
+    sleepTimerRemaining,
+    lyrics,
+    queue,
+    recentlyPlayed,
+    view,
+    currentViewPlaylistId,
+    eqLow,
+    eqMid,
+    eqHigh,
+    searchQuery,
+    playbackSpeed,
+    isAutoplay,
+    audioNormalization,
+  ]);
+
   return (
-    <AudioContext.Provider
-      value={{
-        tracks,
-        playlists,
-        likedSongs,
-        currentTrack,
-        isPlaying,
-        activePlayer,
-        currentTime,
-        duration,
-        volume,
-        isMuted,
-        isShuffle,
-        isSmartShuffle,
-        repeatMode,
-        crossfadeSec,
-        isPrivateSession,
-        sleepTimer,
-        sleepTimerRemaining,
-        lyrics,
-        queue,
-        recentlyPlayed,
-        view,
-        currentViewPlaylistId,
-        eqLow,
-        eqMid,
-        eqHigh,
-        setEQ,
-        analyserNode: analyserRef.current,
-        playTrack,
-        togglePlay,
-        nextTrack,
-        prevTrack,
-        seek,
-        changeVolume,
-        toggleMute,
-        toggleShuffle,
-        toggleSmartShuffle,
-        cycleRepeatMode,
-        changeCrossfade,
-        togglePrivateSession,
-        setSleepTimer,
-        setSleepTimerOnTrackEnd,
-        updateLyrics,
-        addToQueue,
-        playNext,
-        removeFromQueue,
-        clearQueue,
-        toggleLike,
-        createPlaylist,
-        deletePlaylist,
-        renamePlaylist,
-        addTrackToPlaylist,
-        removeTrackFromPlaylist,
-        reorderPlaylistTracks,
-        toggleCollaborative,
-        setView,
-        searchQuery,
-        setSearchQuery,
-        playbackSpeed,
-        setPlaybackSpeed,
-        isAutoplay,
-        setIsAutoplay,
-        audioNormalization,
-        setAudioNormalization,
-      }}
-    >
+    <AudioContext.Provider value={contextValue}>
       {children}
 
       {/* DUAL `<audio>` nodes linking standard html listeners */}

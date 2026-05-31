@@ -20,6 +20,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     changeCrossfade,
     isPrivateSession,
     togglePrivateSession,
+    setView,
   } = useAudio();
 
   if (!isOpen) return null;
@@ -172,7 +173,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
           <div className="h-px bg-cream/5" />
 
-          {/* F. Troubleshooting - Clear Cache */}
+          {/* F. Cloudinary Sync Manager Navigation */}
+          <div className="flex flex-col gap-1.5 mt-1 bg-coral/5 border border-coral/10 p-3 rounded-xl">
+            <span className="font-semibold text-coral text-xs uppercase tracking-wider">Cloudinary Sync Manager</span>
+            <p className="text-[11px] text-muted leading-relaxed">
+              Sync and import your original song catalog from your Cloudinary folder directly into Soniqo Vibe.
+            </p>
+            <button
+              onClick={() => {
+                setView("sync");
+                onClose();
+              }}
+              className="mt-1 w-full bg-coral/15 hover:bg-coral/25 text-coral text-xs py-2 rounded-lg font-bold transition-colors cursor-pointer border border-coral/20 text-center"
+            >
+              Open Sync Manager
+            </button>
+          </div>
+
+          <div className="h-px bg-cream/5" />
+
+          {/* G. Troubleshooting - Clear Cache */}
           <div className="flex flex-col gap-1.5 mt-1 bg-red-500/5 border border-red-500/10 p-3 rounded-xl">
             <span className="font-semibold text-pink text-xs uppercase tracking-wider">Troubleshooting</span>
             <p className="text-[11px] text-muted leading-relaxed">
