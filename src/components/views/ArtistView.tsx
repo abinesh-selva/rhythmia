@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useAudio } from "../../context/AudioContext";
+import { useToast } from "../../context/ToastContext";
 import { TrackRow } from "../ui/TrackRow";
 
 interface ArtistViewProps {
   artistName: string;
   onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-  showToast: (msg: string) => void;
 }
 
-export function ArtistView({ artistName, onContextMenu, showToast }: ArtistViewProps) {
+export function ArtistView({ artistName, onContextMenu }: ArtistViewProps) {
+  const { addToast } = useToast();
   const { tracks, playTrack } = useAudio();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -37,7 +38,7 @@ export function ArtistView({ artistName, onContextMenu, showToast }: ArtistViewP
   const handleShare = () => {
     const shareUrl = `${window.location.origin}/?view=artist:${artistName}`;
     navigator.clipboard.writeText(shareUrl);
-    showToast("Share link copied to clipboard!");
+    addToast("Share link copied to clipboard!", "success");
   };
 
   return (
@@ -49,7 +50,7 @@ export function ArtistView({ artistName, onContextMenu, showToast }: ArtistViewP
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark to-panel/30 z-0" />
 
         <div
-          className="hero-art w-40 h-40 md:w-56 md:h-56 rounded-full shadow-2xl z-10 transition-transform hover:scale-[1.02] flex items-center justify-center relative overflow-hidden"
+          className="hero-art w-40 h-40 md:w-56 md:h-56 rounded-full shadow-2xl z-10 transition-transform hover:scale-105 flex items-center justify-center relative overflow-hidden"
           style={{
             background: `linear-gradient(135deg, ${artistTracks[0].cover_colors[0]}, ${artistTracks[0].cover_colors[1]})`,
           }}

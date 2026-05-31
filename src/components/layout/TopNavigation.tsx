@@ -52,9 +52,9 @@ export function TopNavigation({
       <div className="profile flex items-center gap-3">
         <button
           onClick={togglePrivateSession}
-          className={`toggle-pill text-[11px] font-bold px-3 py-2 rounded-full flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
+          className={`toggle-pill text-xs font-bold px-3 py-2 rounded-full flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
             isPrivateSession
-              ? "bg-coral text-forest-dark border-2 border-coral shadow-[0_0_15px_rgba(240,130,78,0.4)]"
+              ? "bg-coral text-forest-dark border-2 border-coral shadow-md"
               : "bg-panel border-2 border-transparent text-muted hover:text-cream hover:bg-panel-hover"
           }`}
           title="Private session pauses recently-played logging"
@@ -77,7 +77,7 @@ export function TopNavigation({
           className="w-9 h-9 rounded-full bg-panel hover:bg-panel-hover flex items-center justify-center text-muted hover:text-cream cursor-pointer transition-all border border-cream/5 shadow-sm hover:scale-105 active:scale-95"
           title="App Settings"
         >
-          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
             <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49-.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
           </svg>
         </button>
@@ -91,14 +91,14 @@ export function TopNavigation({
           }`}
           title="Friend Activity"
         >
-          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
             <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
           </svg>
         </button>
 
         {isOffline && (
           <span
-            className="text-[10px] text-coral font-bold uppercase tracking-widest bg-coral/10 border border-coral/30 px-3 py-1.5 rounded-full shadow-sm hidden md:block"
+            className="text-xs text-coral font-bold uppercase tracking-widest bg-coral/10 border border-coral/30 px-3 py-1.5 rounded-full shadow-sm hidden md:block"
             title="Running locally in fallback database. Install Supabase keys in .env.local to persist."
           >
             Offline

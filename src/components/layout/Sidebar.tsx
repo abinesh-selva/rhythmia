@@ -5,6 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAudio } from "../../context/AudioContext";
 import { supabase } from "../../lib/supabase";
 import { useTheme } from "../../context/ThemeContext";
+import { useToast } from "../../context/ToastContext";
+import { useDialog } from "../../context/DialogContext";
 
 interface ArtistRow { id: string; display_name: string; slug: string; image: string | null; track_count: number }
 interface AlbumRow  { id: string; title: string; slug: string; cover_colors: string[]; artist_id: string; artists: { display_name: string } | null }
@@ -14,6 +16,8 @@ export function Sidebar() {
   const pathname = usePathname();
   const { view, setView, playlists, createPlaylist, likedSongs } = useAudio();
   const { theme, setTheme } = useTheme();
+  const { addToast } = useToast();
+  const { showPrompt } = useDialog();
 
   const [libraryFilter, setLibraryFilter] = useState<"all" | "playlists" | "artists" | "albums">("all");
   const [dbArtists, setDbArtists] = useState<ArtistRow[]>([]);
@@ -26,12 +30,12 @@ export function Sidebar() {
       const res = await fetch("/api/spotify-enrich", { method: "POST" });
       const data = await res.json();
       if (data.success) {
-        alert(data.message);
+        addToast(data.message, "success");
       } else {
-        alert("Error: " + data.error);
+        addToast("Error: " + data.error, "error");
       }
     } catch (err: any) {
-      alert("Error: " + err.message);
+      addToast("Error: " + err.message, "error");
     }
     setIsEnriching(false);
   };
@@ -52,7 +56,12 @@ export function Sidebar() {
   }, []);
 
   const handleCreatePlaylist = async () => {
-    const pName = prompt("Enter a playlist name:");
+    const pName = await showPrompt({
+      title: "New Playlist",
+      description: "Give your playlist a name to get started.",
+      placeholder: "My Playlist",
+      confirmLabel: "Create",
+    });
     if (!pName) return;
     const plId = await createPlaylist(pName);
     if (plId) setView(`playlist:${plId}`);
@@ -112,22 +121,6 @@ export function Sidebar() {
               Search
             </button>
           </li>
-          <li>
-            <button
-              onClick={() => setView("live")}
-              className={`w-full flex items-center justify-between py-3 px-3 rounded-xl font-bold text-sm transition-all ${
-                view === "live" ? "text-cream bg-panel shadow-sm" : "text-muted hover:text-cream hover:bg-panel/30"
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zM12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-                </svg>
-                Live Events
-              </div>
-              <span className="w-1.5 h-1.5 rounded-full bg-coral animate-ping" />
-            </button>
-          </li>
         </ul>
       </nav>
 
@@ -140,7 +133,7 @@ export function Sidebar() {
             <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current group-hover:-translate-y-0.5 transition-transform">
               <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z" />
             </svg>
-            Your Library
+            Library
           </button>
           <div className="flex items-center gap-1">
             <button
@@ -188,12 +181,12 @@ export function Sidebar() {
         </div>
 
         {/* Library Filters */}
-        <div className="px-4 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar relative z-10">
+        <div className="px-3 py-2 grid grid-cols-4 gap-1 relative z-10">
           {(["all", "playlists", "artists", "albums"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setLibraryFilter(f)}
-              className={`px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide transition-all select-none flex-none ${
+              className={`py-1.5 rounded-full text-xs font-bold tracking-wide transition-all select-none text-center truncate ${
                 libraryFilter === f
                   ? "bg-cream text-forest-dark shadow-sm"
                   : "bg-panel/40 text-muted hover:text-cream hover:bg-panel/80"
@@ -221,8 +214,8 @@ export function Sidebar() {
               </div>
               <div className="flex flex-col min-w-0">
                 <span className={`text-sm font-bold truncate ${view === "liked" ? "text-coral" : "text-cream"}`}>Liked Songs</span>
-                <div className="text-[11px] text-muted flex items-center gap-1.5">
-                  <span className="w-4 h-4 bg-coral rounded-sm inline-flex items-center justify-center font-bold text-[8px] text-forest-dark">S</span>
+                <div className="text-xs text-muted flex items-center gap-1.5">
+                  <span className="w-4 h-4 bg-coral rounded-sm inline-flex items-center justify-center font-bold text-xs text-forest-dark">S</span>
                   Playlist · {likedSongs.size} songs
                 </div>
               </div>
@@ -249,7 +242,7 @@ export function Sidebar() {
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className={`text-sm font-bold truncate ${view === `playlist:${pl.id}` ? "text-coral" : "text-cream"}`}>{pl.name}</span>
-                  <div className="text-[11px] text-muted flex items-center gap-1 mt-0.5">
+                  <div className="text-xs text-muted flex items-center gap-1 mt-0.5">
                     {pl.collaborative && <span className="w-1.5 h-1.5 rounded-full bg-green" />}
                     <span>Playlist · You</span>
                   </div>
@@ -283,7 +276,7 @@ export function Sidebar() {
                   <span className={`text-sm font-bold truncate ${isArtistActive(artist.id) ? "text-coral" : "text-cream"}`}>
                     {artist.display_name}
                   </span>
-                  <span className="text-[11px] text-muted">Artist · {artist.track_count} songs</span>
+                  <span className="text-xs text-muted">Artist · {artist.track_count} songs</span>
                 </div>
               </div>
             ))}
@@ -309,7 +302,7 @@ export function Sidebar() {
                     <span className={`text-sm font-bold truncate ${isAlbumActive(album.id) ? "text-coral" : "text-cream"}`}>
                       {album.title}
                     </span>
-                    <span className="text-[11px] text-muted truncate">
+                    <span className="text-xs text-muted truncate">
                       Album{artistInfo ? ` · ${artistInfo.display_name}` : ""}
                     </span>
                   </div>

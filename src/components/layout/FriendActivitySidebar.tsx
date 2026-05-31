@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { useAudio } from "../../context/AudioContext";
 import { useAuth } from "../../context/AuthContext";
+import { useRealtime } from "../../context/RealtimeContext";
 
 interface FriendActivitySidebarProps {
   setIsFriendOpen: (val: boolean) => void;
@@ -17,6 +18,7 @@ const MOCK_FRIENDS = [
 export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebarProps) {
   const { isPrivateSession, currentTrack, isPlaying, recentlyPlayed, tracks } = useAudio();
   const { profile } = useAuth();
+  const { onlineUsers, setActiveChatUser, setIsChatOpen } = useRealtime();
 
   // Assign each mock friend a real track from the catalog, deterministically
   const friendTracks = useMemo(() => {
@@ -51,15 +53,15 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
 
         {/* Current user's activity card */}
         <div className="bg-panel border border-cream/5 rounded-xl p-3 text-xs shadow-sm">
-          <div className="font-bold text-coral text-[9px] uppercase tracking-wider mb-2">Your Activity</div>
+          <div className="font-bold text-coral text-xs uppercase tracking-wider mb-2">Your Activity</div>
 
           {isPrivateSession ? (
             <div className="flex flex-col items-center gap-2 py-2 text-center">
               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-coral opacity-80">
                 <path d="M12 1L3 5v6c0 5 3.8 9.7 9 11 5.2-1.3 9-6 9-11V5l-9-4z" />
               </svg>
-              <span className="font-bold text-cream text-[10px]">Private Session Active</span>
-              <p className="text-[10px] text-muted leading-relaxed">
+              <span className="font-bold text-cream text-xs">Private Session Active</span>
+              <p className="text-xs text-muted leading-relaxed">
                 Friends can't see your listening activity.
               </p>
             </div>
@@ -74,8 +76,8 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-bold text-cream truncate">{lastHeardTrack.title}</div>
-                <div className="text-[10px] text-muted truncate">{lastHeardTrack.artist}</div>
+                <div className="text-xs font-bold text-cream truncate">{lastHeardTrack.title}</div>
+                <div className="text-xs text-muted truncate">{lastHeardTrack.artist}</div>
               </div>
               {isPlaying && currentTrack?.id === lastHeardTrack.id && (
                 <div className="flex gap-0.5 items-end h-4 flex-none">
@@ -92,56 +94,72 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
           ) : (
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-muted/30" />
-              <span className="text-muted text-[10px]">Not listening to anything yet</span>
+              <span className="text-muted text-xs">Not listening to anything yet</span>
             </div>
           )}
 
           {!isPrivateSession && (
             <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-cream/5">
-              <div className="w-1.5 h-1.5 rounded-full bg-green animate-pulse shadow-[0_0_6px_#1E9E54]" />
-              <span className="text-muted text-[10px]">Sharing with friends</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-green animate-pulse shadow-sm" />
+              <span className="text-muted text-xs">Sharing with friends</span>
             </div>
           )}
         </div>
 
-        {/* Mock friends with real catalog tracks */}
-        {MOCK_FRIENDS.map((friend, idx) => {
-          const track = friendTracks[idx];
-          if (!track) return null;
-          return (
+        {/* Real friends from Realtime Presence */}
+        {onlineUsers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 p-6 text-center h-full">
+            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-muted/30 mb-2">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
+            <span className="text-muted text-xs">No friends online</span>
+          </div>
+        ) : (
+          onlineUsers.map((friend) => (
             <div
-              key={idx}
+              key={friend.user_id}
               className="flex gap-3 text-xs min-w-0 p-2 rounded-xl hover:bg-panel-hover transition-colors cursor-pointer group"
+              onClick={() => {
+                setActiveChatUser(friend.user_id);
+                setIsChatOpen(true);
+              }}
             >
               <div className="relative flex-none">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-[11px] font-bold text-forest-dark shadow-sm"
-                  style={{ background: `linear-gradient(135deg, ${track.cover_colors[0]}, ${track.cover_colors[1]})` }}
-                >
-                  {friend.initials}
-                </div>
-                {friend.active && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green border-2 border-forest rounded-full shadow-sm" />
+                {friend.avatar_url ? (
+                  <img src={friend.avatar_url} alt={friend.display_name} className="w-10 h-10 rounded-full shadow-sm object-cover" />
+                ) : (
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-forest-dark shadow-sm bg-coral"
+                  >
+                    {friend.display_name.substring(0, 2).toUpperCase()}
+                  </div>
                 )}
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green border-2 border-forest rounded-full shadow-sm" />
               </div>
 
               <div className="min-w-0 flex-1 flex flex-col justify-center">
                 <div className="flex justify-between items-center gap-2">
-                  <span className="font-bold text-cream truncate group-hover:text-coral transition-colors text-[11px]">
-                    {friend.name}
+                  <span className="font-bold text-cream truncate group-hover:text-coral transition-colors text-xs">
+                    {friend.display_name}
                   </span>
-                  <span className="text-[9px] text-muted whitespace-nowrap">{friend.timeAgo}</span>
+                  <span className="text-xs text-muted whitespace-nowrap">Online</span>
                 </div>
-                <div className="text-[11px] font-medium text-cream/90 truncate mt-0.5 group-hover:underline">
-                  {track.title}
-                </div>
-                <div className="text-[10px] text-muted truncate">{track.artist}</div>
+                {friend.current_track_id ? (
+                  <>
+                    <div className="text-xs font-medium text-cream/90 truncate mt-0.5 group-hover:underline">
+                      {friend.current_track_title}
+                    </div>
+                    <div className="text-xs text-muted truncate">{friend.current_track_artist}</div>
+                  </>
+                ) : (
+                  <div className="text-xs text-muted mt-1 italic">Idle</div>
+                )}
               </div>
             </div>
-          );
-        })}
+          ))
+        )}
 
-        <p className="text-[9px] text-muted/50 text-center pt-2 border-t border-cream/5 mt-auto">
+        <p className="text-xs text-muted/50 text-center pt-2 border-t border-cream/5 mt-auto">
           Friend activity updates when they listen
         </p>
       </div>

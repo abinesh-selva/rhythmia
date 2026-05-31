@@ -87,9 +87,9 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
   const [isDevicesOpen, setIsDevicesOpen] = useState(false);
 
   return (
-    <footer className="player w-full md:col-span-2 h-[92px] bg-forest-dark border-t border-cream/5 flex items-center justify-between px-4 md:px-6 select-none relative z-40 shrink-0 shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
+    <footer className="player w-full md:col-span-full h-24 bg-forest-dark border-t border-cream/5 flex items-center justify-between px-4 md:px-6 select-none relative z-40 shrink-0 shadow-2xl">
       {/* Left: playing track details */}
-      <div className="now flex items-center gap-3 w-[28%] min-w-0">
+      <div className="now flex items-center gap-3 w-1/4 min-w-0">
         {currentTrack ? (
           <>
             <div
@@ -104,7 +104,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             </div>
             <div className="now-meta min-w-0 flex flex-col justify-center">
               <div className="nm text-sm font-bold text-cream truncate">{currentTrack.title}</div>
-              <div className="ar text-[11px] text-muted mt-0.5 truncate hover:underline cursor-pointer">{currentTrack.artist}</div>
+              <div className="ar text-xs text-muted mt-0.5 truncate hover:underline cursor-pointer">{currentTrack.artist}</div>
             </div>
             <button
               onClick={() => toggleLike(currentTrack.id)}
@@ -136,14 +136,14 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             </div>
             <div className="now-meta min-w-0">
               <div className="nm text-sm font-semibold text-cream truncate">-</div>
-              <div className="ar text-[11px] text-muted mt-0.5 truncate">Select a song</div>
+              <div className="ar text-xs text-muted mt-0.5 truncate">Select a song</div>
             </div>
           </>
         )}
       </div>
 
       {/* Center: Playback controls */}
-      <div className="controls flex flex-col items-center gap-2 w-[44%] max-w-2xl">
+      <div className="controls flex flex-col items-center gap-2 w-2/5 max-w-2xl">
         <div className="cbtns flex items-center gap-5 md:gap-6">
           {currentTrack?.type === "podcast" || currentTrack?.type === "audiobook" ? (
             <button
@@ -152,7 +152,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
                 const nextIdx = (speeds.indexOf(playbackSpeed) + 1) % speeds.length;
                 setPlaybackSpeed(speeds[nextIdx]);
               }}
-              className="text-[10px] font-extrabold text-coral hover:text-coral-bright transition-all border border-coral/25 px-2 py-0.5 rounded bg-coral/5 hover:scale-105 active:scale-95 cursor-pointer flex-none h-6 flex items-center justify-center min-w-[36px] shadow"
+              className="text-xs font-extrabold text-coral hover:text-coral-bright transition-all border border-coral/25 px-2 py-0.5 rounded bg-coral/5 hover:scale-105 active:scale-95 cursor-pointer flex-none h-6 flex items-center justify-center min-w-9 shadow"
               title="Quick Speed Rate"
             >
               {playbackSpeed}x
@@ -165,7 +165,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               }`}
               title="Shuffle"
             >
-              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
                 <path d="M17 3l4 4-4 4V8h-3l-2.5 3.5-1.4-1.9L12.5 6H17V3zM3 6h4l3 4-1.4 1.9L6 8H3V6zm14 9v-3l4 4-4 4v-3h-4.5l-2.6-3.6 1.4-1.9L14 15h3zM3 16h3l2.5-3.5 1.4 1.9L7 18H3v-2z" />
               </svg>
             </button>
@@ -177,10 +177,10 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               className="cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 flex items-center justify-center relative w-7 h-7"
               title="Rewind 15s"
             >
-              <svg viewBox="0 0 24 24" className="w-5.5 h-5.5 fill-current">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
                 <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
               </svg>
-              <span className="absolute text-[7px] font-extrabold text-cream scale-90 top-[7.5px]">15</span>
+              <span className="absolute text-xs font-extrabold text-cream scale-90 top-2">15</span>
             </button>
           ) : (
             <button onClick={prevTrack} className="cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90" title="Previous">
@@ -199,7 +199,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
                 <path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current translate-x-[1px]">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current translate-x-px">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -211,10 +211,10 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               className="cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 flex items-center justify-center relative w-7 h-7"
               title="Forward 15s"
             >
-              <svg viewBox="0 0 24 24" className="w-5.5 h-5.5 fill-current">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
                 <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" />
               </svg>
-              <span className="absolute text-[7px] font-extrabold text-cream scale-90 top-[7.5px]">15</span>
+              <span className="absolute text-xs font-extrabold text-cream scale-90 top-2">15</span>
             </button>
           ) : (
             <button onClick={nextTrack} className="cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90" title="Next">
@@ -231,11 +231,11 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             }`}
             title="Repeat"
           >
-            <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
               <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" />
             </svg>
             {repeatMode === 2 && (
-              <span className="badge absolute -top-1.5 -right-2 text-[8px] bg-coral text-forest-dark font-black px-1 rounded-full scale-75">
+              <span className="badge absolute -top-1.5 -right-2 text-xs bg-coral text-forest-dark font-black px-1 rounded-full scale-75">
                 1
               </span>
             )}
@@ -244,7 +244,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
         {/* Seek progress slider bar */}
         <div className="progress flex items-center gap-2 w-full">
-          <span className="time text-[11px] text-muted select-none w-10 text-right font-medium">{fmt(currentTime)}</span>
+          <span className="time text-xs text-muted select-none w-10 text-right font-medium">{fmt(currentTime)}</span>
           <div className="relative flex-1 group h-3 flex items-center">
             <input
               type="range"
@@ -255,12 +255,12 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               className="w-full cursor-pointer h-1.5 rounded-full bg-cream/20 accent-cream hover:accent-coral transition-colors"
             />
           </div>
-          <span className="time text-[11px] text-muted select-none w-10 text-left font-medium">{fmt(duration)}</span>
+          <span className="time text-xs text-muted select-none w-10 text-left font-medium">{fmt(duration)}</span>
         </div>
       </div>
 
       {/* Right: controls (EQ, lyrics panel, timer launchers) */}
-      <div className="extra hidden md:flex items-center justify-end gap-3 w-[28%]">
+      <div className="extra hidden md:flex items-center justify-end gap-3 w-1/4">
         {/* Lyrics button */}
         <button
           onClick={() => {
@@ -272,7 +272,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           }`}
           title="Lyrics"
         >
-          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
             <path d="M3 5h18v2H3V5zm0 4h18v2H3V9zm0 4h12v2H3v-2zm0 4h12v2H3v-2z" />
           </svg>
         </button>
@@ -285,7 +285,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           }`}
           title="Queue"
         >
-          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
             <path d="M3 6h13v2H3V6zm0 4h13v2H3v-2zm0 4h9v2H3v-2zm15-3l4 3-4 3v-6z" />
           </svg>
         </button>
@@ -298,7 +298,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           }`}
           title="Now playing pane"
         >
-          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
             <path d="M4 4h7v7H4V4zm0 9h7v7H4v-7zm9-9h7v7h-7V4zm0 9h7v7h-7v-7z" />
           </svg>
         </button>
@@ -311,7 +311,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           }`}
           title="Soniqo Connect"
         >
-          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
             <path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" />
           </svg>
         </button>
@@ -324,7 +324,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           }`}
           title="Equalizer"
         >
-          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
             <path d="M5 3h2v8H5V3zm0 10h2v8H5v-8zm6-10h2v4h-2V3zm0 6h2v12h-2V9zm6-6h2v12h-2V3zm0 14h2v4h-2v-4z" />
           </svg>
           {(eqLow !== 0 || eqMid !== 0 || eqHigh !== 0) && (
@@ -340,11 +340,11 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           }`}
           title="Sleep timer"
         >
-          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
             <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 5h-2v6l5 3 1-1.7-4-2.3V7z" />
           </svg>
           {(sleepTimer !== null || sleepTimerRemaining !== null) && (
-            <span className="absolute -top-1 -right-1 text-[8px] bg-coral text-forest-dark font-black px-1 rounded-sm scale-75">
+            <span className="absolute -top-1 -right-1 text-xs bg-coral text-forest-dark font-black px-1 rounded-sm scale-75">
               ON
             </span>
           )}
@@ -354,15 +354,15 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         <div className="vol hidden sm:flex items-center gap-2 group w-28 flex-none ml-2">
           <button onClick={toggleMute} className="cb text-muted hover:text-cream transition-all cursor-pointer hover:scale-110 active:scale-90">
             {isMuted || volume === 0 ? (
-              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current text-pink">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current text-pink">
                 <path d="M3.63 3.63L2.22 5.04 7 9.83V15h4l5 5V12.83l3.07 3.07c-.62.47-1.31.84-2.07 1.07v2.04c1.28-.31 2.42-.92 3.37-1.76l2.03 2.03 1.41-1.41L3.63 3.63zM12 4L9.91 6.09 12 8.18V4zM16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63z" />
               </svg>
             ) : volume < 0.5 ? (
-              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
                 <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4z" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
                 <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8v8a4.5 4.5 0 002.5-4zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
               </svg>
             )}
@@ -385,7 +385,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
       {/* 1. Equalizer Popover */}
       {isEQOpen && (
-        <div className="pop absolute right-16 bottom-[100px] w-72 bg-panel border border-cream/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
+        <div className="pop absolute right-16 bottom-24 w-72 bg-panel border border-cream/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-display font-bold text-sm">3-Band Equalizer</h4>
             <button onClick={() => setIsEQOpen(false)} className="text-muted hover:text-cream text-xl leading-none cursor-pointer">
@@ -434,30 +434,30 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           <div className="presets grid grid-cols-2 gap-2 mt-5">
             <button
               onClick={() => setEQ(0, 0, 0)}
-              className="bg-panel-hover hover:bg-coral hover:text-forest-dark text-[11px] font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
+              className="bg-panel-hover hover:bg-coral hover:text-forest-dark text-xs font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
             >
               Flat
             </button>
             <button
               onClick={() => setEQ(8, 2, 0)}
-              className="bg-panel-hover hover:bg-coral hover:text-forest-dark text-[11px] font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
+              className="bg-panel-hover hover:bg-coral hover:text-forest-dark text-xs font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
             >
               Bass Boost
             </button>
             <button
               onClick={() => setEQ(0, 1, 7)}
-              className="bg-panel-hover hover:bg-coral hover:text-forest-dark text-[11px] font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
+              className="bg-panel-hover hover:bg-coral hover:text-forest-dark text-xs font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
             >
               Treble Boost
             </button>
             <button
               onClick={() => setEQ(-2, 5, 2)}
-              className="bg-panel-hover hover:bg-coral hover:text-forest-dark text-[11px] font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
+              className="bg-panel-hover hover:bg-coral hover:text-forest-dark text-xs font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
             >
               Vocal
             </button>
           </div>
-          <p className="text-[10px] text-muted/70 mt-4 text-center">
+          <p className="text-xs text-muted/70 mt-4 text-center">
             True Web Audio EQ Processing
           </p>
         </div>
@@ -465,7 +465,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
       {/* 2. Sleep Timer Popover */}
       {isSleepOpen && (
-        <div className="pop absolute right-10 bottom-[100px] w-56 bg-panel border border-cream/10 rounded-2xl p-4 shadow-2xl z-50 text-cream flex flex-col animate-fade-in">
+        <div className="pop absolute right-10 bottom-24 w-56 bg-panel border border-cream/10 rounded-2xl p-4 shadow-2xl z-50 text-cream flex flex-col animate-fade-in">
           <div className="flex justify-between items-center mb-3">
             <h4 className="font-display font-bold text-sm">Sleep Timer</h4>
             <button onClick={() => setIsSleepOpen(false)} className="text-muted hover:text-cream text-xl leading-none cursor-pointer">
@@ -510,7 +510,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             )}
           </div>
           {sleepTimerRemaining !== null && (
-            <div className="mt-3 text-[10px] text-center text-coral font-bold border-t border-cream/10 pt-2">
+            <div className="mt-3 text-xs text-center text-coral font-bold border-t border-cream/10 pt-2">
               Time left: {fmt(sleepTimerRemaining)}
             </div>
           )}
@@ -519,7 +519,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
       {/* 3. Devices Popover */}
       {isDevicesOpen && (
-        <div className="pop absolute right-4 bottom-[100px] w-80 bg-panel border border-cream/10 rounded-2xl p-5 shadow-2xl z-50 text-cream flex flex-col animate-fade-in">
+        <div className="pop absolute right-4 bottom-24 w-80 bg-panel border border-cream/10 rounded-2xl p-5 shadow-2xl z-50 text-cream flex flex-col animate-fade-in">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-display font-bold text-sm flex items-center gap-2">
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-coral"><path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" /></svg>
@@ -530,40 +530,40 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             </button>
           </div>
 
-          <p className="text-[10px] text-muted uppercase tracking-wider font-bold mb-2">Current Device</p>
+          <p className="text-xs text-muted uppercase tracking-wider font-bold mb-2">Current Device</p>
           <div className="flex items-center gap-3 p-3 bg-coral/10 border border-coral/20 rounded-xl mb-4">
             <svg viewBox="0 0 24 24" className="w-9 h-9 fill-coral flex-none">
               <path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" />
             </svg>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-bold text-coral">{deviceInfo.browser}</span>
-              <span className="text-[10px] text-muted">{deviceInfo.os} · Web Audio API</span>
+              <span className="text-xs text-muted">{deviceInfo.os} · Web Audio API</span>
             </div>
             <div className="ml-auto flex items-center gap-1 flex-none">
               <div className="w-1.5 h-1.5 rounded-full bg-green animate-pulse" />
-              <span className="text-[9px] text-green font-bold">Active</span>
+              <span className="text-xs text-green font-bold">Active</span>
             </div>
           </div>
 
-          <p className="text-[10px] text-muted uppercase tracking-wider font-bold mb-2">Audio Capabilities</p>
+          <p className="text-xs text-muted uppercase tracking-wider font-bold mb-2">Audio Capabilities</p>
           <div className="flex flex-wrap gap-1.5 mb-4">
             {deviceInfo.formats.map((fmt) => (
-              <span key={fmt} className="text-[10px] font-bold px-2 py-0.5 bg-green/10 border border-green/20 text-green rounded-full">
+              <span key={fmt} className="text-xs font-bold px-2 py-0.5 bg-green/10 border border-green/20 text-green rounded-full">
                 {fmt}
               </span>
             ))}
             {deviceInfo.formats.length === 0 && (
-              <span className="text-[10px] text-muted">No formats detected</span>
+              <span className="text-xs text-muted">No formats detected</span>
             )}
           </div>
 
-          <p className="text-[10px] text-muted uppercase tracking-wider font-bold mb-2">Audio Engine</p>
-          <div className="text-[10px] text-muted bg-black/20 rounded-lg p-2.5 font-mono leading-relaxed">
+          <p className="text-xs text-muted uppercase tracking-wider font-bold mb-2">Audio Engine</p>
+          <div className="text-xs text-muted bg-black/20 rounded-lg p-2.5 font-mono leading-relaxed">
             Web Audio API · Dual-Player · 3-Band EQ<br />
             AnalyserNode · Crossfade Engine · Master Gain
           </div>
 
-          <p className="text-[10px] text-muted/50 mt-4 text-center">
+          <p className="text-xs text-muted/50 mt-4 text-center">
             Multi-device streaming is not yet supported
           </p>
         </div>

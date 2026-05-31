@@ -108,6 +108,12 @@ body {
   background: rgba(241, 237, 227, 0.3);
 }
 
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(241, 237, 227, 0.15) transparent;
+}
+
 /* Smooth range slider customizations for Player seek and EQ */
 input[type="range"] {
   -webkit-appearance: none;
@@ -134,12 +140,20 @@ input[type="range"]::-webkit-slider-thumb:hover {
   background: #F0824E;
 }
 
-/* Mobile & Capacitor Hybrid Wrapper Optimizations */
+/* Global pointer cursor + touch optimizations */
 button,
 a,
-input,
-select,
-[role="button"] {
+[role="button"],
+[type="button"],
+[type="submit"],
+label[for],
+select {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -158,3 +172,21 @@ input[type="range"] {
     overflow: hidden;
   }
 }
+
+/* ── Shell layout grids (replaces arbitrary grid-cols/grid-rows) ── */
+@media (min-width: 768px) {
+  .shell-grid-2 {
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 1fr 96px;
+  }
+  .shell-grid-3 {
+    grid-template-columns: 260px 1fr 260px;
+    grid-template-rows: 1fr 96px;
+  }
+}
+
+/* Track row column layout */
+.track-row-grid {
+  grid-template-columns: 40px 1fr 1.2fr 60px 60px;
+}
+

@@ -1,23 +1,28 @@
 import React from "react";
 import { useAudio } from "../../context/AudioContext";
+import { useDialog } from "../../context/DialogContext";
 
 export function MobileNav() {
   const { view, setView, createPlaylist } = useAudio();
+  const { showPrompt } = useDialog();
 
   const handleCreatePlaylist = async () => {
-    const pName = prompt("Enter a playlist name:");
+    const pName = await showPrompt({
+      title: "New Playlist",
+      description: "Give your playlist a name to get started.",
+      placeholder: "My Playlist",
+      confirmLabel: "Create",
+    });
     if (!pName) return;
     const plId = await createPlaylist(pName);
-    if (plId) {
-      setView(`playlist:${plId}`);
-    }
+    if (plId) setView(`playlist:${plId}`);
   };
 
   return (
-    <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-cream/5 py-3 px-4 z-40 select-none text-muted shrink-0 rounded-t-2xl shadow-[0_-5px_20px_rgba(0,0,0,0.2)]">
+    <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-cream/5 py-3 px-4 z-40 select-none text-muted shrink-0 rounded-t-2xl shadow-xl">
       <button
         onClick={() => setView("home")}
-        className={`flex flex-col items-center gap-1.5 text-[10px] font-bold tracking-wider cursor-pointer transition-colors ${
+        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${
           view === "home" ? "text-coral" : "hover:text-cream text-muted"
         }`}
       >
@@ -28,7 +33,7 @@ export function MobileNav() {
       </button>
       <button
         onClick={() => setView("search")}
-        className={`flex flex-col items-center gap-1.5 text-[10px] font-bold tracking-wider cursor-pointer transition-colors ${
+        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${
           view === "search" ? "text-coral" : "hover:text-cream text-muted"
         }`}
       >
@@ -39,7 +44,7 @@ export function MobileNav() {
       </button>
       <button
         onClick={() => setView("liked")}
-        className={`flex flex-col items-center gap-1.5 text-[10px] font-bold tracking-wider cursor-pointer transition-colors ${
+        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${
           view === "liked" ? "text-coral" : "hover:text-cream text-muted"
         }`}
       >
@@ -50,7 +55,7 @@ export function MobileNav() {
       </button>
       <button
         onClick={() => setView("live")}
-        className={`flex flex-col items-center gap-1.5 text-[10px] font-bold tracking-wider cursor-pointer transition-colors ${
+        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${
           view === "live" ? "text-coral" : "hover:text-cream text-muted"
         }`}
       >
@@ -61,7 +66,7 @@ export function MobileNav() {
       </button>
       <button
         onClick={handleCreatePlaylist}
-        className="flex flex-col items-center gap-1 text-[10px] font-bold tracking-wider hover:text-cream text-muted cursor-pointer transition-colors"
+        className="flex flex-col items-center gap-1 text-xs font-bold tracking-wider hover:text-cream text-muted cursor-pointer transition-colors"
       >
         <span className="text-xl font-light leading-none h-6 flex items-center justify-center mb-0.5">+</span>
         Create

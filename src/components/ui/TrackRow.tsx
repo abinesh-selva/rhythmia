@@ -43,7 +43,7 @@ export function TrackRow({
   // Inactive tracks: render greyed-out "Unavailable" row — non-playable, non-interactive
   if (track.is_active === false) {
     return (
-      <div className="row grid grid-cols-[40px_1fr_1.2fr_60px_60px] gap-4 items-center px-4 py-2.5 rounded-lg opacity-40 cursor-not-allowed select-none">
+      <div className="row grid track-row-grid gap-4 items-center px-4 py-2.5 rounded-lg opacity-40 cursor-not-allowed select-none">
         <span className="text-xs text-muted text-center">{index + 1}</span>
         <div className="tcell flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded bg-panel/50 flex-none border border-cream/10" />
@@ -66,7 +66,7 @@ export function TrackRow({
       onDragOver={(e) => isReorderable && onDragOver && onDragOver(e, index)}
       onDrop={(e) => isReorderable && playlistId && playlistTrackIds && onDrop && onDrop(e, index, playlistId, playlistTrackIds)}
       onDragEnd={isReorderable && onDragEnd ? onDragEnd : undefined}
-      className={`row group grid grid-cols-[40px_1fr_1.2fr_60px_60px] gap-4 items-center px-4 py-2.5 rounded-lg transition-colors cursor-pointer select-none border border-transparent ${
+      className={`row group grid track-row-grid gap-4 items-center px-4 py-2.5 rounded-lg transition-colors cursor-pointer select-none border border-transparent ${
         isCurrent ? "bg-panel/40" : "hover:bg-panel/20"
       } ${dragOverIndex === index && draggedIndex !== index ? "border-dashed border-coral bg-coral/5" : ""} ${
         draggedIndex === index ? "opacity-40" : ""
@@ -103,7 +103,7 @@ export function TrackRow({
             }}
             className="pic hidden group-hover:flex items-center justify-center border-none bg-transparent absolute inset-0 cursor-pointer"
           >
-            <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-coral">
+            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-coral">
               <path d="M8 5v14l11-7z" />
             </svg>
           </button>
@@ -143,7 +143,7 @@ export function TrackRow({
           isLiked ? "text-coral opacity-100" : "text-muted hover:text-cream opacity-0 group-hover:opacity-100"
         }`}
       >
-        <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-current">
+        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
           <path
             d="M12 21l-1.45-1.32C5.4 15 2 11.9 2 8.1 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.1c0 3.8-3.4 6.9-8.55 11.58L12 21z"
             stroke="currentColor"
@@ -154,7 +154,7 @@ export function TrackRow({
       </button>
 
       {/* Duration / Menu Trigger */}
-      <div className="flex items-center justify-between gap-1 pr-2 justify-self-end min-w-[50px]">
+      <div className="flex items-center justify-between gap-1 pr-2 justify-self-end min-w-12">
         <span className="text-xs text-muted tabular-nums select-none">{fmt(track.duration_sec)}</span>
         <button
           onClick={(e) => {

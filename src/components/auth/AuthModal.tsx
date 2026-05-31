@@ -15,6 +15,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -22,17 +23,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+    setSuccessMsg("");
     setLoading(true);
 
     try {
       if (isSignUp) {
         const { error } = await signUpWithEmail(email, password, name);
         if (error) throw new Error(error.message || error);
+        // Supabase sends a confirmation email by default
+        setSuccessMsg("Account created! Please check your email for the confirmation link to sign in.");
+        setIsSignUp(false); // Switch to login mode
+        setPassword(""); // Clear password for security
       } else {
         const { error } = await loginWithEmail(email, password);
-        if (error) throw new Error(error.message || error);
+        if (error) {
+          if (error.message?.includes("Email not confirmed")) {
+            throw new Error("Please check your email and click the confirmation link before logging in.");
+          }
+          throw new Error(error.message || error);
+        }
+        onClose();
       }
-      onClose();
     } catch (err: any) {
       setErrorMsg(err.message || "An authentication error occurred.");
     } finally {
@@ -79,6 +90,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         {errorMsg && (
           <div className="mb-4 p-3 bg-coral/20 border border-coral/30 rounded-lg text-cream text-sm">
             {errorMsg}
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mb-4 p-3 bg-green/20 border border-green/30 rounded-lg text-cream text-sm">
+            {successMsg}
           </div>
         )}
 
@@ -169,7 +186,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </button>
 
         {isOffline && (
-          <p className="text-center text-[10px] text-coral/80 mt-3">
+          <p className="text-center text-xs text-coral/80 mt-3">
             Google login is disabled in offline fallback mode. Any email/password will instantly sign in locally.
           </p>
         )}

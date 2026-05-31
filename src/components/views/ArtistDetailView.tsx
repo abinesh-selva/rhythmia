@@ -141,7 +141,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
                 <div
                   key={album.id}
                   onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
-                  className="flex flex-col gap-3 min-w-[160px] md:min-w-[180px] p-4 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all hover:scale-[1.02]"
+                  className="flex flex-col gap-3 min-w-40 md:min-w-44 p-4 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all hover:scale-105"
                 >
                   <div
                     className="w-full aspect-square rounded-lg shadow-lg flex items-center justify-center relative overflow-hidden"
@@ -154,7 +154,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
                         <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
                       </svg>
                     )}
-                    <div className="absolute right-2 bottom-2 w-10 h-10 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
+                    <div className="absolute right-2 bottom-2 w-10 h-10 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-0 opacity-100 md:translate-y-4 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all z-10">
                       <svg viewBox="0 0 24 24" className="w-5 h-5 fill-forest-dark ml-0.5">
                         <path d="M8 5v14l11-7z" />
                       </svg>

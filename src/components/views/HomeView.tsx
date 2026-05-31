@@ -8,7 +8,6 @@ import { TrackRow } from "@/components/ui/TrackRow";
 
 interface HomeViewProps {
   onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-  showToast: (msg: string) => void;
 }
 
 interface ArtistRow {
@@ -42,7 +41,7 @@ function HomeSkeleton() {
         <div className="h-7 w-64 bg-cream/10 rounded-lg mb-5" />
         <div className="flex gap-4 overflow-hidden">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="min-w-[160px] md:min-w-[180px] flex flex-col gap-3">
+            <div key={i} className="min-w-40 md:min-w-44 flex flex-col gap-3">
               <div className="w-full aspect-square rounded-xl bg-cream/10" />
               <div className="h-4 w-3/4 bg-cream/10 rounded" />
               <div className="h-3 w-1/2 bg-cream/10 rounded" />
@@ -60,7 +59,7 @@ function HomeSkeleton() {
   );
 }
 
-export function HomeView({ onContextMenu, showToast }: HomeViewProps) {
+export function HomeView({ onContextMenu }: HomeViewProps) {
   const router = useRouter();
   const { tracks, recentlyPlayed, playTrack, isLoading } = useAudio();
 
@@ -154,7 +153,7 @@ export function HomeView({ onContextMenu, showToast }: HomeViewProps) {
                 <div
                   key={album.id}
                   onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
-                  className="flex flex-col gap-3 min-w-[140px] md:min-w-[180px] p-4 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
+                  className="flex flex-col gap-3 min-w-36 md:min-w-44 p-4 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
                 >
                   <div
                     className="w-full aspect-square rounded-md shadow-lg relative overflow-hidden flex-none"
@@ -163,7 +162,7 @@ export function HomeView({ onContextMenu, showToast }: HomeViewProps) {
                     {album.cover_image && (
                       <img src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />
                     )}
-                    <div className="absolute right-2 bottom-2 w-12 h-12 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
+                    <div className="absolute right-2 bottom-2 w-12 h-12 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-0 opacity-100 md:translate-y-4 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all z-10">
                       <svg viewBox="0 0 24 24" className="w-6 h-6 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
                     </div>
                   </div>
@@ -191,7 +190,7 @@ export function HomeView({ onContextMenu, showToast }: HomeViewProps) {
               <div
                 key={artist.id}
                 onClick={() => router.push(`/artist/${artist.id}/${artist.slug}`)}
-                className="flex flex-col items-center gap-3 min-w-[140px] md:min-w-[160px] p-4 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
+                className="flex flex-col items-center gap-3 min-w-36 md:min-w-40 p-4 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
               >
                 <div className="w-full aspect-square rounded-full bg-panel/50 border border-cream/5 shadow-lg flex items-center justify-center group-hover:bg-panel transition-colors overflow-hidden relative">
                   {artist.image ? (
@@ -204,7 +203,7 @@ export function HomeView({ onContextMenu, showToast }: HomeViewProps) {
                       </svg>
                     </>
                   )}
-                  <div className="absolute right-1 bottom-1 w-10 h-10 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
+                  <div className="absolute right-1 bottom-1 w-10 h-10 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-0 opacity-100 md:translate-y-4 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all z-10">
                     <svg viewBox="0 0 24 24" className="w-5 h-5 fill-forest-dark ml-0.5"><path d="M8 5v14l11-7z" /></svg>
                   </div>
                 </div>
@@ -232,7 +231,7 @@ export function HomeView({ onContextMenu, showToast }: HomeViewProps) {
                 <div
                   key={album.id}
                   onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
-                  className="flex flex-col gap-3 min-w-[140px] md:min-w-[180px] p-4 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
+                  className="flex flex-col gap-3 min-w-36 md:min-w-44 p-4 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
                 >
                   <div
                     className="w-full aspect-square rounded-md shadow-lg relative overflow-hidden"
@@ -241,7 +240,7 @@ export function HomeView({ onContextMenu, showToast }: HomeViewProps) {
                     {album.cover_image && (
                       <img src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />
                     )}
-                    <div className="absolute right-2 bottom-2 w-12 h-12 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
+                    <div className="absolute right-2 bottom-2 w-12 h-12 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-0 opacity-100 md:translate-y-4 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all z-10">
                       <svg viewBox="0 0 24 24" className="w-6 h-6 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
                     </div>
                   </div>
@@ -267,7 +266,7 @@ export function HomeView({ onContextMenu, showToast }: HomeViewProps) {
               <div
                 key={track.id}
                 onClick={() => playTrack(track.id)}
-                className="group relative p-4 bg-panel/30 hover:bg-panel/60 rounded-xl flex flex-col gap-3 cursor-pointer transition-all hover:scale-[1.02] shadow-sm hover:shadow-md border border-cream/5"
+                className="group relative p-4 bg-panel/30 hover:bg-panel/60 rounded-xl flex flex-col gap-3 cursor-pointer transition-all hover:scale-105 shadow-sm hover:shadow-md border border-cream/5"
               >
                 <div
                   className="w-full aspect-square rounded-md shadow-lg relative overflow-hidden flex items-center justify-center flex-none"
@@ -276,7 +275,7 @@ export function HomeView({ onContextMenu, showToast }: HomeViewProps) {
                   <svg viewBox="0 0 24 24" className="w-8 h-8 fill-cream/50 transition-transform group-hover:scale-110">
                     <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
                   </svg>
-                  <div className="absolute right-2 bottom-2 w-10 h-10 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
+                  <div className="absolute right-2 bottom-2 w-10 h-10 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-0 opacity-100 md:translate-y-4 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all z-10">
                     <svg viewBox="0 0 24 24" className="w-5 h-5 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
                   </div>
                 </div>

@@ -2,28 +2,23 @@
 
 import React, { useState } from "react";
 import { useAudio } from "../context/AudioContext";
+import { useToast } from "../context/ToastContext";
 import { HomeView } from "../components/views/HomeView";
 import { SearchView } from "../components/views/SearchView";
 import { PlaylistView } from "../components/views/PlaylistView";
 import { LikedSongsView } from "../components/views/LikedSongsView";
-import { LiveEventsView } from "../components/views/LiveEventsView";
 import { QueueView } from "../components/views/QueueView";
 import { CloudinarySyncView } from "../components/views/CloudinarySyncView";
 import { AlbumView } from "../components/views/AlbumView";
 import { ArtistView } from "../components/views/ArtistView";
+import { LiveEventsView } from "../components/views/LiveEventsView";
 
 export default function Page() {
   const { view, playlists, addToQueue, addTrackToPlaylist } = useAudio();
-  const [toastMessage, setToastMessage] = useState("");
+  const { addToast } = useToast();
 
-  // Context menu track selector
   const [activeMenuTrackId, setActiveMenuTrackId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 3000);
-  };
 
   const handleContextMenu = (e: React.MouseEvent, trackId: string) => {
     e.preventDefault();
@@ -33,40 +28,33 @@ export default function Page() {
 
   const renderView = () => {
     if (view === "home") {
-      return <HomeView showToast={showToast} onContextMenu={handleContextMenu} />;
+      return <HomeView onContextMenu={handleContextMenu} />;
     } else if (view === "search") {
-      return <SearchView showToast={showToast} onContextMenu={handleContextMenu} />;
+      return <SearchView onContextMenu={handleContextMenu} />;
     } else if (view.startsWith("playlist:")) {
       const playlistId = view.split(":")[1];
-      return <PlaylistView playlistId={playlistId} showToast={showToast} onContextMenu={handleContextMenu} />;
+      return <PlaylistView playlistId={playlistId} onContextMenu={handleContextMenu} />;
     } else if (view.startsWith("album:")) {
       const albumName = view.split(":")[1];
-      return <AlbumView albumName={albumName} showToast={showToast} onContextMenu={handleContextMenu} />;
+      return <AlbumView albumName={albumName} onContextMenu={handleContextMenu} />;
     } else if (view.startsWith("artist:")) {
       const artistName = view.split(":")[1];
-      return <ArtistView artistName={artistName} showToast={showToast} onContextMenu={handleContextMenu} />;
+      return <ArtistView artistName={artistName} onContextMenu={handleContextMenu} />;
     } else if (view === "liked") {
-      return <LikedSongsView showToast={showToast} onContextMenu={handleContextMenu} />;
-    } else if (view === "live") {
-      return <LiveEventsView showToast={showToast} />;
+      return <LikedSongsView onContextMenu={handleContextMenu} />;
     } else if (view === "queue") {
-      return <QueueView showToast={showToast} onContextMenu={handleContextMenu} />;
+      return <QueueView onContextMenu={handleContextMenu} />;
     } else if (view === "sync") {
-      return <CloudinarySyncView showToast={showToast} />;
+      return <CloudinarySyncView />;
+    } else if (view === "live") {
+      return <LiveEventsView />;
     }
-    return <HomeView showToast={showToast} onContextMenu={handleContextMenu} />;
+    return <HomeView onContextMenu={handleContextMenu} />;
   };
 
   return (
     <div onClick={() => setActiveMenuTrackId(null)}>
       {renderView()}
-
-      {/* Global Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-[110px] left-1/2 -translate-x-1/2 bg-coral text-forest-dark px-4 py-2 rounded-lg shadow-xl font-bold text-sm z-50 animate-fade-in pointer-events-none">
-          {toastMessage}
-        </div>
-      )}
 
       {/* GLOBAL TRACK CONTEXT MENU */}
       {activeMenuTrackId && (
@@ -82,13 +70,13 @@ export default function Page() {
             onClick={() => {
               addToQueue(activeMenuTrackId);
               setActiveMenuTrackId(null);
-              showToast("Added to queue");
+              addToast("Added to queue", "success");
             }}
             className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-panel-hover transition-colors font-medium border-b border-cream/5"
           >
             Add to Queue
           </button>
-          
+
           <div className="px-4 py-2 text-xs font-bold text-muted uppercase tracking-wider bg-black/20">
             Add to Playlist
           </div>
@@ -99,7 +87,7 @@ export default function Page() {
                 onClick={() => {
                   addTrackToPlaylist(pl.id, activeMenuTrackId);
                   setActiveMenuTrackId(null);
-                  showToast(`Added to ${pl.name}`);
+                  addToast(`Added to ${pl.name}`, "success");
                 }}
                 className="w-full text-left px-4 py-2 text-sm text-cream hover:bg-panel-hover transition-colors"
               >

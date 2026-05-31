@@ -1,11 +1,7 @@
 import React, { useState } from "react";
 import { useAudio } from "../../context/AudioContext";
 
-interface CloudinarySyncViewProps {
-  showToast: (msg: string) => void;
-}
-
-export function CloudinarySyncView({ showToast }: CloudinarySyncViewProps) {
+export function CloudinarySyncView() {
   const { refreshTracks } = useAudio();
   const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -48,7 +44,7 @@ export function CloudinarySyncView({ showToast }: CloudinarySyncViewProps) {
         </p>
       </div>
 
-      <div className="bg-panel/30 border border-cream/5 rounded-3xl p-8 md:p-12 shadow-xl flex flex-col justify-center items-center text-center gap-6 min-h-[350px] relative overflow-hidden animate-fade-in">
+      <div className="bg-panel/30 border border-cream/5 rounded-3xl p-8 md:p-12 shadow-xl flex flex-col justify-center items-center text-center gap-6 min-h-80 relative overflow-hidden animate-fade-in">
         {/* Subtle background glow */}
         <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 opacity-20 ${
           syncStatus === "success" ? "from-green/40 to-transparent" :

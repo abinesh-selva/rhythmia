@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { useAudio } from "../../context/AudioContext";
+import { useToast } from "../../context/ToastContext";
+import { useDialog } from "../../context/DialogContext";
 import { TrackRow } from "../ui/TrackRow";
 
 interface PlaylistViewProps {
   playlistId: string;
   onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-  showToast: (msg: string) => void;
 }
 
-export function PlaylistView({ playlistId, onContextMenu, showToast }: PlaylistViewProps) {
+export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
+  const { addToast } = useToast();
+  const { showPrompt, showConfirm } = useDialog();
   const { 
     tracks, 
     playlists, 
@@ -47,8 +50,13 @@ export function PlaylistView({ playlistId, onContextMenu, showToast }: PlaylistV
       t.artist.toLowerCase().includes(playlistSearchQuery.toLowerCase())
   );
 
-  const handleRename = () => {
-    const newName = prompt("Rename playlist to:", pl.name);
+  const handleRename = async () => {
+    const newName = await showPrompt({
+      title: "Rename Playlist",
+      placeholder: pl.name,
+      defaultValue: pl.name,
+      confirmLabel: "Rename",
+    });
     if (newName && newName.trim()) {
       renamePlaylist(pl.id, newName.trim());
     }
@@ -57,7 +65,7 @@ export function PlaylistView({ playlistId, onContextMenu, showToast }: PlaylistV
   const handleSharePlaylist = () => {
     const shareUrl = `${window.location.origin}/?view=playlist:${pl.id}`;
     navigator.clipboard.writeText(shareUrl);
-    alert("Share link copied to clipboard!");
+    addToast("Share link copied to clipboard!", "success");
   };
 
   // Drag handlers
@@ -106,7 +114,7 @@ export function PlaylistView({ playlistId, onContextMenu, showToast }: PlaylistV
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark to-transparent z-0" />
 
         <div
-          className="hero-art w-40 h-40 md:w-56 md:h-56 rounded-xl flex items-center justify-center flex-none shadow-2xl z-10 transition-transform hover:scale-[1.02]"
+          className="hero-art w-40 h-40 md:w-56 md:h-56 rounded-xl flex items-center justify-center flex-none shadow-2xl z-10 transition-transform hover:scale-105"
           style={{
             background: `linear-gradient(135deg, ${pl.cover_colors[0]}, ${pl.cover_colors[1]})`,
           }}
@@ -120,7 +128,7 @@ export function PlaylistView({ playlistId, onContextMenu, showToast }: PlaylistV
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold tracking-wider text-white/80">Playlist</span>
             {pl.collaborative && (
-              <span className="bg-green/15 text-green border border-green/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm select-none">
+              <span className="bg-green/15 text-green border border-green/20 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm select-none">
                 <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse" />
                 Collaborative
               </span>
@@ -135,7 +143,7 @@ export function PlaylistView({ playlistId, onContextMenu, showToast }: PlaylistV
           </h2>
           <div className="flex items-center gap-2 mt-2">
             <div className="w-6 h-6 rounded-full bg-blue flex items-center justify-center shadow-md">
-              <span className="text-[10px] font-bold text-white">A</span>
+              <span className="text-xs font-bold text-white">A</span>
             </div>
             <span className="text-sm font-semibold text-white drop-shadow">Amigo</span>
             <span className="text-sm text-white/70">•</span>
@@ -183,12 +191,16 @@ export function PlaylistView({ playlistId, onContextMenu, showToast }: PlaylistV
                    {pl.collaborative ? "Make Private" : "Make Collaborative"}
                  </button>
                  <div className="h-px bg-cream/10 my-1"></div>
-                 <button 
-                   onClick={() => {
-                     if (confirm("Are you sure you want to delete this playlist?")) {
-                       deletePlaylist(pl.id);
-                     }
-                   }} 
+                 <button
+                   onClick={async () => {
+                     const ok = await showConfirm({
+                       title: "Delete Playlist",
+                       description: `"${pl.name}" will be permanently removed. This cannot be undone.`,
+                       confirmLabel: "Delete",
+                       variant: "danger",
+                     });
+                     if (ok) deletePlaylist(pl.id);
+                   }}
                    className="text-left px-3 py-2 text-sm text-pink hover:bg-pink/10 rounded"
                  >
                    Delete
@@ -224,7 +236,7 @@ export function PlaylistView({ playlistId, onContextMenu, showToast }: PlaylistV
               )}
             </div>
             
-            <div className="text-[11px] text-muted uppercase tracking-widest font-semibold select-none hidden sm:block opacity-60">
+            <div className="text-xs text-muted uppercase tracking-widest font-semibold select-none hidden sm:block opacity-60">
               Drag rows to reorder
             </div>
           </div>

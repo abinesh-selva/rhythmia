@@ -62,7 +62,7 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
   if (!currentTrack) return null;
 
   return (
-    <aside className="np fixed top-4 right-4 bottom-[108px] w-[340px] bg-panel rounded-2xl z-40 overflow-hidden flex flex-col shadow-2xl border border-cream/5 animate-slide-in-right">
+    <aside className="np fixed top-0 right-0 bottom-24 w-full md:top-4 md:right-4 md:bottom-28 md:w-80 bg-panel md:rounded-2xl z-40 overflow-hidden flex flex-col shadow-2xl border-t border-cream/5 md:border animate-slide-in-right">
       <div className="flex justify-between items-center p-5 pb-0 flex-none relative z-10">
         <h3 className="font-display font-bold text-lg text-cream">Now Playing</h3>
         <button
@@ -123,7 +123,7 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
 
         <div className="min-h-0">
           {npTab === "lyrics" ? (
-            <div className="flex flex-col h-[250px]">
+            <div className="flex flex-col h-64">
               <textarea
                 value={lyrics}
                 onChange={(e) => updateLyrics(e.target.value)}
@@ -136,7 +136,7 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
               {queue.length === 0 ? (
                 <div className="text-center py-10 bg-black/10 rounded-xl border border-cream/5 border-dashed">
                    <svg viewBox="0 0 24 24" className="w-8 h-8 fill-muted mx-auto mb-2 opacity-50"><path d="M3 6h13v2H3V6zm0 4h13v2H3v-2zm0 4h9v2H3v-2zm15-3l4 3-4 3v-6z" /></svg>
-                   <p className="text-xs text-muted max-w-[200px] mx-auto">
+                   <p className="text-xs text-muted max-w-48 mx-auto">
                      Queue is empty. Right-click or click menu on songs to queue.
                    </p>
                 </div>
@@ -164,10 +164,10 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
                         </div>
                         <div className="qm min-w-0 flex flex-col justify-center">
                           <div className="qn font-bold text-xs text-cream truncate group-hover:text-coral transition-colors">{qTrack.title}</div>
-                          <div className="qs text-[10px] text-muted truncate mt-0.5">{qTrack.artist}</div>
+                          <div className="qs text-xs text-muted truncate mt-0.5">{qTrack.artist}</div>
                         </div>
                       </div>
-                      <button className="text-[10px] text-coral opacity-0 group-hover:opacity-100 transition-opacity font-bold uppercase tracking-wider px-2 py-1 bg-coral/10 rounded">
+                      <button className="text-xs text-coral opacity-0 group-hover:opacity-100 transition-opacity font-bold uppercase tracking-wider px-2 py-1 bg-coral/10 rounded">
                         Remove
                       </button>
                     </div>

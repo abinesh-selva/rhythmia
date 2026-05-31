@@ -4,20 +4,19 @@ import { TrackRow } from "../ui/TrackRow";
 
 interface LikedSongsViewProps {
   onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-  showToast: (msg: string) => void;
 }
 
-export function LikedSongsView({ onContextMenu, showToast }: LikedSongsViewProps) {
+export function LikedSongsView({ onContextMenu }: LikedSongsViewProps) {
   const { tracks, likedSongs, playTrack } = useAudio();
   const likedTracks = tracks.filter((t) => likedSongs.has(t.id));
 
   return (
     <div className="flex flex-col min-h-full pb-20">
       {/* Header Hero */}
-      <div className="hero bg-gradient-to-b from-[#5C32E6]/60 to-forest-dark p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-cream/5 relative overflow-hidden transition-all">
+      <div className="hero p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-cream/5 relative overflow-hidden transition-all" style={{ background: 'linear-gradient(to bottom, rgba(92,50,230,0.6), var(--theme-forest-dark))' }}>
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark/80 to-transparent z-0" />
-        
-        <div className="hero-art w-40 h-40 md:w-56 md:h-56 rounded-xl bg-gradient-to-br from-[#450AF5] to-[#C4EFD9] flex items-center justify-center flex-none shadow-2xl z-10 transition-transform hover:scale-[1.02]">
+
+        <div className="hero-art w-40 h-40 md:w-56 md:h-56 rounded-xl flex items-center justify-center flex-none shadow-2xl z-10 transition-transform hover:scale-105" style={{ background: 'linear-gradient(135deg, #450AF5, #C4EFD9)' }}>
           <svg viewBox="0 0 24 24" className="w-16 h-16 md:w-24 md:h-24 fill-white shadow-inner drop-shadow-md">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
           </svg>
@@ -30,7 +29,7 @@ export function LikedSongsView({ onContextMenu, showToast }: LikedSongsViewProps
           </h2>
           <div className="flex items-center gap-2 mt-2">
             <div className="w-6 h-6 rounded-full bg-coral flex items-center justify-center shadow-md">
-              <span className="text-[10px] font-bold text-white">S</span>
+              <span className="text-xs font-bold text-white">S</span>
             </div>
             <span className="text-sm font-semibold text-white drop-shadow">Soniqo</span>
             <span className="text-sm text-white/70">•</span>

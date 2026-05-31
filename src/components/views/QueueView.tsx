@@ -4,10 +4,9 @@ import { TrackRow } from "../ui/TrackRow";
 
 interface QueueViewProps {
   onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-  showToast: (msg: string) => void;
 }
 
-export function QueueView({ onContextMenu, showToast }: QueueViewProps) {
+export function QueueView({ onContextMenu }: QueueViewProps) {
   const { tracks, queue, clearQueue } = useAudio();
   
   const qTracks = queue.map((id) => tracks.find((t) => t.id === id)!).filter(Boolean);

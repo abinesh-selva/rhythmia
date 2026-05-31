@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useAudio } from "../../context/AudioContext";
+import { useDialog } from "../../context/DialogContext";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
+  const { showConfirm } = useDialog();
   const {
     playbackSpeed,
     setPlaybackSpeed,
@@ -25,11 +27,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
   if (!isOpen) return null;
 
-  const handleResetApp = () => {
-    const doubleCheck = confirm(
-      "Warning: This will wipe your locally saved liked songs, custom playlists, play history, custom lyrics, and all active settings. This acts as a 'Clear Cache' troubleshooting reset.\n\nDo you want to proceed?"
-    );
-    if (doubleCheck) {
+  const handleResetApp = async () => {
+    const ok = await showConfirm({
+      title: "Reset App Data",
+      description: "This will wipe your locally saved liked songs, custom playlists, play history, and all settings. This cannot be undone.",
+      confirmLabel: "Reset Everything",
+      variant: "danger",
+    });
+    if (ok) {
       localStorage.clear();
       window.location.href = window.location.origin;
     }
@@ -38,7 +43,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
       <div 
-        className="w-full max-w-md bg-[#0e3b35]/95 border border-cream/10 rounded-2xl p-6 shadow-2xl text-cream relative"
+        className="w-full max-w-md bg-forest/95 border border-cream/10 rounded-2xl p-6 shadow-2xl text-cream relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -56,14 +61,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* Content list */}
-        <div className="flex flex-col gap-5 max-h-[420px] overflow-y-auto pr-1 text-sm">
+        <div className="flex flex-col gap-5 max-h-96 overflow-y-auto pr-1 text-sm">
           {/* A. Playback Speed */}
           <div className="flex flex-col gap-1.5">
             <div className="flex justify-between items-center">
               <span className="font-semibold text-cream">Playback Speed</span>
               <span className="text-xs text-coral font-bold">{playbackSpeed}x</span>
             </div>
-            <p className="text-[11px] text-muted">Adjust audio speed rate. Recommended for podcasts and audiobooks.</p>
+            <p className="text-xs text-muted">Adjust audio speed rate. Recommended for podcasts and audiobooks.</p>
             <div className="flex gap-2 mt-1">
               {[0.5, 0.8, 1.0, 1.25, 1.5, 2.0].map((speed) => (
                 <button
@@ -89,7 +94,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               <span className="font-semibold text-cream">Crossfade Songs</span>
               <span className="text-xs text-coral font-bold">{crossfadeSec}s</span>
             </div>
-            <p className="text-[11px] text-muted">Overlap duration during transitions. Set to 0 to disable.</p>
+            <p className="text-xs text-muted">Overlap duration during transitions. Set to 0 to disable.</p>
             <div className="flex items-center gap-3 mt-1">
               <span className="text-xs text-muted">0s</span>
               <input
@@ -109,7 +114,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           {/* C. Audio Normalization */}
           <div className="flex flex-col gap-1.5">
             <span className="font-semibold text-cream">Audio Normalization</span>
-            <p className="text-[11px] text-muted">Scale master gain output. Adjust to suit your current environment.</p>
+            <p className="text-xs text-muted">Scale master gain output. Adjust to suit your current environment.</p>
             <div className="flex gap-2 mt-1">
               {(["quiet", "normal", "loud"] as const).map((level) => (
                 <button
@@ -133,7 +138,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
               <span className="font-semibold text-cream">Autoplay Similar Content</span>
-              <span className="text-[11px] text-muted pr-2">Keep playback going with recommended tracks when a list ends.</span>
+              <span className="text-xs text-muted pr-2">Keep playback going with recommended tracks when a list ends.</span>
             </div>
             <button
               onClick={() => setIsAutoplay(!isAutoplay)}
@@ -155,7 +160,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-0.5">
               <span className="font-semibold text-cream">Private Session</span>
-              <span className="text-[11px] text-muted pr-2">Hides your listening logs and active state from Friend Activity.</span>
+              <span className="text-xs text-muted pr-2">Hides your listening logs and active state from Friend Activity.</span>
             </div>
             <button
               onClick={togglePrivateSession}
@@ -176,7 +181,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           {/* F. Cloudinary Sync Manager Navigation */}
           <div className="flex flex-col gap-1.5 mt-1 bg-coral/5 border border-coral/10 p-3 rounded-xl">
             <span className="font-semibold text-coral text-xs uppercase tracking-wider">Cloudinary Sync Manager</span>
-            <p className="text-[11px] text-muted leading-relaxed">
+            <p className="text-xs text-muted leading-relaxed">
               Sync and import your original song catalog from your Cloudinary folder directly into Soniqo Vibe.
             </p>
             <button
@@ -195,7 +200,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           {/* G. Troubleshooting - Clear Cache */}
           <div className="flex flex-col gap-1.5 mt-1 bg-red-500/5 border border-red-500/10 p-3 rounded-xl">
             <span className="font-semibold text-pink text-xs uppercase tracking-wider">Troubleshooting</span>
-            <p className="text-[11px] text-muted leading-relaxed">
+            <p className="text-xs text-muted leading-relaxed">
               If playlists fail to sync or media assets stall, perform an offline cache reset. This restores pristine factory states.
             </p>
             <button

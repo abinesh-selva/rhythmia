@@ -11,6 +11,7 @@ import { TopNavigation } from "./TopNavigation";
 import { BottomPlayer } from "./BottomPlayer";
 import { NowPlayingSidebar } from "./NowPlayingSidebar";
 import { FriendActivitySidebar } from "./FriendActivitySidebar";
+import { ChatDrawer } from "../chat/ChatDrawer";
 import { MobileNav } from "./MobileNav";
 
 export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -79,9 +80,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <div className={`app flex flex-col md:grid h-screen gap-2 p-2 bg-black overflow-hidden font-sans text-cream ${
-      isFriendOpen
-        ? "md:grid-cols-[260px_1fr_260px] md:grid-rows-[1fr_92px]"
-        : "md:grid-cols-[260px_1fr] md:grid-rows-[1fr_92px]"
+      isFriendOpen ? "shell-grid-3" : "shell-grid-2"
     }`}>
       {/* 1. SIDEBAR ZONE */}
       <Sidebar />
@@ -134,17 +133,17 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
       {/* Features popover overlay */}
       {isFeaturesOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-[400px] bg-panel border border-cream/10 rounded-2xl p-6 shadow-2xl text-cream transform transition-all scale-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="w-96 bg-panel border border-cream/10 rounded-2xl p-6 shadow-2xl text-cream transform transition-all scale-100">
             <div className="flex justify-between items-center mb-5 border-b border-cream/10 pb-3">
               <h4 className="font-display font-bold text-lg text-coral drop-shadow">Soniqo Features</h4>
               <button onClick={() => setIsFeaturesOpen(false)} className="text-muted hover:text-cream text-2xl leading-none cursor-pointer">
                 &times;
               </button>
             </div>
-            <div className="flex flex-col gap-4 text-sm leading-relaxed max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex flex-col gap-4 text-sm leading-relaxed max-h-96 overflow-y-auto pr-2 custom-scrollbar">
               <div className="bg-black/20 p-4 rounded-xl border border-cream/5">
-                <span className="font-bold text-coral uppercase text-[10px] tracking-widest block mb-2 flex items-center gap-2">
+                <span className="font-bold text-coral uppercase text-xs tracking-widest block mb-2 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse"></span>
                   Fully Functional
                 </span>
@@ -153,7 +152,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                 </p>
               </div>
               <div className="bg-black/20 p-4 rounded-xl border border-cream/5">
-                <span className="font-bold text-green uppercase text-[10px] tracking-widest block mb-2 flex items-center gap-2">
+                <span className="font-bold text-green uppercase text-xs tracking-widest block mb-2 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse"></span>
                   Database Sync
                 </span>
@@ -165,6 +164,9 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
           </div>
         </div>
       )}
+
+      {/* Realtime Chat Drawer */}
+      <ChatDrawer />
     </div>
   );
 };

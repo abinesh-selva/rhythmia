@@ -8,7 +8,6 @@ import { TrackRow } from "@/components/ui/TrackRow";
 
 interface SearchViewProps {
   onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-  showToast: (msg: string) => void;
 }
 
 interface ArtistResult  { id: string; display_name: string; slug: string; image: string | null; track_count: number }
@@ -16,11 +15,11 @@ interface AlbumResult   { id: string; title: string; slug: string; cover_image: 
 interface PlaylistResult { id: string; name: string; cover_colors: string[] }
 
 const GENRES = [
-  { id: "music",    label: "All Music",     type: "music"    as const, keywords: [],                        gradient: "from-[#E13300] to-[#FF6B35]" },
-  { id: "acoustic", label: "Acoustic Chill", type: "music"   as const, keywords: ["acoustic","chill","folk"], gradient: "from-[#1E3264] to-[#2E4A96]" },
-  { id: "beats",    label: "Lo-Fi Beats",   type: "music"    as const, keywords: ["beat","lo-fi","lofi","anno"], gradient: "from-[#8D67AB] to-[#B388D6]" },
-  { id: "podcast",  label: "Podcasts",      type: "podcast"  as const, keywords: [],                        gradient: "from-[#1DB954] to-[#34D068]" },
-  { id: "audiobook",label: "Audiobooks",    type: "audiobook"as const, keywords: [],                        gradient: "from-[#B02897] to-[#D644BB]" },
+  { id: "music",     label: "All Music",     type: "music"     as const, keywords: [],                           from: "#E13300", to: "#FF6B35" },
+  { id: "acoustic",  label: "Acoustic Chill", type: "music"    as const, keywords: ["acoustic","chill","folk"],   from: "#1E3264", to: "#2E4A96" },
+  { id: "beats",     label: "Lo-Fi Beats",   type: "music"     as const, keywords: ["beat","lo-fi","lofi","anno"],from: "#8D67AB", to: "#B388D6" },
+  { id: "podcast",   label: "Podcasts",      type: "podcast"   as const, keywords: [],                           from: "#1DB954", to: "#34D068" },
+  { id: "audiobook", label: "Audiobooks",    type: "audiobook" as const, keywords: [],                           from: "#B02897", to: "#D644BB" },
 ];
 
 function matchesGenre(track: Track, genre: (typeof GENRES)[number]): boolean {
@@ -41,7 +40,7 @@ function getAlbumColors(album: AlbumResult): [string, string] {
   return ["#F0824E", "#1E9E54"];
 }
 
-export function SearchView({ onContextMenu, showToast }: SearchViewProps) {
+export function SearchView({ onContextMenu }: SearchViewProps) {
   const router = useRouter();
   const { tracks, searchQuery, isLoading } = useAudio();
   const [activeGenre, setActiveGenre] = useState<(typeof GENRES)[number] | null>(null);
@@ -156,7 +155,7 @@ export function SearchView({ onContextMenu, showToast }: SearchViewProps) {
                   <div
                     key={artist.id}
                     onClick={() => router.push(`/artist/${artist.id}/${artist.slug}`)}
-                    className="flex flex-col items-center gap-2 min-w-[120px] p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
+                    className="flex flex-col items-center gap-2 min-w-32 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
                   >
                     <div className="w-20 h-20 rounded-full bg-panel/50 border border-cream/5 overflow-hidden flex items-center justify-center">
                       {artist.image
@@ -184,7 +183,7 @@ export function SearchView({ onContextMenu, showToast }: SearchViewProps) {
                     <div
                       key={album.id}
                       onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
-                      className="flex flex-col gap-2 min-w-[140px] p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
+                      className="flex flex-col gap-2 min-w-36 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
                     >
                       <div
                         className="w-full aspect-square rounded-md overflow-hidden"
@@ -221,7 +220,7 @@ export function SearchView({ onContextMenu, showToast }: SearchViewProps) {
                 {playlistResults.map((pl) => {
                   const c = Array.isArray(pl.cover_colors) ? pl.cover_colors : ["#F0824E","#1E9E54"];
                   return (
-                    <div key={pl.id} className="flex flex-col gap-2 min-w-[140px] p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
+                    <div key={pl.id} className="flex flex-col gap-2 min-w-36 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
                       <div
                         className="w-full aspect-square rounded-md flex items-center justify-center"
                         style={{ background: `linear-gradient(135deg, ${c[0]}, ${c[1]})` }}
@@ -288,9 +287,10 @@ export function SearchView({ onContextMenu, showToast }: SearchViewProps) {
                   <button
                     key={genre.id}
                     onClick={() => setActiveGenre(isActive ? null : genre)}
-                    className={`p-5 rounded-2xl bg-gradient-to-br ${genre.gradient} font-bold text-xl md:text-2xl aspect-[1.3] relative overflow-hidden shadow-lg cursor-pointer text-left transition-all hover:scale-[1.03] active:scale-[0.98] ${
-                      isActive ? "ring-4 ring-cream/60 scale-[1.03] brightness-110" : "hover:brightness-105"
+                    className={`p-5 rounded-2xl font-bold text-xl md:text-2xl relative overflow-hidden shadow-lg cursor-pointer text-left transition-all hover:scale-105 active:scale-95 aspect-video ${
+                      isActive ? "ring-4 ring-cream/60 scale-105 brightness-110" : "hover:brightness-105"
                     }`}
+                    style={{ background: `linear-gradient(135deg, ${genre.from}, ${genre.to})` }}
                   >
                     <span className="relative z-10 text-white drop-shadow-md">{genre.label}</span>
                     <span className="relative z-10 text-white/70 text-xs font-normal block mt-1">
