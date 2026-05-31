@@ -13,12 +13,18 @@ export interface Track {
   cover_colors: string[];
   duration_sec: number;
   type?: "music" | "podcast" | "audiobook";
-  // catalog hierarchy (populated once migration + sync have run)
+  // catalog hierarchy
   artist_id?:    string;
   album_id?:     string;
   track_number?: number;
   is_active?:    boolean;
   asset_id?:     string;
+  // multi-dimensional metadata
+  language_id?:  string;
+  language?:     string;      // human-readable language name
+  genre?:        string;      // primary genre name
+  genre_id?:     string;
+  singers?:      string[];    // vocal performer display names
 }
 
 export interface Playlist {
@@ -28,6 +34,16 @@ export interface Playlist {
   songs: string[];
   is_public: boolean;
   collaborative: boolean;
+}
+
+export interface Collection {
+  id: string;
+  name: string;
+  slug: string;
+  source_folder: string | null;
+  cover_colors: string[];
+  track_count: number;
+  songs: string[];  // ordered track ids
 }
 
 // Typed DB row shapes — eliminates `any` casts on Supabase responses
@@ -56,6 +72,7 @@ interface DbHistory { track_id: string }
 interface AudioContextType {
   tracks: Track[];
   playlists: Playlist[];
+  collections: Collection[];
   likedSongs: Set<string>; // Set of track IDs
   currentTrack: Track | null;
   isPlaying: boolean;
@@ -131,90 +148,14 @@ interface AudioContextType {
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
-// Core static tracks seed array as fallback
-const SEED_TRACKS: Track[] = [
-  {
-    id: "t1",
-    title: "In The Morning",
-    artist: "Blue Beat Review",
-    album: "Singles",
-    audio_url: "https://res.cloudinary.com/dodgaqogz/video/upload/v1780196803/In_The_Morning_-_Blue_Beat_Review_qepjk2.mp3",
-    cover_colors: ["#F0824E", "#F4C9C2"],
-    duration_sec: 307.7,
-  },
-  {
-    id: "t2",
-    title: "Gone Away",
-    artist: "Blue Beat Review",
-    album: "Singles",
-    audio_url: "https://res.cloudinary.com/dodgaqogz/video/upload/v1780196801/Gone_Away_-_Blue_Beat_Review_sccetg.mp3",
-    cover_colors: ["#1E9E54", "#0E3B35"],
-    duration_sec: 193.6,
-  },
-  {
-    id: "t3",
-    title: "I Love What You Do To Me",
-    artist: "The Soundlings",
-    album: "Singles",
-    audio_url: "https://res.cloudinary.com/dodgaqogz/video/upload/v1780196800/I_Love_What_You_Do_To_Me_-_The_Soundlings_qhqb8j.mp3",
-    cover_colors: ["#3E8B96", "#0E3B35"],
-    duration_sec: 208.5,
-  },
-  {
-    id: "t4",
-    title: "Kuntry Boy",
-    artist: "Anno Domini Beats",
-    album: "Beats",
-    audio_url: "https://res.cloudinary.com/dodgaqogz/video/upload/v1780196799/Kuntry_Boy_-_Anno_Domini_Beats_u5t8r0.mp3",
-    cover_colors: ["#F4C9C2", "#F0824E"],
-    duration_sec: 197.9,
-  },
-  {
-    id: "t5",
-    title: "Halfway In",
-    artist: "Anno Domini Beats",
-    album: "Beats",
-    audio_url: "https://res.cloudinary.com/dodgaqogz/video/upload/v1780196797/Halfway_In_-_Anno_Domini_Beats_fm35kh.mp3",
-    cover_colors: ["#0E3B35", "#1E9E54"],
-    duration_sec: 154.2,
-  },
-  {
-    id: "t6",
-    title: "Wildfire",
-    artist: "Jessie Villa",
-    album: "Singles",
-    audio_url: "https://res.cloudinary.com/dodgaqogz/video/upload/v1780196795/Wildfire_-_Jessie_Villa_x62op9.mp3",
-    cover_colors: ["#F0824E", "#1E9E54"],
-    duration_sec: 190.8,
-  },
-  {
-    id: "t7",
-    title: "Soniqo Tech Talk — Episode 42",
-    artist: "Amigo Podcasters",
-    album: "Soniqo Podcast",
-    audio_url: "https://res.cloudinary.com/dodgaqogz/video/upload/v1780196803/In_The_Morning_-_Blue_Beat_Review_qepjk2.mp3",
-    cover_colors: ["#3E8B96", "#F4C9C2"],
-    duration_sec: 307.7,
-    type: "podcast",
-  },
-  {
-    id: "t8",
-    title: "The Green Amigos Narrative — Chapter 1",
-    artist: "Narrator Figtree",
-    album: "Soniqo Audiobooks",
-    audio_url: "https://res.cloudinary.com/dodgaqogz/video/upload/v1780196797/Halfway_In_-_Anno_Domini_Beats_fm35kh.mp3",
-    cover_colors: ["#F4C9C2", "#1E9E54"],
-    duration_sec: 154.2,
-    type: "audiobook",
-  },
-];
 
 export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
 
   // Core application state
-  const [tracks, setTracks] = useState<Track[]>(SEED_TRACKS);
+  const [tracks, setTracks] = useState<Track[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [likedSongs, setLikedSongs] = useState<Set<string>>(new Set());
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -279,9 +220,31 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       if (isSupabaseConfigured && supabase) {
-        const { data: dbTracks } = await supabase.from("tracks").select("*");
+        // Try full query with metadata joins first; fall back to plain query if
+        // the new migrations (languages / track_singers / track_genres) haven't
+        // been applied to this Supabase project yet.
+        let { data: dbTracks, error: dbError } = await supabase
+          .from("tracks")
+          .select(`
+            id, title, artist, album, audio_url, cover_colors, duration_sec,
+            type, artist_id, album_id, track_number, is_active, asset_id, language_id,
+            languages(id, name),
+            track_singers(singers(id, name, slug)),
+            track_genres(genres(id, name, slug))
+          `)
+          .order("title");
+
+        if (dbError) {
+          console.warn("Track metadata query failed (migrations pending?), falling back to basic query.", dbError.message);
+          const fallback = await supabase
+            .from("tracks")
+            .select("id, title, artist, album, audio_url, cover_colors, duration_sec, type, artist_id, album_id, track_number, is_active, asset_id")
+            .order("title");
+          dbTracks = fallback.data as any;
+        }
+
         if (dbTracks && dbTracks.length > 0) {
-          const formatted: Track[] = (dbTracks as DbTrack[]).map((t) => ({
+          const formatted: Track[] = (dbTracks as any[]).map((t) => ({
             id: t.id,
             title: t.title,
             artist: t.artist,
@@ -289,6 +252,17 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
             audio_url: t.audio_url,
             cover_colors: t.cover_colors,
             duration_sec: Number(t.duration_sec),
+            type: t.type,
+            artist_id: t.artist_id,
+            album_id: t.album_id,
+            track_number: t.track_number,
+            is_active: t.is_active,
+            asset_id: t.asset_id,
+            language_id: t.language_id,
+            language: t.languages?.name ?? undefined,
+            singers: (t.track_singers ?? []).map((ts: any) => ts.singers?.name).filter(Boolean),
+            genre: (t.track_genres ?? [])[0]?.genres?.name ?? undefined,
+            genre_id: (t.track_genres ?? [])[0]?.genres?.id ?? undefined,
           }));
           setTracks(formatted);
         }
@@ -329,148 +303,48 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
             setRecentlyPlayed((dbHistory as DbHistory[]).map((h) => h.track_id));
           }
         }
-      } else {
-        const localTracks = localStorage.getItem("soniqo_local_tracks");
-        setTracks(localTracks ? JSON.parse(localTracks) : SEED_TRACKS);
 
-        const localLikes = localStorage.getItem("soniqo_local_likes");
+        // Load collections (public — available to all, no auth required)
+        const { data: dbCollections } = await supabase
+          .from("collections")
+          .select("id, name, slug, source_folder, cover_colors, track_count, collection_tracks(track_id, position)")
+          .order("name");
+        if (dbCollections) {
+          const formattedCollections: Collection[] = (dbCollections as any[]).map((c) => {
+            const sorted = [...(c.collection_tracks ?? [])].sort((a: any, b: any) => a.position - b.position);
+            return {
+              id: c.id,
+              name: c.name,
+              slug: c.slug,
+              source_folder: c.source_folder,
+              cover_colors: c.cover_colors,
+              track_count: c.track_count,
+              songs: sorted.map((t: any) => t.track_id),
+            };
+          });
+          setCollections(formattedCollections);
+        }
+      } else {
+        const localTracks = localStorage.getItem("rhythmia_local_tracks");
+        setTracks(localTracks ? JSON.parse(localTracks) : []);
+
+        const localLikes = localStorage.getItem("rhythmia_local_likes");
         setLikedSongs(localLikes ? new Set(JSON.parse(localLikes)) : new Set());
 
-        const localPlaylists = localStorage.getItem("soniqo_local_playlists");
+        const localPlaylists = localStorage.getItem("rhythmia_local_playlists");
         setPlaylists(localPlaylists ? JSON.parse(localPlaylists) : []);
 
-        const localHistory = localStorage.getItem("soniqo_local_history");
+        const localHistory = localStorage.getItem("rhythmia_local_history");
         setRecentlyPlayed(localHistory ? JSON.parse(localHistory) : []);
       }
     } catch (e) {
-      console.error("Soniqo: Failed to load library", e);
-      setTracks(SEED_TRACKS);
+      console.error("Rhythmia: Failed to load library", e);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const triggerBackgroundAutoSync = async () => {
-    try {
-      const lastSync = localStorage.getItem("soniqo_last_sync_time");
-      const now = Date.now();
-      
-      // Cache Gate Guard: Synced within the last 1 hour (3,600,000 ms)? Skip!
-      if (lastSync && now - Number(lastSync) < 3600000) {
-        console.log("Soniqo Auto-Sync: Skipping background check (recently synchronized)");
-        return;
-      }
-
-      if (isSyncingRef.current) {
-        console.log("Soniqo Auto-Sync: Sync already in progress, skipping.");
-        return;
-      }
-
-      isSyncingRef.current = true;
-      console.log("Soniqo Auto-Sync: Initiating silent background catalog check...");
-      
-      const res = await fetch("/api/cloudinary-sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ auto: true }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        console.warn("Soniqo Auto-Sync: Background check skipped.", err.error);
-        return;
-      }
-
-      const data = await res.json();
-      if (!data.success || !data.tracks || data.tracks.length === 0) return;
-
-      const fetchedTracks: Track[] = data.tracks;
-      const count = fetchedTracks.length;
-      const batchSize = 100;
-
-      console.log(`Soniqo Auto-Sync: Syncing ${count} tracks silently in background...`);
-
-      if (isSupabaseConfigured && supabase) {
-        // Online Supabase Mode: Batch Upsert
-        for (let i = 0; i < count; i += batchSize) {
-          const batch = fetchedTracks.slice(i, i + batchSize);
-          const formatted = batch.map((t) => ({
-            title: t.title,
-            artist: t.artist,
-            album: t.album,
-            audio_url: t.audio_url,
-            cover_colors: t.cover_colors,
-            duration_sec: t.duration_sec,
-          }));
-
-          const { error } = await supabase.from("tracks").upsert(formatted, {
-            onConflict: "audio_url",
-          });
-
-          if (error) {
-            console.error("Soniqo Auto-Sync: Supabase background upsert failed:", error.message);
-            return;
-          }
-        }
-      } else {
-        // Offline LocalStorage Mode
-        const existingTracksLocal = localStorage.getItem("soniqo_local_tracks");
-        let localTracksList: Track[] = [];
-        if (existingTracksLocal) {
-          try {
-            localTracksList = JSON.parse(existingTracksLocal);
-          } catch (e) {}
-        }
-
-        fetchedTracks.forEach((newTrack, idx) => {
-          const dupIdx = localTracksList.findIndex((ex) => ex.audio_url === newTrack.audio_url);
-          const trackWithId = {
-            ...newTrack,
-            id: dupIdx >= 0 ? localTracksList[dupIdx].id : `offline-track-${idx}-${Math.random().toString(36).substring(2, 6)}`,
-          };
-          if (dupIdx >= 0) {
-            localTracksList[dupIdx] = trackWithId;
-          } else {
-            localTracksList.push(trackWithId);
-          }
-        });
-
-        localStorage.setItem("soniqo_local_tracks", JSON.stringify(localTracksList));
-      }
-
-      localStorage.setItem("soniqo_last_sync_time", String(now));
-      console.log("Soniqo Auto-Sync: Silent background check completed successfully!");
-      
-      // Reload catalog tracks into active application state smoothly
-      if (isSupabaseConfigured && supabase) {
-        const { data: dbTracks } = await supabase.from("tracks").select("*");
-        if (dbTracks && dbTracks.length > 0) {
-          const formatted: Track[] = dbTracks.map((t: any) => ({
-            id: t.id,
-            title: t.title,
-            artist: t.artist,
-            album: t.album,
-            audio_url: t.audio_url,
-            cover_colors: t.cover_colors,
-            duration_sec: Number(t.duration_sec),
-          }));
-          setTracks(formatted);
-        }
-      } else {
-        const localTracks = localStorage.getItem("soniqo_local_tracks");
-        if (localTracks) {
-          setTracks(JSON.parse(localTracks));
-        }
-      }
-    } catch (e) {
-      console.error("Soniqo Auto-Sync: Silent background check failed", e);
-    } finally {
-      isSyncingRef.current = false;
-    }
-  };
-
-  // Fetch tracks and user library on mount / user switch.
-  // Auto-sync removed per Rule Set 2.9 — use the manual sync button instead.
+  // Load tracks and user library on mount / user switch
   useEffect(() => {
     loadTracksAndLibrary();
   }, [user]);
@@ -709,7 +583,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     const nextGain = nextPlayer === "A" ? gainNodeRefA.current! : gainNodeRefB.current!;
 
     // Set the path and prep next player at 0 volume
-    nextEl.src = nextTrack.audio_url;
+    nextEl.src = `/api/audio/${nextTrack.id}`;
     nextEl.currentTime = 0;
     nextEl.volume = 0;
     nextEl.play().catch(() => {});
@@ -717,7 +591,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     // Sync state metadata
     setCurrentTrack(nextTrack);
     setDuration(nextTrack.duration_sec);
-    setLyrics(localStorage.getItem(`soniqo_lyrics_${nextTrack.id}`) || "");
+    setLyrics(localStorage.getItem(`rhythmia_lyrics_${nextTrack.id}`) || "");
     setActivePlayer(nextPlayer);
 
     // Write play history log
@@ -795,14 +669,14 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     activeEl.pause();
     
     // Play on Player A
-    audioRefA.current!.src = track.audio_url;
+    audioRefA.current!.src = `/api/audio/${track.id}`;
     audioRefA.current!.currentTime = 0;
     
     setActivePlayer("A");
     setCurrentTrack(track);
     setDuration(track.duration_sec);
     setIsPlaying(true);
-    setLyrics(localStorage.getItem(`soniqo_lyrics_${track.id}`) || "");
+    setLyrics(localStorage.getItem(`rhythmia_lyrics_${track.id}`) || "");
 
     // Apply baseline gains
     if (isGraphInitialized.current) {
@@ -931,7 +805,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const updateLyrics = (text: string) => {
     if (!currentTrack) return;
     setLyrics(text);
-    localStorage.setItem(`soniqo_lyrics_${currentTrack.id}`, text);
+    localStorage.setItem(`rhythmia_lyrics_${currentTrack.id}`, text);
   };
 
   // Queue Operations
@@ -992,7 +866,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       // Offline local history persistence
       const historyArr = [trackId, ...recentlyPlayed.filter((id) => id !== trackId)].slice(0, 20);
-      localStorage.setItem("soniqo_local_history", JSON.stringify(historyArr));
+      localStorage.setItem("rhythmia_local_history", JSON.stringify(historyArr));
     }
   };
 
@@ -1016,7 +890,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         });
       }
     } else {
-      localStorage.setItem("soniqo_local_likes", JSON.stringify(Array.from(updated)));
+      localStorage.setItem("rhythmia_local_likes", JSON.stringify(Array.from(updated)));
     }
   };
 
@@ -1068,7 +942,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
       const updated = [...playlists, newPl];
       setPlaylists(updated);
-      localStorage.setItem("soniqo_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
       return plId;
     }
   };
@@ -1083,7 +957,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.from("playlists").delete().eq("id", playlistId);
     } else {
       const updated = playlists.filter((p) => p.id !== playlistId);
-      localStorage.setItem("soniqo_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1102,7 +976,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, collaborative: updatedCollab } : p
       );
-      localStorage.setItem("soniqo_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1115,7 +989,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.from("playlists").update({ name }).eq("id", playlistId);
     } else {
       const updated = playlists.map((p) => (p.id === playlistId ? { ...p, name } : p));
-      localStorage.setItem("soniqo_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1138,7 +1012,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, songs: updatedSongs } : p
       );
-      localStorage.setItem("soniqo_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1157,7 +1031,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, songs: updatedSongs } : p
       );
-      localStorage.setItem("soniqo_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1178,7 +1052,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         setPlaylists((prev) =>
           prev.map((p) => (p.id === playlistId ? { ...p, songs: original } : p))
         );
-        console.error("Soniqo: reorder delete failed, rolled back", delErr.message);
+        console.error("Rhythmia: reorder delete failed, rolled back", delErr.message);
         return;
       }
 
@@ -1190,20 +1064,21 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { error: insErr } = await supabase.from("playlist_tracks").insert(insertRows);
       if (insErr) {
-        console.error("Soniqo: reorder insert failed, reloading library", insErr.message);
+        console.error("Rhythmia: reorder insert failed, reloading library", insErr.message);
         loadTracksAndLibrary();
       }
     } else {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, songs: reorderedTrackIds } : p
       );
-      localStorage.setItem("soniqo_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
     }
   };
 
   const contextValue = React.useMemo(() => ({
     tracks,
     playlists,
+    collections,
     likedSongs,
     currentTrack,
     isPlaying,

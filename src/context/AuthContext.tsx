@@ -25,8 +25,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // LocalStorage mock key names
-const LOCAL_USER_KEY = "soniqo_local_user";
-const LOCAL_PROFILE_KEY = "soniqo_local_profile";
+const LOCAL_USER_KEY = "rhythmia_local_user";
+const LOCAL_PROFILE_KEY = "rhythmia_local_profile";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const guestId = "00000000-0000-0000-0000-000000000000";
         const dummyUser = {
           id: guestId,
-          email: "guest@soniqo.com",
+          email: "guest@rhythmia.com",
           app_metadata: {},
           user_metadata: {},
           aud: "authenticated",
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error };
     } else {
       // Mock Offline Login: Create user matching this email
-      const localUserId = email === "guest@soniqo.com" ? "00000000-0000-0000-0000-000000000000" : `user-${Math.random().toString(36).substring(2, 10)}`;
+      const localUserId = email === "guest@rhythmia.com" ? "00000000-0000-0000-0000-000000000000" : `user-${Math.random().toString(36).substring(2, 10)}`;
       const mockUser = {
         id: localUserId,
         email,
@@ -219,7 +219,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const guestId = "00000000-0000-0000-0000-000000000000";
       const dummyUser = {
         id: guestId,
-        email: "guest@soniqo.com",
+        email: "guest@rhythmia.com",
         aud: "authenticated",
         role: "authenticated",
         created_at: new Date().toISOString(),

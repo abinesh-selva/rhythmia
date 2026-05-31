@@ -1,11 +1,11 @@
-# Soniqo Project Analysis
+# Rhythmia Project Analysis
 
 > [!NOTE]
-> This document provides a high-level technical analysis of the **Soniqo** web application, detailing its architecture, core systems, and how the various components currently interact.
+> This document provides a high-level technical analysis of the **Rhythmia** web application, detailing its architecture, core systems, and how the various components currently interact.
 
 ## 1. Project Architecture
 
-Soniqo is a modern, full-stack music streaming web application. It follows a decoupled architecture using the following stack:
+Rhythmia is a modern, full-stack music streaming web application. It follows a decoupled architecture using the following stack:
 
 - **Frontend:** Next.js (React) using the App Router.
 - **Styling:** Tailwind CSS for a highly responsive, modern, and animated user interface.
@@ -45,7 +45,7 @@ While the exact schema scales with features, the core entities currently include
 ## 4. Current State & Scalability
 
 **How it works right now:**
-When a user opens Soniqo, `AudioContext` initializes and loads the tracks from Supabase. A silent background task immediately pings the `/api/cloudinary-sync` route to ensure the database matches Cloudinary's storage (if it hasn't checked in the last hour). When a user clicks play, the Web Audio graph initializes (to respect browser autoplay policies), and the song streams directly from Cloudinary's CDN.
+When a user opens Rhythmia, `AudioContext` initializes and loads the tracks from Supabase. A silent background task immediately pings the `/api/cloudinary-sync` route to ensure the database matches Cloudinary's storage (if it hasn't checked in the last hour). When a user clicks play, the Web Audio graph initializes (to respect browser autoplay policies), and the song streams directly from Cloudinary's CDN.
 
 **Strengths:**
 - **Zero-downtime Crossfading:** The dual-player design is highly advanced for a web player.

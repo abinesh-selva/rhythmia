@@ -50,7 +50,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         <div className="flex justify-between items-center mb-6 pb-3 border-b border-cream/10">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-coral animate-pulse" />
-            <h3 className="font-display font-bold text-lg tracking-tight">Soniqo Settings</h3>
+            <h3 className="font-display font-bold text-lg tracking-tight">Rhythmia Settings</h3>
           </div>
           <button
             onClick={onClose}
@@ -182,7 +182,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           <div className="flex flex-col gap-1.5 mt-1 bg-coral/5 border border-coral/10 p-3 rounded-xl">
             <span className="font-semibold text-coral text-xs uppercase tracking-wider">Cloudinary Sync Manager</span>
             <p className="text-xs text-muted leading-relaxed">
-              Sync and import your original song catalog from your Cloudinary folder directly into Soniqo Vibe.
+              Sync and import your original song catalog from your Cloudinary folder directly into Rhythmia Vibe.
             </p>
             <button
               onClick={() => {

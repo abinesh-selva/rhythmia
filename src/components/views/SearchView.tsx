@@ -10,9 +10,12 @@ interface SearchViewProps {
   onContextMenu: (e: React.MouseEvent, trackId: string) => void;
 }
 
-interface ArtistResult  { id: string; display_name: string; slug: string; image: string | null; track_count: number }
-interface AlbumResult   { id: string; title: string; slug: string; cover_image: string | null; cover_colors: string[]; artists: { display_name: string; slug: string } | null }
+interface ArtistResult   { id: string; display_name: string; slug: string; image: string | null; track_count: number }
+interface AlbumResult    { id: string; title: string; slug: string; cover_image: string | null; cover_colors: string[]; artists: { display_name: string; slug: string } | null }
 interface PlaylistResult { id: string; name: string; cover_colors: string[] }
+interface SingerResult   { id: string; name: string; slug: string; image: string | null; track_count: number }
+interface GenreResult    { id: string; name: string; slug: string }
+interface LanguageResult { id: string; name: string; code: string | null; slug: string }
 
 const GENRES = [
   { id: "music",     label: "All Music",     type: "music"     as const, keywords: [],                           from: "#E13300", to: "#FF6B35" },
@@ -46,10 +49,13 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
   const [activeGenre, setActiveGenre] = useState<(typeof GENRES)[number] | null>(null);
 
   // Grouped search results (DB-driven)
-  const [artistResults,  setArtistResults]  = useState<ArtistResult[]>([]);
-  const [albumResults,   setAlbumResults]   = useState<AlbumResult[]>([]);
-  const [trackResults,   setTrackResults]   = useState<Track[]>([]);
-  const [playlistResults,setPlaylistResults]= useState<PlaylistResult[]>([]);
+  const [artistResults,   setArtistResults]   = useState<ArtistResult[]>([]);
+  const [albumResults,    setAlbumResults]    = useState<AlbumResult[]>([]);
+  const [trackResults,    setTrackResults]    = useState<Track[]>([]);
+  const [playlistResults, setPlaylistResults] = useState<PlaylistResult[]>([]);
+  const [singerResults,   setSingerResults]   = useState<SingerResult[]>([]);
+  const [genreResults,    setGenreResults]    = useState<GenreResult[]>([]);
+  const [languageResults, setLanguageResults] = useState<LanguageResult[]>([]);
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -58,6 +64,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
     if (!searchQuery || searchQuery.length < 2) {
       setArtistResults([]); setAlbumResults([]);
       setTrackResults([]); setPlaylistResults([]);
+      setSingerResults([]); setGenreResults([]); setLanguageResults([]);
       setSearching(false);
       return;
     }
@@ -80,31 +87,29 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
       setSearching(true);
       const q = searchQuery;
 
-      const [artRes, albRes, trkRes, plRes] = await Promise.all([
-        supabase.from("artists")
-          .select("id,display_name,slug,image,track_count")
-          .ilike("display_name", `%${q}%`)
-          .limit(6),
-        supabase.from("albums")
-          .select("id,title,slug,cover_image,cover_colors,artists(display_name,slug)")
-          .ilike("title", `%${q}%`)
-          .limit(6),
+      const [artRes, albRes, trkRes, plRes, sinRes, genRes, langRes] = await Promise.all([
+        supabase.from("artists").select("id,display_name,slug,image,track_count").ilike("display_name", `%${q}%`).limit(6),
+        supabase.from("albums").select("id,title,slug,cover_image,cover_colors,artists(display_name,slug)").ilike("title", `%${q}%`).limit(6),
         supabase.from("tracks")
-          .select("id,title,artist,album,audio_url,cover_colors,duration_sec,is_active,artist_id,album_id,track_number,asset_id")
+          .select("id,title,artist,album,audio_url,cover_colors,duration_sec,is_active,artist_id,album_id,track_number,asset_id,track_singers(singers(name))")
           .or(`title.ilike.%${q}%,artist.ilike.%${q}%,album.ilike.%${q}%`)
-          .eq("is_active", true)
-          .limit(20),
-        supabase.from("playlists")
-          .select("id,name,cover_colors")
-          .ilike("name", `%${q}%`)
-          .eq("is_public", true)
-          .limit(5),
+          .eq("is_active", true).limit(20),
+        supabase.from("playlists").select("id,name,cover_colors").ilike("name", `%${q}%`).eq("is_public", true).limit(5),
+        supabase.from("singers").select("id,name,slug,image,track_count").ilike("name", `%${q}%`).limit(6),
+        supabase.from("genres").select("id,name,slug").ilike("name", `%${q}%`).limit(5),
+        supabase.from("languages").select("id,name,code,slug").ilike("name", `%${q}%`).limit(5),
       ]);
 
       setArtistResults((artRes.data as ArtistResult[]) ?? []);
       setAlbumResults((albRes.data as unknown as AlbumResult[]) ?? []);
-      setTrackResults((trkRes.data as unknown as Track[]) ?? []);
+      setTrackResults(((trkRes.data as any[]) ?? []).map((t) => ({
+        ...t,
+        singers: (t.track_singers ?? []).map((ts: any) => ts.singers?.name).filter(Boolean),
+      })) as Track[]);
       setPlaylistResults((plRes.data as PlaylistResult[]) ?? []);
+      setSingerResults((sinRes.data as SingerResult[]) ?? []);
+      setGenreResults((genRes.data as GenreResult[]) ?? []);
+      setLanguageResults((langRes.data as LanguageResult[]) ?? []);
       setSearching(false);
     }, 300);
 
@@ -121,8 +126,9 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
     );
   }
 
-  const hasQuery  = searchQuery.length >= 2;
-  const hasResults = artistResults.length + albumResults.length + trackResults.length + playlistResults.length > 0;
+  const hasQuery   = searchQuery.length >= 2;
+  const hasResults = artistResults.length + albumResults.length + trackResults.length +
+                     playlistResults.length + singerResults.length + genreResults.length + languageResults.length > 0;
 
   // Genre-filtered local tracks (when no search query)
   const genreFilteredTracks = activeGenre
@@ -232,6 +238,61 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                     </div>
                   );
                 })}
+              </div>
+            </section>
+          )}
+
+          {/* Singers */}
+          {singerResults.length > 0 && (
+            <section>
+              <h3 className="text-lg font-bold text-cream mb-3">Singers</h3>
+              <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                {singerResults.map((singer) => (
+                  <a key={singer.id} href={`/singer/${singer.id}/${singer.slug}`}
+                    className="flex flex-col items-center gap-2 min-w-32 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
+                    <div className="w-20 h-20 rounded-full bg-panel/50 border border-cream/5 overflow-hidden flex items-center justify-center">
+                      {singer.image
+                        ? <img src={singer.image} alt={singer.name} className="w-full h-full object-cover" />
+                        : <svg viewBox="0 0 24 24" className="w-10 h-10 fill-muted">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h-3v2h8v-2h-3v-2.06A9 9 0 0 0 21 12v-2h-2z" />
+                          </svg>}
+                    </div>
+                    <span className="text-sm font-bold text-cream text-center truncate w-full">{singer.name}</span>
+                    <span className="text-xs text-muted">Singer · {singer.track_count} songs</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Genres */}
+          {genreResults.length > 0 && (
+            <section>
+              <h3 className="text-lg font-bold text-cream mb-3">Genres</h3>
+              <div className="flex gap-3 flex-wrap">
+                {genreResults.map((genre) => (
+                  <a key={genre.id} href={`/genre/${genre.id}/${genre.slug}`}
+                    className="px-4 py-2 rounded-full bg-coral/10 border border-coral/20 text-coral font-bold text-sm hover:bg-coral/20 transition-colors">
+                    {genre.name}
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Languages */}
+          {languageResults.length > 0 && (
+            <section>
+              <h3 className="text-lg font-bold text-cream mb-3">Languages</h3>
+              <div className="flex gap-3 flex-wrap">
+                {languageResults.map((lang) => (
+                  <a key={lang.id} href={`/language/${lang.id}/${lang.slug}`}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-green/10 border border-green/20 text-green font-bold text-sm hover:bg-green/20 transition-colors">
+                    {lang.name}
+                    {lang.code && <span className="text-xs font-mono opacity-60 uppercase">{lang.code}</span>}
+                  </a>
+                ))}
               </div>
             </section>
           )}

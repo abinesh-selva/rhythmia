@@ -9,8 +9,6 @@ import { PlaylistView } from "../components/views/PlaylistView";
 import { LikedSongsView } from "../components/views/LikedSongsView";
 import { QueueView } from "../components/views/QueueView";
 import { CloudinarySyncView } from "../components/views/CloudinarySyncView";
-import { AlbumView } from "../components/views/AlbumView";
-import { ArtistView } from "../components/views/ArtistView";
 import { LiveEventsView } from "../components/views/LiveEventsView";
 
 export default function Page() {
@@ -27,27 +25,14 @@ export default function Page() {
   };
 
   const renderView = () => {
-    if (view === "home") {
-      return <HomeView onContextMenu={handleContextMenu} />;
-    } else if (view === "search") {
-      return <SearchView onContextMenu={handleContextMenu} />;
-    } else if (view.startsWith("playlist:")) {
-      const playlistId = view.split(":")[1];
-      return <PlaylistView playlistId={playlistId} onContextMenu={handleContextMenu} />;
-    } else if (view.startsWith("album:")) {
-      const albumName = view.split(":")[1];
-      return <AlbumView albumName={albumName} onContextMenu={handleContextMenu} />;
-    } else if (view.startsWith("artist:")) {
-      const artistName = view.split(":")[1];
-      return <ArtistView artistName={artistName} onContextMenu={handleContextMenu} />;
-    } else if (view === "liked") {
-      return <LikedSongsView onContextMenu={handleContextMenu} />;
-    } else if (view === "queue") {
-      return <QueueView onContextMenu={handleContextMenu} />;
-    } else if (view === "sync") {
-      return <CloudinarySyncView />;
-    } else if (view === "live") {
-      return <LiveEventsView />;
+    if (view === "home")   return <HomeView onContextMenu={handleContextMenu} />;
+    if (view === "search") return <SearchView onContextMenu={handleContextMenu} />;
+    if (view === "liked")  return <LikedSongsView onContextMenu={handleContextMenu} />;
+    if (view === "queue")  return <QueueView onContextMenu={handleContextMenu} />;
+    if (view === "sync")   return <CloudinarySyncView />;
+    if (view === "live")   return <LiveEventsView />;
+    if (view.startsWith("playlist:")) {
+      return <PlaylistView playlistId={view.split(":")[1]} onContextMenu={handleContextMenu} />;
     }
     return <HomeView onContextMenu={handleContextMenu} />;
   };
@@ -56,22 +41,17 @@ export default function Page() {
     <div onClick={() => setActiveMenuTrackId(null)}>
       {renderView()}
 
-      {/* GLOBAL TRACK CONTEXT MENU */}
       {activeMenuTrackId && (
         <div
           className="fixed z-50 w-48 bg-panel border border-cream/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
           style={{
-            top: Math.min(menuPosition.y, window.innerHeight - 250),
-            left: Math.min(menuPosition.x, window.innerWidth - 200),
+            top:  Math.min(menuPosition.y, window.innerHeight - 250),
+            left: Math.min(menuPosition.x, window.innerWidth  - 200),
           }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            onClick={() => {
-              addToQueue(activeMenuTrackId);
-              setActiveMenuTrackId(null);
-              addToast("Added to queue", "success");
-            }}
+            onClick={() => { addToQueue(activeMenuTrackId); setActiveMenuTrackId(null); addToast("Added to queue", "success"); }}
             className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-panel-hover transition-colors font-medium border-b border-cream/5"
           >
             Add to Queue
@@ -84,11 +64,7 @@ export default function Page() {
             {playlists.map((pl) => (
               <button
                 key={pl.id}
-                onClick={() => {
-                  addTrackToPlaylist(pl.id, activeMenuTrackId);
-                  setActiveMenuTrackId(null);
-                  addToast(`Added to ${pl.name}`, "success");
-                }}
+                onClick={() => { addTrackToPlaylist(pl.id, activeMenuTrackId); setActiveMenuTrackId(null); addToast(`Added to ${pl.name}`, "success"); }}
                 className="w-full text-left px-4 py-2 text-sm text-cream hover:bg-panel-hover transition-colors"
               >
                 {pl.name}

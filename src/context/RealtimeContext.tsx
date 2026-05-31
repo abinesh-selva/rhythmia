@@ -72,7 +72,7 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
     if (!isSupabaseConfigured || !supabase || !user || !profile) return;
 
     // 1. Setup Presence Channel
-    const room = supabase.channel('soniqo_activity');
+    const room = supabase.channel('rhythmia_activity');
     setChannel(room);
 
     room

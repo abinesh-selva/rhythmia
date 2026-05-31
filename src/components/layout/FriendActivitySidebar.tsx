@@ -2,35 +2,16 @@
 
 import React, { useMemo } from "react";
 import { useAudio } from "../../context/AudioContext";
-import { useAuth } from "../../context/AuthContext";
 import { useRealtime } from "../../context/RealtimeContext";
 
 interface FriendActivitySidebarProps {
   setIsFriendOpen: (val: boolean) => void;
 }
 
-const MOCK_FRIENDS = [
-  { name: "Melody Clara",    initials: "MC", timeAgo: "Now playing", active: true },
-  { name: "Beat Maker Dave", initials: "BD", timeAgo: "3m ago",      active: true },
-  { name: "Amigo John",      initials: "AJ", timeAgo: "2h ago",      active: false },
-];
-
 export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebarProps) {
   const { isPrivateSession, currentTrack, isPlaying, recentlyPlayed, tracks } = useAudio();
-  const { profile } = useAuth();
   const { onlineUsers, setActiveChatUser, setIsChatOpen } = useRealtime();
 
-  // Assign each mock friend a real track from the catalog, deterministically
-  const friendTracks = useMemo(() => {
-    if (tracks.length === 0) return MOCK_FRIENDS.map(() => null);
-    return MOCK_FRIENDS.map((_, i) => {
-      // Pick from a spread of catalog positions so friends look diverse
-      const offset = (i * 2 + 1) % tracks.length;
-      return tracks[offset];
-    });
-  }, [tracks]);
-
-  // Most recent track the current user listened to (for sidebar "your state" display)
   const lastHeardTrack = useMemo(() => {
     if (currentTrack) return currentTrack;
     const firstId = recentlyPlayed[0];

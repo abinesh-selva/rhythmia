@@ -1,28 +1,54 @@
 import React, { useState } from "react";
 import { useAudio } from "../../context/AudioContext";
 
+interface SyncResult {
+  trackCount:      number;
+  artistCount:     number;
+  albumCount:      number;
+  collectionCount: number;
+  metadataParsed:  number;
+  deactivated:     number;
+}
+
 export function CloudinarySyncView() {
   const { refreshTracks } = useAudio();
   const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [totalCount, setTotalCount] = useState(0);
+  const [result, setResult] = useState<SyncResult | null>(null);
 
   const handleStartSync = async () => {
     setSyncStatus("syncing");
     setErrorMsg("");
+    setResult(null);
 
     try {
-      const res = await fetch("/api/cloudinary-sync", {
-        method: "POST",
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to sync assets from Cloudinary.");
+      let res: Response;
+      try {
+        res = await fetch("/api/cloudinary-sync", { method: "POST" });
+      } catch (networkErr: any) {
+        throw new Error(`Network error — could not reach the sync endpoint: ${networkErr.message}`);
       }
 
-      setTotalCount(data.totalCount || 0);
+      let data: any;
+      try {
+        data = await res.json();
+      } catch {
+        const body = await res.text().catch(() => "(no body)");
+        throw new Error(`Sync endpoint returned non-JSON (status ${res.status}): ${body.slice(0, 200)}`);
+      }
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || `Sync failed with status ${res.status}.`);
+      }
+
+      setResult({
+        trackCount:      data.trackCount      ?? 0,
+        artistCount:     data.artistCount     ?? 0,
+        albumCount:      data.albumCount      ?? 0,
+        collectionCount: data.collectionCount ?? 0,
+        metadataParsed:  data.metadataParsed  ?? 0,
+        deactivated:     data.deactivated     ?? 0,
+      });
       await refreshTracks();
       setSyncStatus("success");
     } catch (err: any) {
@@ -39,16 +65,17 @@ export function CloudinarySyncView() {
           <span className="w-3 h-3 rounded-full bg-coral animate-pulse" />
           <h2 className="text-3xl md:text-4xl font-bold font-display text-cream tracking-tight">Cloudinary Sync</h2>
         </div>
-        <p className="text-sm text-muted mt-2 max-w-2xl">
-          Synchronize your Soniqo catalog with your Cloudinary folder. The backend automatically handles parsing file names (e.g. <code>Artist - Title.mp3</code>) and database insertion.
+        <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">
+          Imports your music library from Cloudinary. Artist folders become Artists, album subfolders
+          become Albums, flat folders become Collections. ID3 tags are parsed for singers, genre and
+          language — only unprocessed tracks are fetched.
         </p>
       </div>
 
       <div className="bg-panel/30 border border-cream/5 rounded-3xl p-8 md:p-12 shadow-xl flex flex-col justify-center items-center text-center gap-6 min-h-80 relative overflow-hidden animate-fade-in">
-        {/* Subtle background glow */}
         <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 opacity-20 ${
           syncStatus === "success" ? "from-green/40 to-transparent" :
-          syncStatus === "error" ? "from-pink/40 to-transparent" :
+          syncStatus === "error"   ? "from-pink/40 to-transparent"  :
           "from-coral/20 to-transparent"
         }`} />
 
@@ -61,34 +88,55 @@ export function CloudinarySyncView() {
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-xl font-bold text-cream">Catalog Sync Ready</span>
-              <span className="text-sm text-muted">Click the button below to initiate auto-sync.</span>
+              <span className="text-sm text-muted">
+                Folder structure: <code className="bg-black/20 px-1 rounded">Artist / Album / track.mp3</code>
+              </span>
+              <span className="text-xs text-muted/70 mt-1">
+                Flat folders (no album subfolders) become Collections.
+              </span>
             </div>
           </div>
         )}
 
         {syncStatus === "syncing" && (
           <div className="flex flex-col items-center gap-6 relative z-10">
-            <div className="w-16 h-16 border-4 border-coral border-t-transparent rounded-full animate-spin drop-shadow-md"></div>
+            <div className="w-16 h-16 border-4 border-coral border-t-transparent rounded-full animate-spin drop-shadow-md" />
             <div className="flex flex-col gap-1">
-               <span className="text-xl font-bold text-cream animate-pulse">Syncing tracks in backend...</span>
-               <span className="text-sm text-muted">Please wait while we parse your media.</span>
+              <span className="text-xl font-bold text-cream animate-pulse">Syncing library…</span>
+              <span className="text-sm text-muted">Parsing folder structure, ID3 tags, and metadata.</span>
             </div>
           </div>
         )}
 
-        {syncStatus === "success" && (
-          <div className="flex flex-col items-center gap-4 relative z-10 animate-fade-in">
-            <div className="w-20 h-20 rounded-full bg-green/10 border-2 border-green/30 flex items-center justify-center text-green shadow-lg">
-              <svg viewBox="0 0 24 24" className="w-10 h-10 fill-current">
+        {syncStatus === "success" && result && (
+          <div className="flex flex-col items-center gap-4 relative z-10 animate-fade-in w-full max-w-md">
+            <div className="w-16 h-16 rounded-full bg-green/10 border-2 border-green/30 flex items-center justify-center text-green shadow-lg">
+              <svg viewBox="0 0 24 24" className="w-8 h-8 fill-current">
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
               </svg>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xl font-black text-green uppercase tracking-wide">Sync Completed!</span>
-              <span className="text-sm text-muted mt-1">
-                Imported <b className="text-cream">{totalCount} total tracks</b> to your library.
-              </span>
+            <span className="text-xl font-black text-green uppercase tracking-wide">Sync Completed!</span>
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-3 gap-3 w-full mt-2">
+              {[
+                { label: "Artists",     value: result.artistCount },
+                { label: "Albums",      value: result.albumCount },
+                { label: "Collections", value: result.collectionCount },
+                { label: "Tracks",      value: result.trackCount },
+                { label: "ID3 Parsed",  value: result.metadataParsed },
+                { label: "Deactivated", value: result.deactivated },
+              ].map(({ label, value }) => (
+                <div key={label} className="bg-black/20 rounded-xl p-3 text-center border border-cream/5">
+                  <div className="text-2xl font-black text-cream">{value.toLocaleString()}</div>
+                  <div className="text-xs text-muted mt-0.5">{label}</div>
+                </div>
+              ))}
             </div>
+
+            <p className="text-xs text-muted/70 mt-2">
+              Reload the app to see your full library in the sidebar and home page.
+            </p>
           </div>
         )}
 
@@ -111,13 +159,45 @@ export function CloudinarySyncView() {
         {syncStatus !== "syncing" && (
           <button
             onClick={handleStartSync}
-            className={`mt-4 px-8 py-3.5 text-forest-dark text-sm font-bold rounded-full transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95 relative z-10 ${
+            className={`mt-4 px-8 py-3.5 text-forest-dark text-sm font-bold rounded-full transition-all shadow-lg hover:scale-105 active:scale-95 relative z-10 ${
               syncStatus === "error" ? "bg-pink hover:bg-pink/90" : "bg-coral hover:bg-coral-bright"
             }`}
           >
-            {syncStatus === "error" ? "Retry Sync" : syncStatus === "success" ? "Sync Again" : "Start Manual Sync"}
+            {syncStatus === "error"   ? "Retry Sync"  :
+             syncStatus === "success" ? "Sync Again"  :
+             "Start Sync"}
           </button>
         )}
+      </div>
+
+      {/* Folder structure legend */}
+      <div className="mt-8 bg-panel/20 border border-cream/5 rounded-2xl p-5 text-sm">
+        <h3 className="font-bold text-cream mb-3 text-base">How folder structure maps to the UI</h3>
+        <div className="font-mono text-xs text-muted leading-relaxed space-y-1 bg-black/20 rounded-xl p-4">
+          <div className="text-cream/80">songs/</div>
+          <div className="pl-4 text-coral">└── G. V. Prakash Kumar/   <span className="text-green">← Artist</span></div>
+          <div className="pl-8 text-cream/70">├── Aadukalam/            <span className="text-blue">← Album</span></div>
+          <div className="pl-12 text-muted">├── 01_warriors.mp3      <span className="text-muted/60">← Track (ID3 → singers, genre, language)</span></div>
+          <div className="pl-12 text-muted">└── 02_yathe_yathe.mp3</div>
+          <div className="pl-8 text-cream/70">└── Darling/              <span className="text-blue">← Album</span></div>
+          <div className="pl-4 text-pink">└── 90s Tamil Hits/        <span className="text-green">← Collection (flat — no album subfolders)</span></div>
+          <div className="pl-8 text-muted">├── vaikai_nathi.mp3     <span className="text-muted/60">← artist/title overridden from ID3</span></div>
+          <div className="pl-8 text-muted">└── sollaayo.mp3</div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-xs text-muted">
+          <div className="bg-black/20 rounded-lg p-3">
+            <span className="text-coral font-bold block mb-1">Artist folders</span>
+            Have album subfolders → appear in Popular Artists, sidebar Artists tab, /artist/… pages
+          </div>
+          <div className="bg-black/20 rounded-lg p-3">
+            <span className="text-blue font-bold block mb-1">Album folders</span>
+            L2 depth → appear in Popular Albums, artist page, /album/… pages with full track list
+          </div>
+          <div className="bg-black/20 rounded-lg p-3">
+            <span className="text-green font-bold block mb-1">Collection folders</span>
+            Flat (no subfolders) → appear in Collections on home + sidebar, /collection/… pages
+          </div>
+        </div>
       </div>
     </div>
   );

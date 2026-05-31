@@ -14,12 +14,12 @@ interface AlbumRow  { id: string; title: string; slug: string; cover_colors: str
 export function Sidebar() {
   const router   = useRouter();
   const pathname = usePathname();
-  const { view, setView, playlists, createPlaylist, likedSongs } = useAudio();
+  const { view, setView, playlists, collections, createPlaylist, likedSongs } = useAudio();
   const { theme, setTheme } = useTheme();
   const { addToast } = useToast();
   const { showPrompt } = useDialog();
 
-  const [libraryFilter, setLibraryFilter] = useState<"all" | "playlists" | "artists" | "albums">("all");
+  const [libraryFilter, setLibraryFilter] = useState<"all" | "playlists" | "collections" | "artists" | "albums">("all");
   const [dbArtists, setDbArtists] = useState<ArtistRow[]>([]);
   const [dbAlbums,  setDbAlbums]  = useState<AlbumRow[]>([]);
   const [isEnriching, setIsEnriching] = useState(false);
@@ -84,13 +84,8 @@ export function Sidebar() {
       {/* Navigation panel */}
       <nav className="nav bg-forest rounded-2xl py-4 px-3 flex flex-col gap-4 shadow-md border border-cream/5">
         <div className="brand flex items-center gap-3 px-3">
-          <span className="logo w-9 h-9 rounded-full bg-coral flex items-center justify-center flex-none shadow-inner">
-            <svg viewBox="0 0 24 24" className="w-5 h-5">
-              <path d="M12 2C8 6 6 10 6 14a6 6 0 0012 0c0-4-2-8-6-12z" fill="#0E3B35" />
-              <path d="M12 7v11" stroke="#fff" strokeWidth="1.4" fill="none" />
-            </svg>
-          </span>
-          <h1 className="font-display font-black text-2xl tracking-tighter text-cream drop-shadow">Soniqo</h1>
+          <img src="/logo.png" alt="Rhythmia Logo" className="w-9 h-9 rounded-full shadow-inner object-cover flex-none" />
+          <h1 className="font-display font-black text-2xl tracking-tighter text-cream drop-shadow">Rhythmia</h1>
         </div>
         <ul className="flex flex-col gap-1 mt-1">
           <li>
@@ -138,7 +133,7 @@ export function Sidebar() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => {
-                const themes = ["soniqo", "catppuccin", "nord", "spotify"] as const;
+                const themes = ["rhythmia", "catppuccin", "nord", "spotify"] as const;
                 const idx = themes.indexOf(theme);
                 setTheme(themes[(idx + 1) % themes.length]);
               }}
@@ -181,8 +176,8 @@ export function Sidebar() {
         </div>
 
         {/* Library Filters */}
-        <div className="px-3 py-2 grid grid-cols-4 gap-1 relative z-10">
-          {(["all", "playlists", "artists", "albums"] as const).map((f) => (
+        <div className="px-3 py-2 grid grid-cols-5 gap-1 relative z-10">
+          {(["all", "playlists", "collections", "artists", "albums"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setLibraryFilter(f)}
@@ -192,7 +187,7 @@ export function Sidebar() {
                   : "bg-panel/40 text-muted hover:text-cream hover:bg-panel/80"
               }`}
             >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
+              {{ all: "All", playlists: "Lists", collections: "Colls", artists: "Artists", albums: "Albums" }[f]}
             </button>
           ))}
         </div>
@@ -245,6 +240,31 @@ export function Sidebar() {
                   <div className="text-xs text-muted flex items-center gap-1 mt-0.5">
                     {pl.collaborative && <span className="w-1.5 h-1.5 rounded-full bg-green" />}
                     <span>Playlist · You</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+          {/* Collections (Cloudinary flat folders) */}
+          {(libraryFilter === "all" || libraryFilter === "collections") &&
+            collections.map((col) => (
+              <div
+                key={col.id}
+                onClick={() => router.push(`/collection/${col.id}/${col.slug}`)}
+                className="flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all hover:bg-panel/40"
+              >
+                <div
+                  className="w-12 h-12 rounded-lg flex items-center justify-center flex-none shadow-sm"
+                  style={{ background: `linear-gradient(135deg, ${col.cover_colors[0]}, ${col.cover_colors[1]})` }}
+                >
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-cream/70">
+                    <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 5h-3v5.5a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1 2.5-2.5c.57 0 1.08.19 1.5.51V5h4v2zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z" />
+                  </svg>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-bold truncate text-cream">{col.name}</span>
+                  <div className="text-xs text-muted flex items-center gap-1 mt-0.5">
+                    <span>Collection · {col.track_count} songs</span>
                   </div>
                 </div>
               </div>

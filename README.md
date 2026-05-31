@@ -1,6 +1,6 @@
-# Soniqo — Premium Music Streaming Web App
+# Rhythmia — Premium Music Streaming Web App
 
-Soniqo is a production-quality, Spotify-style music streaming web application designed under the warm, organic **"Green Amigos"** design theme. The player is built with a high-fidelity Web Audio API graph and integrates seamlessly with Supabase for persistent, secure cloud synchronization, with a transparent offline fallback to LocalStorage.
+Rhythmia is a production-quality, Spotify-style music streaming web application designed under the warm, organic **"Green Amigos"** design theme. The player is built with a high-fidelity Web Audio API graph and integrates seamlessly with Supabase for persistent, secure cloud synchronization, with a transparent offline fallback to LocalStorage.
 
 ---
 
@@ -77,7 +77,7 @@ To initialize the tables, RLS rules, profile triggers, and seed the static track
 
 1. Clone the repository and navigate to the project directory:
    ```bash
-   cd soniqo
+   cd rhythmia
    ```
 2. Install package dependencies:
    ```bash
@@ -92,7 +92,7 @@ To initialize the tables, RLS rules, profile triggers, and seed the static track
    NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
    ```
-   *Note: If these variables are not present or are left as placeholders, Soniqo will degrade gracefully to **Offline Local Database Mode**, which persists all actions (likes, playlists, queue, reordering, history) in localStorage!*
+   *Note: If these variables are not present or are left as placeholders, Rhythmia will degrade gracefully to **Offline Local Database Mode**, which persists all actions (likes, playlists, queue, reordering, history) in localStorage!*
 
 ### Running the App
 
@@ -113,7 +113,7 @@ npm run build
 
 ## Vercel Deployment
 
-Soniqo is ready to be deployed instantly on Vercel:
+Rhythmia is ready to be deployed instantly on Vercel:
 1. Push your code to a GitHub/GitLab repository.
 2. Go to [Vercel](https://vercel.com) and import the repository.
 3. Add the required Environment Variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`).

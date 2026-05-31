@@ -126,7 +126,11 @@ export function TrackRow({
           <div className={`nm font-medium text-sm truncate ${isCurrent ? "text-coral" : "text-cream"}`}>
             {track.title}
           </div>
-          <div className="ar text-xs text-muted truncate mt-0.5">{track.artist}</div>
+          <div className="ar text-xs text-muted truncate mt-0.5">
+            {track.singers && track.singers.length > 0
+              ? track.singers.join(", ")
+              : track.artist}
+          </div>
         </div>
       </div>
 

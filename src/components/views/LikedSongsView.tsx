@@ -31,7 +31,7 @@ export function LikedSongsView({ onContextMenu }: LikedSongsViewProps) {
             <div className="w-6 h-6 rounded-full bg-coral flex items-center justify-center shadow-md">
               <span className="text-xs font-bold text-white">S</span>
             </div>
-            <span className="text-sm font-semibold text-white drop-shadow">Soniqo</span>
+            <span className="text-sm font-semibold text-white drop-shadow">Rhythmia</span>
             <span className="text-sm text-white/70">•</span>
             <span className="text-sm text-white/90 font-medium">{likedTracks.length} songs</span>
           </div>

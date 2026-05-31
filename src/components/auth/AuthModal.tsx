@@ -77,7 +77,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold font-display text-cream">
-            {isSignUp ? "Join Soniqo" : "Welcome Back"}
+            {isSignUp ? "Join Rhythmia" : "Welcome Back"}
           </h2>
           <button
             onClick={onClose}
@@ -192,7 +192,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         )}
 
         <div className="mt-6 text-center text-sm text-muted">
-          {isSignUp ? "Already have an account?" : "New to Soniqo?"}{" "}
+          {isSignUp ? "Already have an account?" : "New to Rhythmia?"}{" "}
           <button
             onClick={() => {
               setIsSignUp(!isSignUp);

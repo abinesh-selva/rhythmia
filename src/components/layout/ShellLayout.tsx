@@ -136,7 +136,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="w-96 bg-panel border border-cream/10 rounded-2xl p-6 shadow-2xl text-cream transform transition-all scale-100">
             <div className="flex justify-between items-center mb-5 border-b border-cream/10 pb-3">
-              <h4 className="font-display font-bold text-lg text-coral drop-shadow">Soniqo Features</h4>
+              <h4 className="font-display font-bold text-lg text-coral drop-shadow">Rhythmia Features</h4>
               <button onClick={() => setIsFeaturesOpen(false)} className="text-muted hover:text-cream text-2xl leading-none cursor-pointer">
                 &times;
               </button>

@@ -309,7 +309,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           className={`cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 ${
             isDevicesOpen ? "text-coral" : ""
           }`}
-          title="Soniqo Connect"
+          title="Rhythmia Connect"
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
             <path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" />
@@ -523,7 +523,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-display font-bold text-sm flex items-center gap-2">
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-coral"><path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" /></svg>
-              Soniqo Connect
+              Rhythmia Connect
             </h4>
             <button onClick={() => setIsDevicesOpen(false)} className="text-muted hover:text-cream text-xl leading-none cursor-pointer">
               &times;
