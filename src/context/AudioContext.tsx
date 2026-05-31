@@ -13,16 +13,45 @@ export interface Track {
   cover_colors: string[];
   duration_sec: number;
   type?: "music" | "podcast" | "audiobook";
+  // catalog hierarchy (populated once migration + sync have run)
+  artist_id?:    string;
+  album_id?:     string;
+  track_number?: number;
+  is_active?:    boolean;
+  asset_id?:     string;
 }
 
 export interface Playlist {
   id: string;
   name: string;
   cover_colors: string[];
-  songs: string[]; // List of track IDs
+  songs: string[];
   is_public: boolean;
-  collaborative?: boolean;
+  collaborative: boolean;
 }
+
+// Typed DB row shapes — eliminates `any` casts on Supabase responses
+interface DbTrack {
+  id: string;
+  title: string;
+  artist: string;
+  album: string;
+  audio_url: string;
+  cover_colors: string[];
+  duration_sec: number | string;
+}
+
+interface DbLike { track_id: string }
+interface DbPlaylistTrack { track_id: string; position: number }
+interface DbPlaylist {
+  id: string;
+  name: string;
+  cover_colors: string[];
+  is_public: boolean;
+  collaborative: boolean;
+  playlist_tracks: DbPlaylistTrack[];
+}
+interface DbHistory { track_id: string }
 
 interface AudioContextType {
   tracks: Track[];
@@ -97,6 +126,7 @@ interface AudioContextType {
   toggleCollaborative: (playlistId: string) => Promise<void>;
   setView: (viewName: string) => void;
   refreshTracks: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -234,6 +264,11 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const filterHighRef = useRef<BiquadFilterNode | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
 
+  // Loading state for initial library fetch
+  const [isLoading, setIsLoading] = useState(true);
+  // Becomes true once the Web Audio graph is wired up — triggers useMemo to re-expose analyserNode
+  const [graphInitialized, setGraphInitialized] = useState(false);
+
   // Auto-Sync Concurrency Lock
   const isSyncingRef = useRef(false);
 
@@ -241,92 +276,77 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const isGraphInitialized = useRef(false);
 
   const loadTracksAndLibrary = async () => {
-    if (isSupabaseConfigured && supabase) {
-      // Load from DB
-      const { data: dbTracks } = await supabase.from("tracks").select("*");
-      if (dbTracks && dbTracks.length > 0) {
-        const formatted: Track[] = dbTracks.map((t: any) => ({
-          id: t.id,
-          title: t.title,
-          artist: t.artist,
-          album: t.album,
-          audio_url: t.audio_url,
-          cover_colors: t.cover_colors,
-          duration_sec: Number(t.duration_sec),
-        }));
-        setTracks(formatted);
-      }
-
-      if (user) {
-        // Load Likes
-        const { data: dbLikes } = await supabase.from("likes").select("track_id").eq("user_id", user.id);
-        if (dbLikes) {
-          setLikedSongs(new Set(dbLikes.map((l: any) => l.track_id)));
+    setIsLoading(true);
+    try {
+      if (isSupabaseConfigured && supabase) {
+        const { data: dbTracks } = await supabase.from("tracks").select("*");
+        if (dbTracks && dbTracks.length > 0) {
+          const formatted: Track[] = (dbTracks as DbTrack[]).map((t) => ({
+            id: t.id,
+            title: t.title,
+            artist: t.artist,
+            album: t.album,
+            audio_url: t.audio_url,
+            cover_colors: t.cover_colors,
+            duration_sec: Number(t.duration_sec),
+          }));
+          setTracks(formatted);
         }
 
-        // Load Playlists
-        const { data: dbPlaylists } = await supabase
-          .from("playlists")
-          .select(`
-            id, name, cover_colors, is_public,
-            playlist_tracks (track_id, position)
-          `)
-          .eq("owner_id", user.id);
+        if (user) {
+          const { data: dbLikes } = await supabase.from("likes").select("track_id").eq("user_id", user.id);
+          if (dbLikes) {
+            setLikedSongs(new Set((dbLikes as DbLike[]).map((l) => l.track_id)));
+          }
 
-        if (dbPlaylists) {
-          const formattedPlaylists: Playlist[] = dbPlaylists.map((p: any) => {
-            const sortedTracks = [...p.playlist_tracks].sort((a: any, b: any) => a.position - b.position);
-            return {
-              id: p.id,
-              name: p.name,
-              cover_colors: p.cover_colors,
-              is_public: p.is_public,
-              songs: sortedTracks.map((t: any) => t.track_id),
-            };
-          });
-          setPlaylists(formattedPlaylists);
+          const { data: dbPlaylists } = await supabase
+            .from("playlists")
+            .select(`id, name, cover_colors, is_public, collaborative, playlist_tracks (track_id, position)`)
+            .eq("owner_id", user.id);
+
+          if (dbPlaylists) {
+            const formattedPlaylists: Playlist[] = (dbPlaylists as DbPlaylist[]).map((p) => {
+              const sorted = [...p.playlist_tracks].sort((a, b) => a.position - b.position);
+              return {
+                id: p.id,
+                name: p.name,
+                cover_colors: p.cover_colors,
+                is_public: p.is_public,
+                collaborative: p.collaborative ?? false,
+                songs: sorted.map((t) => t.track_id),
+              };
+            });
+            setPlaylists(formattedPlaylists);
+          }
+
+          const { data: dbHistory } = await supabase
+            .from("play_history")
+            .select("track_id")
+            .eq("user_id", user.id)
+            .order("played_at", { ascending: false })
+            .limit(20);
+          if (dbHistory) {
+            setRecentlyPlayed((dbHistory as DbHistory[]).map((h) => h.track_id));
+          }
         }
-
-        // Load History
-        const { data: dbHistory } = await supabase
-          .from("play_history")
-          .select("track_id")
-          .eq("user_id", user.id)
-          .order("played_at", { ascending: false })
-          .limit(20);
-        if (dbHistory) {
-          setRecentlyPlayed(dbHistory.map((h: any) => h.track_id));
-        }
-      }
-    } else {
-      // Offline LocalStorage Mode
-      const localTracks = localStorage.getItem("soniqo_local_tracks");
-      if (localTracks) {
-        setTracks(JSON.parse(localTracks));
       } else {
-        setTracks(SEED_TRACKS);
-      }
+        const localTracks = localStorage.getItem("soniqo_local_tracks");
+        setTracks(localTracks ? JSON.parse(localTracks) : SEED_TRACKS);
 
-      const localLikes = localStorage.getItem("soniqo_local_likes");
-      if (localLikes) {
-        setLikedSongs(new Set(JSON.parse(localLikes)));
-      } else {
-        setLikedSongs(new Set());
-      }
+        const localLikes = localStorage.getItem("soniqo_local_likes");
+        setLikedSongs(localLikes ? new Set(JSON.parse(localLikes)) : new Set());
 
-      const localPlaylists = localStorage.getItem("soniqo_local_playlists");
-      if (localPlaylists) {
-        setPlaylists(JSON.parse(localPlaylists));
-      } else {
-        setPlaylists([]);
-      }
+        const localPlaylists = localStorage.getItem("soniqo_local_playlists");
+        setPlaylists(localPlaylists ? JSON.parse(localPlaylists) : []);
 
-      const localHistory = localStorage.getItem("soniqo_local_history");
-      if (localHistory) {
-        setRecentlyPlayed(JSON.parse(localHistory));
-      } else {
-        setRecentlyPlayed([]);
+        const localHistory = localStorage.getItem("soniqo_local_history");
+        setRecentlyPlayed(localHistory ? JSON.parse(localHistory) : []);
       }
+    } catch (e) {
+      console.error("Soniqo: Failed to load library", e);
+      setTracks(SEED_TRACKS);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -449,14 +469,10 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Fetch Tracks and user libraries on load / user switch
+  // Fetch tracks and user library on mount / user switch.
+  // Auto-sync removed per Rule Set 2.9 — use the manual sync button instead.
   useEffect(() => {
-    const startupSequence = async () => {
-      await loadTracksAndLibrary();
-      // Trigger background auto-sync silently in background
-      triggerBackgroundAutoSync();
-    };
-    startupSequence();
+    loadTracksAndLibrary();
   }, [user]);
 
   // 1. Sync Playback Rate (Speed)
@@ -550,6 +566,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       masterGainRef.current.connect(ctx.destination);
 
       isGraphInitialized.current = true;
+      setGraphInitialized(true);
     } catch (e) {
       console.warn("Failed to initialize Web Audio API graph. Degraded to default stereo audio.", e);
     }
@@ -1033,6 +1050,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         cover_colors: pColor,
         songs: [],
         is_public: false,
+        collaborative: false,
       };
 
       setPlaylists((prev) => [...prev, newPl]);
@@ -1045,6 +1063,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         cover_colors: pColor,
         songs: [],
         is_public: false,
+        collaborative: false,
       };
 
       const updated = [...playlists, newPl];
@@ -1078,7 +1097,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     if (isSupabaseConfigured && supabase && user) {
-      await supabase.from("playlists").update({ is_public: updatedCollab }).eq("id", playlistId); // Sync fallback
+      await supabase.from("playlists").update({ collaborative: updatedCollab }).eq("id", playlistId);
     } else {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, collaborative: updatedCollab } : p
@@ -1143,21 +1162,37 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const reorderPlaylistTracks = async (playlistId: string, reorderedTrackIds: string[]) => {
+    const original = playlists.find((p) => p.id === playlistId)?.songs ?? [];
+
     setPlaylists((prev) =>
       prev.map((p) => (p.id === playlistId ? { ...p, songs: reorderedTrackIds } : p))
     );
 
     if (isSupabaseConfigured && supabase && user) {
-      // Batch-delete existing playlist tracks and batch-insert reordered tracks
-      await supabase.from("playlist_tracks").delete().eq("playlist_id", playlistId);
-      
+      const { error: delErr } = await supabase
+        .from("playlist_tracks")
+        .delete()
+        .eq("playlist_id", playlistId);
+
+      if (delErr) {
+        setPlaylists((prev) =>
+          prev.map((p) => (p.id === playlistId ? { ...p, songs: original } : p))
+        );
+        console.error("Soniqo: reorder delete failed, rolled back", delErr.message);
+        return;
+      }
+
       const insertRows = reorderedTrackIds.map((trackId, index) => ({
         playlist_id: playlistId,
         track_id: trackId,
         position: index,
       }));
 
-      await supabase.from("playlist_tracks").insert(insertRows);
+      const { error: insErr } = await supabase.from("playlist_tracks").insert(insertRows);
+      if (insErr) {
+        console.error("Soniqo: reorder insert failed, reloading library", insErr.message);
+        loadTracksAndLibrary();
+      }
     } else {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, songs: reorderedTrackIds } : p
@@ -1193,6 +1228,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     eqMid,
     eqHigh,
     setEQ,
+    isLoading,
     analyserNode: analyserRef.current,
     playTrack,
     togglePlay,
@@ -1261,6 +1297,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     playbackSpeed,
     isAutoplay,
     audioNormalization,
+    graphInitialized,
+    isLoading,
   ]);
 
   return (

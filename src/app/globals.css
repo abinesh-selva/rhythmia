@@ -1,25 +1,80 @@
 @import "tailwindcss";
 
 @theme {
-  --color-forest: #0E3B35;
-  --color-forest-dark: #0c332c;
-  --color-panel: #11463d;
-  --color-panel-hover: #1b594c;
-  --color-cream: #F1EDE3;
-  --color-muted: #9bb6ab;
-  --color-coral: #F0824E;
-  --color-coral-bright: #ff9a6b;
-  --color-green: #1E9E54;
-  --color-pink: #F4C9C2;
-  --color-blue: #3E8B96;
+  --color-forest: var(--theme-forest);
+  --color-forest-dark: var(--theme-forest-dark);
+  --color-panel: var(--theme-panel);
+  --color-panel-hover: var(--theme-panel-hover);
+  --color-cream: var(--theme-cream);
+  --color-muted: var(--theme-muted);
+  --color-coral: var(--theme-coral);
+  --color-coral-bright: var(--theme-coral-bright);
+  --color-green: var(--theme-green);
+  --color-pink: var(--theme-pink);
+  --color-blue: var(--theme-blue);
 
   --font-display: var(--font-quicksand), system-ui, sans-serif;
   --font-sans: var(--font-figtree), system-ui, sans-serif;
 }
 
 :root {
-  --background: #0c332c;
-  --foreground: #F1EDE3;
+  /* Default Soniqo Theme */
+  --theme-forest: #0E3B35;
+  --theme-forest-dark: #0c332c;
+  --theme-panel: #11463d;
+  --theme-panel-hover: #1b594c;
+  --theme-cream: #F1EDE3;
+  --theme-muted: #9bb6ab;
+  --theme-coral: #F0824E;
+  --theme-coral-bright: #ff9a6b;
+  --theme-green: #1E9E54;
+  --theme-pink: #F4C9C2;
+  --theme-blue: #3E8B96;
+  
+  --background: var(--theme-forest-dark);
+  --foreground: var(--theme-cream);
+}
+
+[data-theme="catppuccin"] {
+  --theme-forest: #1e1e2e;
+  --theme-forest-dark: #11111b;
+  --theme-panel: #313244;
+  --theme-panel-hover: #45475a;
+  --theme-cream: #cdd6f4;
+  --theme-muted: #a6adc8;
+  --theme-coral: #f38ba8;
+  --theme-coral-bright: #f5c2e7;
+  --theme-green: #a6e3a1;
+  --theme-pink: #f5e0dc;
+  --theme-blue: #89b4fa;
+}
+
+[data-theme="nord"] {
+  --theme-forest: #2e3440;
+  --theme-forest-dark: #242933;
+  --theme-panel: #3b4252;
+  --theme-panel-hover: #434c5e;
+  --theme-cream: #eceff4;
+  --theme-muted: #d8dee9;
+  --theme-coral: #88c0d0;
+  --theme-coral-bright: #81a1c1;
+  --theme-green: #a3be8c;
+  --theme-pink: #b48ead;
+  --theme-blue: #5e81ac;
+}
+
+[data-theme="spotify"] {
+  --theme-forest: #121212;
+  --theme-forest-dark: #000000;
+  --theme-panel: #282828;
+  --theme-panel-hover: #3E3E3E;
+  --theme-cream: #FFFFFF;
+  --theme-muted: #B3B3B3;
+  --theme-coral: #1DB954;
+  --theme-coral-bright: #1ed760;
+  --theme-green: #1DB954;
+  --theme-pink: #FFC0CB;
+  --theme-blue: #2980b9;
 }
 
 html,

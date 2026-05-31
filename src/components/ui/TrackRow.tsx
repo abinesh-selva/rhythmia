@@ -40,6 +40,24 @@ export function TrackRow({
   const isCurrent = currentTrack?.id === track.id;
   const isLiked = likedSongs.has(track.id);
 
+  // Inactive tracks: render greyed-out "Unavailable" row — non-playable, non-interactive
+  if (track.is_active === false) {
+    return (
+      <div className="row grid grid-cols-[40px_1fr_1.2fr_60px_60px] gap-4 items-center px-4 py-2.5 rounded-lg opacity-40 cursor-not-allowed select-none">
+        <span className="text-xs text-muted text-center">{index + 1}</span>
+        <div className="tcell flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded bg-panel/50 flex-none border border-cream/10" />
+          <div className="tt min-w-0">
+            <div className="nm text-sm text-muted truncate">{track.title}</div>
+            <div className="ar text-xs text-muted/60 truncate mt-0.5">Unavailable · {track.artist}</div>
+          </div>
+        </div>
+        <div className="alb text-xs text-muted truncate">{track.album}</div>
+        <div /><div />
+      </div>
+    );
+  }
+
   return (
     <div
       key={track.id}

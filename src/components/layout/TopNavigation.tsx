@@ -113,7 +113,12 @@ export function TopNavigation({
             <div className="absolute right-0 mt-2 w-48 bg-panel border border-cream/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
               <div className="p-2 flex flex-col">
                  <span className="px-3 py-2 text-xs text-muted truncate border-b border-cream/5 mb-1">{user?.email}</span>
-                 <button className="text-left px-3 py-2 text-sm text-cream hover:bg-panel-hover rounded-lg transition-colors">Profile</button>
+                 <button
+                   onClick={() => setIsSettingsOpen(true)}
+                   className="text-left px-3 py-2 text-sm text-cream hover:bg-panel-hover rounded-lg transition-colors"
+                 >
+                   Settings &amp; Profile
+                 </button>
                  <button onClick={signOut} className="text-left px-3 py-2 text-sm text-pink hover:bg-pink/10 rounded-lg transition-colors mt-1">Sign Out</button>
               </div>
             </div>

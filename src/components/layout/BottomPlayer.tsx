@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useMemo } from "react";
 import { useAudio } from "../../context/AudioContext";
 
 // Helper to format track durations
@@ -14,7 +16,39 @@ interface BottomPlayerProps {
   setNpTab: (val: "lyrics" | "queue") => void;
 }
 
+function useDeviceInfo() {
+  return useMemo(() => {
+    if (typeof window === "undefined") return { browser: "Server", os: "Unknown", formats: [] as string[] };
+
+    const ua = navigator.userAgent;
+    let browser = "Browser";
+    if (/Edg\//.test(ua))       browser = "Microsoft Edge";
+    else if (/Firefox/.test(ua)) browser = "Firefox";
+    else if (/OPR|Opera/.test(ua)) browser = "Opera";
+    else if (/Chrome/.test(ua)) browser = "Chrome";
+    else if (/Safari/.test(ua)) browser = "Safari";
+
+    let os = "Unknown OS";
+    if (/Windows NT/.test(ua))  os = "Windows";
+    else if (/Mac OS X/.test(ua)) os = /iPhone|iPad/.test(ua) ? "iOS" : "macOS";
+    else if (/Android/.test(ua)) os = "Android";
+    else if (/Linux/.test(ua))  os = "Linux";
+
+    const audio = document.createElement("audio");
+    const formats: string[] = [];
+    if (audio.canPlayType("audio/mpeg"))       formats.push("MP3");
+    if (audio.canPlayType("audio/ogg"))        formats.push("OGG");
+    if (audio.canPlayType("audio/wav"))        formats.push("WAV");
+    if (audio.canPlayType("audio/aac"))        formats.push("AAC");
+    if (audio.canPlayType("audio/flac"))       formats.push("FLAC");
+    if (audio.canPlayType("audio/webm"))       formats.push("WebM");
+
+    return { browser, os, formats };
+  }, []);
+}
+
 export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomPlayerProps) {
+  const deviceInfo = useDeviceInfo();
   const {
     currentTrack,
     isPlaying,
@@ -483,10 +517,10 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         </div>
       )}
 
-      {/* 3. Devices Popover (Stub) */}
+      {/* 3. Devices Popover */}
       {isDevicesOpen && (
-        <div className="pop absolute right-4 bottom-[100px] w-72 bg-panel border border-cream/10 rounded-2xl p-5 shadow-2xl z-50 text-cream flex flex-col animate-fade-in">
-          <div className="flex justify-between items-center mb-3">
+        <div className="pop absolute right-4 bottom-[100px] w-80 bg-panel border border-cream/10 rounded-2xl p-5 shadow-2xl z-50 text-cream flex flex-col animate-fade-in">
+          <div className="flex justify-between items-center mb-4">
             <h4 className="font-display font-bold text-sm flex items-center gap-2">
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-coral"><path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" /></svg>
               Soniqo Connect
@@ -495,15 +529,43 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               &times;
             </button>
           </div>
-          <p className="text-xs text-muted mb-4">Listening on</p>
-          <div className="flex items-center gap-3 p-3 bg-coral/10 border border-coral/20 rounded-xl">
-             <svg viewBox="0 0 24 24" className="w-8 h-8 fill-coral"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" /></svg>
-             <div className="flex flex-col">
-               <span className="text-sm font-bold text-coral">Current Browser</span>
-               <span className="text-[10px] text-muted">Web Audio API Device</span>
-             </div>
+
+          <p className="text-[10px] text-muted uppercase tracking-wider font-bold mb-2">Current Device</p>
+          <div className="flex items-center gap-3 p-3 bg-coral/10 border border-coral/20 rounded-xl mb-4">
+            <svg viewBox="0 0 24 24" className="w-9 h-9 fill-coral flex-none">
+              <path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" />
+            </svg>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-bold text-coral">{deviceInfo.browser}</span>
+              <span className="text-[10px] text-muted">{deviceInfo.os} · Web Audio API</span>
+            </div>
+            <div className="ml-auto flex items-center gap-1 flex-none">
+              <div className="w-1.5 h-1.5 rounded-full bg-green animate-pulse" />
+              <span className="text-[9px] text-green font-bold">Active</span>
+            </div>
           </div>
-          <p className="text-[10px] text-muted mt-4 text-center">No other devices found on your network.</p>
+
+          <p className="text-[10px] text-muted uppercase tracking-wider font-bold mb-2">Audio Capabilities</p>
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {deviceInfo.formats.map((fmt) => (
+              <span key={fmt} className="text-[10px] font-bold px-2 py-0.5 bg-green/10 border border-green/20 text-green rounded-full">
+                {fmt}
+              </span>
+            ))}
+            {deviceInfo.formats.length === 0 && (
+              <span className="text-[10px] text-muted">No formats detected</span>
+            )}
+          </div>
+
+          <p className="text-[10px] text-muted uppercase tracking-wider font-bold mb-2">Audio Engine</p>
+          <div className="text-[10px] text-muted bg-black/20 rounded-lg p-2.5 font-mono leading-relaxed">
+            Web Audio API · Dual-Player · 3-Band EQ<br />
+            AnalyserNode · Crossfade Engine · Master Gain
+          </div>
+
+          <p className="text-[10px] text-muted/50 mt-4 text-center">
+            Multi-device streaming is not yet supported
+          </p>
         </div>
       )}
     </footer>
