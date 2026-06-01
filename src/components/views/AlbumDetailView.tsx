@@ -61,14 +61,14 @@ export function AlbumDetailView({ album, tracks }: AlbumDetailViewProps) {
 
   const handlePlayAll = () => {
     if (activeTracks.length === 0) return;
-    playTrack(activeTracks[0].id, activeTracks.map((t) => t.id));
+    playTrack(activeTracks[0].id, activeTracks.map((t) => t.id), activeTracks[0]);
   };
 
   const handleShuffle = () => {
     if (activeTracks.length === 0) return;
     toggleShuffle();
     const rand = activeTracks[Math.floor(Math.random() * activeTracks.length)];
-    playTrack(rand.id, activeTracks.map((t) => t.id));
+    playTrack(rand.id, activeTracks.map((t) => t.id), rand);
   };
 
   const handleShare = () => {
@@ -177,6 +177,7 @@ export function AlbumDetailView({ album, tracks }: AlbumDetailViewProps) {
                 key={track.id}
                 track={track}
                 index={idx}
+                playQueue={activeTracks.map(t => t.id)}
                 onContextMenu={handleContextMenu}
               />
             ))}

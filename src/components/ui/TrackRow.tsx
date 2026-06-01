@@ -13,6 +13,7 @@ interface TrackRowProps {
   isReorderable?: boolean;
   playlistId?: string;
   playlistTrackIds?: string[];
+  playQueue?: string[]; // if provided, sets the playback queue on click (e.g. all tracks in a collection/album)
   draggedIndex?: number | null;
   dragOverIndex?: number | null;
   onDragStart?: (e: React.DragEvent, index: number) => void;
@@ -28,6 +29,7 @@ export function TrackRow({
   isReorderable = false,
   playlistId,
   playlistTrackIds,
+  playQueue,
   draggedIndex = null,
   dragOverIndex = null,
   onDragStart,
@@ -99,7 +101,7 @@ export function TrackRow({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              playTrack(track.id);
+              playTrack(track.id, playQueue, track);
             }}
             className="pic hidden group-hover:flex items-center justify-center border-none bg-transparent absolute inset-0 cursor-pointer"
           >
@@ -111,7 +113,7 @@ export function TrackRow({
       </div>
 
       {/* Title & Artist & Album Cover */}
-      <div className="tcell flex items-center gap-3 min-w-0" onClick={() => playTrack(track.id)}>
+      <div className="tcell flex items-center gap-3 min-w-0" onClick={() => playTrack(track.id, playQueue, track)}>
         <div
           className="cart w-10 h-10 rounded flex items-center justify-center flex-none shadow"
           style={{

@@ -58,7 +58,7 @@ async function fetchAllResources(
   extraExpression = ""
 ): Promise<CloudinaryResource[]> {
   if (!CLOUD_NAME || !API_KEY || !API_SECRET)
-    throw new Error("Cloudinary credentials not configured in server environment");
+    throw new Error("Credentials not configured in server environment");
 
   const baseExpression = `folder="${ROOT_FOLDER}/*" AND resource_type:${resourceType}`;
   const expression = extraExpression ? `${baseExpression} AND ${extraExpression}` : baseExpression;
@@ -76,7 +76,7 @@ async function fetchAllResources(
       `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/resources/search`,
       { method: "POST", headers: { "Content-Type": "application/json", Authorization: cloudinaryAuth() }, body: JSON.stringify(body) }
     );
-    if (!res.ok) throw new Error(`Cloudinary API error ${res.status}: ${await res.text()}`);
+    if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
     const data = await res.json();
     all.push(...(data.resources ?? []));
     nextCursor = data.next_cursor;
@@ -562,6 +562,12 @@ export async function POST(_req: Request) {
       const { count } = await db.from("collection_tracks").select("track_id", { count: "exact", head: true }).eq("collection_id", id);
       await db.from("collections").update({ track_count: count ?? 0 }).eq("id", id);
     }
+
+    // ── Step 13: Prune orphaned albums and artists (from renamed/deleted folders) ──
+    // Albums with zero active tracks were either never populated or belong to a renamed folder.
+    await db.from("albums").delete().eq("track_count", 0);
+    // After album cleanup, artists with zero tracks AND zero albums are safe to remove.
+    await db.from("artists").delete().eq("track_count", 0).eq("album_count", 0);
 
     return NextResponse.json({
       success:          true,

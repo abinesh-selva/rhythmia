@@ -49,7 +49,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
 
   const handlePlayAll = () => {
     if (tracks.length === 0) return;
-    playTrack(tracks[0].id, tracks.map((t) => t.id));
+    playTrack(tracks[0].id, tracks.map((t) => t.id), tracks[0]);
   };
 
   const heroGradient = tracks[0]?.cover_colors
@@ -118,6 +118,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
                 key={t.id}
                 track={t}
                 index={idx}
+                playQueue={tracks.map(x => x.id)}
                 onContextMenu={handleContextMenu}
               />
             ))}

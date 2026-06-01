@@ -19,7 +19,7 @@ type FilterChip = "All" | "Music" | "Albums" | "Artists" | "Playlists";
 
 export function HomeView({ onContextMenu }: HomeViewProps) {
   const router = useRouter();
-  const { tracks, recentlyPlayed, playTrack, isLoading, setView, isPrivateSession, likedSongs, playlists } = useAudio();
+  const { tracks, libraryTracks, recentlyPlayed, playTrack, isLoading, setView, isPrivateSession, likedSongs, playlists } = useAudio();
 
   const [dbArtists, setDbArtists] = useState<ArtistRow[]>([]);
   const [dbAlbums, setDbAlbums] = useState<AlbumRow[]>([]);
@@ -130,14 +130,16 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
   // Heuristic Mix "Made for you" — must stay above any early return (Rules of Hooks)
   const madeForYou = useMemo(() => {
     if (!topGenreId && !topArtistId) return [];
-    const candidates = tracks.filter(t => t.genre_id === topGenreId || t.artist_id === topArtistId);
+    const candidates = libraryTracks.filter(t => t.genre_id === topGenreId || t.artist_id === topArtistId);
     return candidates.sort(() => Math.random() - 0.5).slice(0, 10);
-  }, [tracks, topGenreId, topArtistId]);
+  }, [libraryTracks, topGenreId, topArtistId]);
 
   if (isLoading || catalogLoading) return <HomeSkeleton />;
 
   // Derived data for shelves
-  const jumpBackInTracks = historyTracks.filter((t, i, arr) => arr.findIndex(x => x.id === t.id) === i).slice(0, 10);
+  const jumpBackInTracks = historyTracks
+    .filter((t, i, arr) => arr.findIndex(x => x.id === t.id) === i && t.folder_type !== "collection")
+    .slice(0, 10);
   
   // Quick Pick Grid items
   const quickPicks: { id: string; title: string; type: string; image?: string | null; color1: string; color2: string; onClick: () => void; onPlay: (e: any) => void }[] = [];

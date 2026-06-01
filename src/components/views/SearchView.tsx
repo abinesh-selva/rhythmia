@@ -45,7 +45,7 @@ function getAlbumColors(album: AlbumResult): [string, string] {
 
 export function SearchView({ onContextMenu }: SearchViewProps) {
   const router = useRouter();
-  const { tracks, searchQuery, isLoading } = useAudio();
+  const { tracks, libraryTracks, searchQuery, isLoading } = useAudio();
   const [activeGenre, setActiveGenre] = useState<(typeof GENRES)[number] | null>(null);
 
   // Grouped search results (DB-driven)
@@ -71,9 +71,9 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
 
     debounceRef.current = setTimeout(async () => {
       if (!supabase) {
-        // Offline: filter from AudioContext tracks only
+        // Offline: filter from library tracks only (exclude raw collection tracks)
         const q = searchQuery.toLowerCase();
-        const filtered = tracks.filter(
+        const filtered = libraryTracks.filter(
           (t) => t.is_active !== false && (
             t.title.toLowerCase().includes(q) ||
             t.artist.toLowerCase().includes(q) ||
@@ -93,7 +93,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
         supabase.from("tracks")
           .select("id,title,artist,album,audio_url,cover_colors,duration_sec,is_active,artist_id,album_id,track_number,asset_id,track_singers(singers(name))")
           .or(`title.ilike.%${q}%,artist.ilike.%${q}%,album.ilike.%${q}%`)
-          .eq("is_active", true).limit(20),
+          .eq("is_active", true).neq("folder_type", "collection").limit(20),
         supabase.from("playlists").select("id,name,cover_colors").ilike("name", `%${q}%`).eq("is_public", true).limit(5),
         supabase.from("singers").select("id,name,slug,image,track_count").ilike("name", `%${q}%`).limit(6),
         supabase.from("genres").select("id,name,slug").ilike("name", `%${q}%`).limit(5),
@@ -132,7 +132,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
 
   // Genre-filtered local tracks (when no search query)
   const genreFilteredTracks = activeGenre
-    ? tracks.filter((t) => t.is_active !== false && matchesGenre(t, activeGenre))
+    ? libraryTracks.filter((t) => t.is_active !== false && matchesGenre(t, activeGenre))
     : [];
 
   return (

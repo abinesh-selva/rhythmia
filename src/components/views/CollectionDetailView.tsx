@@ -76,7 +76,7 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
       {activeTracks.length > 0 && (
         <div className="px-6 md:px-10 py-6 flex items-center gap-4 flex-wrap">
           <button
-            onClick={() => playTrack(activeTracks[0].id as any)}
+            onClick={() => playTrack(activeTracks[0].id as any, activeTracks.map(t => t.id), activeTracks[0] as any)}
             className="w-14 h-14 rounded-full bg-coral hover:bg-coral-bright flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all"
           >
             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
@@ -116,7 +116,13 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
         ) : (
           <div className="flex flex-col gap-1 bg-panel/10 rounded-2xl p-2 md:p-4 border border-cream/5">
             {filteredTracks.map((t, idx) => (
-              <TrackRow key={t.id} track={t as any} index={idx} onContextMenu={handleContextMenu} />
+              <TrackRow
+                key={t.id}
+                track={t as any}
+                index={idx}
+                playQueue={activeTracks.map(x => x.id)}
+                onContextMenu={handleContextMenu}
+              />
             ))}
           </div>
         )}
