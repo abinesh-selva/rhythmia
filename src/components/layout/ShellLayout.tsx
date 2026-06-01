@@ -79,7 +79,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [currentTrack, duration, currentTime, isMuted, isShuffle]);
 
   return (
-    <div className={`app flex flex-col md:grid h-screen gap-2 p-2 bg-black overflow-hidden font-sans text-cream ${
+    <div className={`app flex flex-col md:grid h-full gap-2 p-2 bg-black overflow-hidden font-sans text-cream ${
       isFriendOpen ? "shell-grid-3" : "shell-grid-2"
     }`}>
       {/* 1. SIDEBAR ZONE */}
@@ -116,9 +116,6 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         />
       )}
 
-      {/* MOBILE BOTTOM NAVIGATION TABS (Visible only on screens <768px) */}
-      <MobileNav />
-
       {/* 4. FIXED BOTTOM PLAYER BAR */}
       <BottomPlayer
         isNPOpen={isNPOpen}
@@ -126,6 +123,9 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         npTab={npTab}
         setNpTab={setNpTab}
       />
+
+      {/* MOBILE BOTTOM NAVIGATION TABS (Visible only on screens <768px) */}
+      <MobileNav />
 
       {/* Modals */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />

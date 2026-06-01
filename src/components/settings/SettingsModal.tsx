@@ -178,11 +178,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
           <div className="h-px bg-cream/5" />
 
-          {/* F. Cloudinary Sync Manager Navigation */}
+          {/* Sync Manager Navigation */}
           <div className="flex flex-col gap-1.5 mt-1 bg-coral/5 border border-coral/10 p-3 rounded-xl">
-            <span className="font-semibold text-coral text-xs uppercase tracking-wider">Cloudinary Sync Manager</span>
+            <span className="font-semibold text-coral text-xs uppercase tracking-wider">Sync Manager</span>
             <p className="text-xs text-muted leading-relaxed">
-              Sync and import your original song catalog from your Cloudinary folder directly into Rhythmia Vibe.
+              Sync and import your original song catalog from your songs folder directly into Rhythmia Vibe.
             </p>
             <button
               onClick={() => {

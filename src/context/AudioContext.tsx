@@ -583,7 +583,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     const nextGain = nextPlayer === "A" ? gainNodeRefA.current! : gainNodeRefB.current!;
 
     // Set the path and prep next player at 0 volume
-    nextEl.src = `/api/audio/${nextTrack.id}`;
+    nextEl.src = nextTrack.audio_url || `/api/audio/${nextTrack.id}`;
     nextEl.currentTime = 0;
     nextEl.volume = 0;
     nextEl.play().catch(() => {});
@@ -669,7 +669,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     activeEl.pause();
     
     // Play on Player A
-    audioRefA.current!.src = `/api/audio/${track.id}`;
+    audioRefA.current!.src = track.audio_url || `/api/audio/${track.id}`;
     audioRefA.current!.currentTime = 0;
     
     setActivePlayer("A");
@@ -684,7 +684,10 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       gainNodeRefB.current!.gain.value = 0;
     }
 
-    audioRefA.current!.play().catch(() => {});
+    audioRefA.current!.play().catch((err) => {
+      console.error("Playback failed", err);
+      setIsPlaying(false);
+    });
 
     // Write play history
     logPlayHistory(track.id);
@@ -700,8 +703,10 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       audioCtxRef.current.resume();
     }
 
-    if (!currentTrack && tracks.length > 0) {
-      playTrack(tracks[0].id);
+    if (!currentTrack) {
+      if (tracks.length > 0) {
+        playTrack(tracks[0].id);
+      }
       return;
     }
 
@@ -710,8 +715,11 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       el.pause();
       setIsPlaying(false);
     } else {
-      el.play().catch(() => {});
       setIsPlaying(true);
+      el.play().catch((err) => {
+        console.error("Playback failed", err);
+        setIsPlaying(false);
+      });
     }
   };
 

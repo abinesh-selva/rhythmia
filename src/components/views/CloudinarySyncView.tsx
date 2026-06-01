@@ -60,18 +60,6 @@ export function CloudinarySyncView() {
 
   return (
     <div className="flex flex-col p-6 md:p-10 min-h-full max-w-4xl mx-auto pb-20 w-full">
-      <div className="mb-8">
-        <div className="flex items-center gap-3">
-          <span className="w-3 h-3 rounded-full bg-coral animate-pulse" />
-          <h2 className="text-3xl md:text-4xl font-bold font-display text-cream tracking-tight">Cloudinary Sync</h2>
-        </div>
-        <p className="text-sm text-muted mt-2 max-w-2xl leading-relaxed">
-          Imports your music library from Cloudinary. Artist folders become Artists, album subfolders
-          become Albums, flat folders become Collections. ID3 tags are parsed for singers, genre and
-          language — only unprocessed tracks are fetched.
-        </p>
-      </div>
-
       <div className="bg-panel/30 border border-cream/5 rounded-3xl p-8 md:p-12 shadow-xl flex flex-col justify-center items-center text-center gap-6 min-h-80 relative overflow-hidden animate-fade-in">
         <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 opacity-20 ${
           syncStatus === "success" ? "from-green/40 to-transparent" :
@@ -168,36 +156,6 @@ export function CloudinarySyncView() {
              "Start Sync"}
           </button>
         )}
-      </div>
-
-      {/* Folder structure legend */}
-      <div className="mt-8 bg-panel/20 border border-cream/5 rounded-2xl p-5 text-sm">
-        <h3 className="font-bold text-cream mb-3 text-base">How folder structure maps to the UI</h3>
-        <div className="font-mono text-xs text-muted leading-relaxed space-y-1 bg-black/20 rounded-xl p-4">
-          <div className="text-cream/80">songs/</div>
-          <div className="pl-4 text-coral">└── G. V. Prakash Kumar/   <span className="text-green">← Artist</span></div>
-          <div className="pl-8 text-cream/70">├── Aadukalam/            <span className="text-blue">← Album</span></div>
-          <div className="pl-12 text-muted">├── 01_warriors.mp3      <span className="text-muted/60">← Track (ID3 → singers, genre, language)</span></div>
-          <div className="pl-12 text-muted">└── 02_yathe_yathe.mp3</div>
-          <div className="pl-8 text-cream/70">└── Darling/              <span className="text-blue">← Album</span></div>
-          <div className="pl-4 text-pink">└── 90s Tamil Hits/        <span className="text-green">← Collection (flat — no album subfolders)</span></div>
-          <div className="pl-8 text-muted">├── vaikai_nathi.mp3     <span className="text-muted/60">← artist/title overridden from ID3</span></div>
-          <div className="pl-8 text-muted">└── sollaayo.mp3</div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-xs text-muted">
-          <div className="bg-black/20 rounded-lg p-3">
-            <span className="text-coral font-bold block mb-1">Artist folders</span>
-            Have album subfolders → appear in Popular Artists, sidebar Artists tab, /artist/… pages
-          </div>
-          <div className="bg-black/20 rounded-lg p-3">
-            <span className="text-blue font-bold block mb-1">Album folders</span>
-            L2 depth → appear in Popular Albums, artist page, /album/… pages with full track list
-          </div>
-          <div className="bg-black/20 rounded-lg p-3">
-            <span className="text-green font-bold block mb-1">Collection folders</span>
-            Flat (no subfolders) → appear in Collections on home + sidebar, /collection/… pages
-          </div>
-        </div>
       </div>
     </div>
   );

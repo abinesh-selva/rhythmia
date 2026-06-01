@@ -87,33 +87,33 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
   const [isDevicesOpen, setIsDevicesOpen] = useState(false);
 
   return (
-    <footer className="player w-full md:col-span-full h-24 bg-forest-dark border-t border-cream/5 flex items-center justify-between px-4 md:px-6 select-none relative z-40 shrink-0 shadow-2xl">
+    <footer className="player w-full md:col-span-full h-16 md:h-24 bg-forest-dark border-t border-cream/5 flex items-center justify-between px-2 md:px-6 select-none relative z-40 shrink-0 shadow-2xl">
       {/* Left: playing track details */}
-      <div className="now flex items-center gap-3 w-1/4 min-w-0">
+      <div className="now flex items-center gap-2 md:gap-3 flex-1 md:w-1/4 min-w-0">
         {currentTrack ? (
           <>
             <div
-              className="now-art w-14 h-14 rounded-lg flex items-center justify-center flex-none shadow-md overflow-hidden relative group"
+              className="now-art w-10 h-10 md:w-14 md:h-14 rounded md:rounded-lg flex items-center justify-center flex-none shadow-md overflow-hidden relative group"
               style={{
                 background: `linear-gradient(135deg, ${currentTrack.cover_colors[0]}, ${currentTrack.cover_colors[1]})`,
               }}
             >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream/90 transition-transform group-hover:scale-110">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5 fill-cream/90 transition-transform group-hover:scale-110">
                 <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
               </svg>
             </div>
-            <div className="now-meta min-w-0 flex flex-col justify-center">
-              <div className="nm text-sm font-bold text-cream truncate">{currentTrack.title}</div>
-              <div className="ar text-xs text-muted mt-0.5 truncate hover:underline cursor-pointer">{currentTrack.artist}</div>
+            <div className="now-meta min-w-0 flex flex-col justify-center flex-1">
+              <div className="nm text-xs md:text-sm font-bold text-cream truncate">{currentTrack.title}</div>
+              <div className="ar text-[10px] md:text-xs text-muted mt-0.5 truncate hover:underline cursor-pointer">{currentTrack.artist}</div>
             </div>
             <button
               onClick={() => toggleLike(currentTrack.id)}
-              className={`like ml-3 transition-transform cursor-pointer hover:scale-110 active:scale-90 ${
+              className={`like ml-1 md:ml-3 transition-transform cursor-pointer hover:scale-110 active:scale-90 hidden sm:block ${
                 likedSongs.has(currentTrack.id) ? "text-coral" : "text-muted hover:text-cream"
               }`}
               title={likedSongs.has(currentTrack.id) ? "Remove from Liked Songs" : "Save to Liked Songs"}
             >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5 fill-current">
                 <path
                   d={
                     likedSongs.has(currentTrack.id)
@@ -129,22 +129,22 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           </>
         ) : (
           <>
-            <div className="now-art w-14 h-14 rounded-lg bg-panel flex items-center justify-center flex-none border border-cream/5">
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream/30">
+            <div className="now-art w-10 h-10 md:w-14 md:h-14 rounded md:rounded-lg bg-panel flex items-center justify-center flex-none border border-cream/5">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5 fill-cream/30">
                 <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
               </svg>
             </div>
-            <div className="now-meta min-w-0">
-              <div className="nm text-sm font-semibold text-cream truncate">-</div>
-              <div className="ar text-xs text-muted mt-0.5 truncate">Select a song</div>
+            <div className="now-meta min-w-0 flex-1">
+              <div className="nm text-xs md:text-sm font-semibold text-cream truncate">-</div>
+              <div className="ar text-[10px] md:text-xs text-muted mt-0.5 truncate">Select a song</div>
             </div>
           </>
         )}
       </div>
 
       {/* Center: Playback controls */}
-      <div className="controls flex flex-col items-center gap-2 w-2/5 max-w-2xl">
-        <div className="cbtns flex items-center gap-5 md:gap-6">
+      <div className="controls flex items-center justify-end md:justify-center md:flex-col gap-2 flex-none md:w-2/5 md:max-w-2xl">
+        <div className="cbtns flex items-center gap-3 md:gap-6">
           {currentTrack?.type === "podcast" || currentTrack?.type === "audiobook" ? (
             <button
               onClick={() => {
@@ -152,7 +152,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
                 const nextIdx = (speeds.indexOf(playbackSpeed) + 1) % speeds.length;
                 setPlaybackSpeed(speeds[nextIdx]);
               }}
-              className="text-xs font-extrabold text-coral hover:text-coral-bright transition-all border border-coral/25 px-2 py-0.5 rounded bg-coral/5 hover:scale-105 active:scale-95 cursor-pointer flex-none h-6 flex items-center justify-center min-w-9 shadow"
+              className="hidden md:flex text-xs font-extrabold text-coral hover:text-coral-bright transition-all border border-coral/25 px-2 py-0.5 rounded bg-coral/5 hover:scale-105 active:scale-95 cursor-pointer flex-none h-6 items-center justify-center min-w-9 shadow"
               title="Quick Speed Rate"
             >
               {playbackSpeed}x
@@ -160,7 +160,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           ) : (
             <button
               onClick={toggleShuffle}
-              className={`cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 ${
+              className={`cb hidden md:block text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 ${
                 isShuffle ? "text-coral hover:text-coral-bright" : ""
               }`}
               title="Shuffle"
@@ -174,7 +174,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           {currentTrack?.type === "podcast" || currentTrack?.type === "audiobook" ? (
             <button
               onClick={() => seek(Math.max(0, currentTime - 15))}
-              className="cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 flex items-center justify-center relative w-7 h-7"
+              className="cb hidden md:flex text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 items-center justify-center relative w-7 h-7"
               title="Rewind 15s"
             >
               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
@@ -183,7 +183,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               <span className="absolute text-xs font-extrabold text-cream scale-90 top-2">15</span>
             </button>
           ) : (
-            <button onClick={prevTrack} className="cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90" title="Previous">
+            <button onClick={prevTrack} className="cb hidden md:block text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90" title="Previous">
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
                 <path d="M6 5h2v14H6V5zm3.5 7L18 5v14l-8.5-7z" />
               </svg>
@@ -192,14 +192,14 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
           <button
             onClick={togglePlay}
-            className="cb play w-10 h-10 rounded-full bg-cream hover:bg-white text-forest-dark flex items-center justify-center transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95"
+            className="cb play w-8 h-8 md:w-10 md:h-10 rounded-full bg-cream hover:bg-white text-forest-dark flex items-center justify-center transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95"
           >
             {isPlaying ? (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5 fill-current">
                 <path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current translate-x-px">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5 fill-current translate-x-0.5">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -211,10 +211,10 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               className="cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 flex items-center justify-center relative w-7 h-7"
               title="Forward 15s"
             >
-              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-6 md:h-6 fill-current">
                 <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" />
               </svg>
-              <span className="absolute text-xs font-extrabold text-cream scale-90 top-2">15</span>
+              <span className="absolute text-[10px] md:text-xs font-extrabold text-cream scale-90 top-2 md:top-2">15</span>
             </button>
           ) : (
             <button onClick={nextTrack} className="cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90" title="Next">
@@ -226,7 +226,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
           <button
             onClick={cycleRepeatMode}
-            className={`cb text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 relative ${
+            className={`cb hidden md:block text-muted hover:text-cream cursor-pointer transition-all hover:scale-110 active:scale-90 relative ${
               repeatMode > 0 ? "text-coral hover:text-coral-bright" : ""
             }`}
             title="Repeat"
@@ -243,7 +243,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         </div>
 
         {/* Seek progress slider bar */}
-        <div className="progress flex items-center gap-2 w-full">
+        <div className="progress hidden md:flex items-center gap-2 w-full">
           <span className="time text-xs text-muted select-none w-10 text-right font-medium">{fmt(currentTime)}</span>
           <div className="relative flex-1 group h-3 flex items-center">
             <input
