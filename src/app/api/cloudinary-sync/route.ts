@@ -36,18 +36,18 @@ interface TrackMetadata {
 // ─── Supabase service-role client ────────────────────────────────────────────
 
 function getServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
   if (!url || !key) throw new Error("Supabase service role credentials not configured");
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 // ─── Cloudinary Admin API helpers ────────────────────────────────────────────
 
-const CLOUD_NAME  = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
-const API_KEY     = process.env.CLOUDINARY_API_KEY ?? "";
-const API_SECRET  = process.env.CLOUDINARY_API_SECRET ?? "";
-const ROOT_FOLDER = (process.env.CLOUDINARY_FOLDER ?? "songs").replace(/\/$/, "");
+const CLOUD_NAME  = (process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "").trim();
+const API_KEY     = (process.env.CLOUDINARY_API_KEY ?? "").trim();
+const API_SECRET  = (process.env.CLOUDINARY_API_SECRET ?? "").trim();
+const ROOT_FOLDER = (process.env.CLOUDINARY_FOLDER ?? "songs").trim().replace(/\/$/, "");
 
 function cloudinaryAuth(): string {
   return "Basic " + Buffer.from(`${API_KEY}:${API_SECRET}`).toString("base64");
