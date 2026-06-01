@@ -25,6 +25,7 @@ export interface Track {
   genre?:        string;      // primary genre name
   genre_id?:     string;
   singers?:      string[];    // vocal performer display names
+  folder_type?:  string;     // 'artist_album' | 'collection'
 }
 
 export interface Playlist {
@@ -71,6 +72,7 @@ interface DbHistory { track_id: string }
 
 interface AudioContextType {
   tracks: Track[];
+  libraryTracks: Track[]; // tracks excluding folder_type='collection' — for search/home display
   playlists: Playlist[];
   collections: Collection[];
   likedSongs: Set<string>; // Set of track IDs
@@ -112,7 +114,7 @@ interface AudioContextType {
   analyserNode: AnalyserNode | null;
   
   // Playback Operations
-  playTrack: (trackId: string, customQueue?: string[]) => void;
+  playTrack: (trackId: string, customQueue?: string[], fallbackTrack?: Track) => void;
   togglePlay: () => void;
   nextTrack: () => void;
   prevTrack: () => void;
@@ -227,7 +229,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
           .from("tracks")
           .select(`
             id, title, artist, album, audio_url, cover_colors, duration_sec,
-            type, artist_id, album_id, track_number, is_active, asset_id, language_id,
+            artist_id, album_id, track_number, is_active, asset_id, language_id, folder_type,
             languages(id, name),
             track_singers(singers(id, name, slug)),
             track_genres(genres(id, name, slug))
@@ -236,11 +238,22 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (dbError) {
           console.warn("Track metadata query failed (migrations pending?), falling back to basic query.", dbError.message);
-          const fallback = await supabase
+          // Fallback 1: catalog columns (no language/genre/singer joins, no type)
+          const fallback1 = await supabase
             .from("tracks")
-            .select("id, title, artist, album, audio_url, cover_colors, duration_sec, type, artist_id, album_id, track_number, is_active, asset_id")
+            .select("id, title, artist, album, audio_url, cover_colors, duration_sec, artist_id, album_id, track_number, is_active, asset_id, folder_type")
             .order("title");
-          dbTracks = fallback.data as any;
+          if (!fallback1.error) {
+            dbTracks = fallback1.data as any;
+          } else {
+            // Fallback 2: minimum base columns guaranteed since initial migration
+            console.warn("Catalog query also failed, using base columns.", fallback1.error.message);
+            const fallback2 = await supabase
+              .from("tracks")
+              .select("id, title, artist, album, audio_url, cover_colors, duration_sec")
+              .order("title");
+            dbTracks = fallback2.data as any;
+          }
         }
 
         if (dbTracks && dbTracks.length > 0) {
@@ -263,6 +276,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
             singers: (t.track_singers ?? []).map((ts: any) => ts.singers?.name).filter(Boolean),
             genre: (t.track_genres ?? [])[0]?.genres?.name ?? undefined,
             genre_id: (t.track_genres ?? [])[0]?.genres?.id ?? undefined,
+            folder_type: t.folder_type ?? undefined,
           }));
           setTracks(formatted);
         }
@@ -557,9 +571,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return playlistSongs[0].id;
     }
 
-    // Autoplay Recommendation: Pick a random track from the full catalog (excluding current) when list ends
+    // Autoplay: pick a random library track (excluding collection tracks and current) when list ends
     if (isAutoplay && tracks.length > 0) {
-      const candidates = tracks.filter((t) => t.id !== currentTrack?.id);
+      const candidates = tracks.filter((t) => t.id !== currentTrack?.id && t.folder_type !== "collection");
       if (candidates.length > 0) {
         const randomCand = candidates[Math.floor(Math.random() * candidates.length)];
         return randomCand.id;
@@ -631,18 +645,19 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     // Clean queue
-    if (queue.length > 0 && queue[0] === nextTrack.id) {
-      setQueue((prev) => prev.slice(1));
-    }
+    setQueue((prev) => {
+      if (prev.length > 0 && prev[0] === nextTrack.id) return prev.slice(1);
+      return prev;
+    });
   };
 
-  const playTrack = (trackId: string, customQueue?: string[]) => {
+  const playTrack = (trackId: string, customQueue?: string[], fallbackTrack?: Track) => {
     initAudioGraph();
     if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
       audioCtxRef.current.resume();
     }
 
-    const track = tracks.find((t) => t.id === trackId);
+    const track = tracks.find((t) => t.id === trackId) ?? fallbackTrack ?? null;
     if (!track) return;
 
     const activeEl = activePlayer === "A" ? audioRefA.current! : audioRefB.current!;
@@ -685,6 +700,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     audioRefA.current!.play().catch((err) => {
+      if (err.name === "AbortError") return; // pause() raced play() — harmless
       console.error("Playback failed", err);
       setIsPlaying(false);
     });
@@ -694,6 +710,11 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (customQueue) {
       setQueue(customQueue.filter((id) => id !== trackId));
+    } else {
+      setQueue((prev) => {
+        if (prev.length > 0 && prev[0] === trackId) return prev.slice(1);
+        return prev;
+      });
     }
   };
 
@@ -717,6 +738,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       setIsPlaying(true);
       el.play().catch((err) => {
+        if (err.name === "AbortError") return; // pause() raced play() — harmless
         console.error("Playback failed", err);
         setIsPlaying(false);
       });
@@ -847,7 +869,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (view === "queue") {
       return queue.map((id) => tracks.find((t) => t.id === id)!).filter(Boolean);
     }
-    return tracks;
+    // Default: use library tracks only (exclude raw collection tracks with numbered names)
+    return tracks.filter(t => t.folder_type !== "collection");
   };
 
   const setView = (viewName: string) => {
@@ -1085,6 +1108,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
   const contextValue = React.useMemo(() => ({
     tracks,
+    libraryTracks: tracks.filter(t => t.folder_type !== "collection"),
     playlists,
     collections,
     likedSongs,
