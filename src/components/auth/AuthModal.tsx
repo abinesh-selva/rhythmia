@@ -28,12 +28,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
     try {
       if (isSignUp) {
-        const { error } = await signUpWithEmail(email, password, name);
+        const { data, error } = await signUpWithEmail(email, password, name);
         if (error) throw new Error(error.message || error);
-        // Supabase sends a confirmation email by default
-        setSuccessMsg("Account created! Please check your email for the confirmation link to sign in.");
-        setIsSignUp(false); // Switch to login mode
-        setPassword(""); // Clear password for security
+        
+        if (data?.session) {
+          // Auto sign-in was successful (email confirmation disabled or offline mode)
+          onClose();
+        } else {
+          // Supabase sends a confirmation email by default
+          setSuccessMsg("Account created! Please check your email for the confirmation link to sign in.");
+          setIsSignUp(false); // Switch to login mode
+          setPassword(""); // Clear password for security
+        }
       } else {
         const { error } = await loginWithEmail(email, password);
         if (error) {
@@ -70,14 +76,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-md bg-panel border border-cream/10 rounded-2xl p-8 shadow-2xl flex flex-col z-10 overflow-hidden">
+      <div className="relative w-full max-w-md bg-panel border border-white/10 rounded-2xl p-8 shadow-2xl flex flex-col z-10 overflow-hidden">
         {/* Decorative leaf backdrop motif */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-coral/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-green/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold font-display text-cream">
-            {isSignUp ? "Join Rhythmia" : "Welcome Back"}
+            {isSignUp ? "Join Vibeblower" : "Welcome Back"}
           </h2>
           <button
             onClick={onClose}
@@ -111,7 +117,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="What should we call you?"
-                className="w-full px-4 py-3 bg-forest-dark/40 border border-cream/10 rounded-xl text-cream placeholder-muted focus:outline-none focus:border-coral transition-colors"
+                className="w-full px-4 py-3 bg-forest-dark/40 border border-white/10 rounded-xl text-cream placeholder-muted focus:outline-none focus:border-coral transition-colors"
               />
             </div>
           )}
@@ -126,7 +132,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-4 py-3 bg-forest-dark/40 border border-cream/10 rounded-xl text-cream placeholder-muted focus:outline-none focus:border-coral transition-colors"
+              className="w-full px-4 py-3 bg-forest-dark/40 border border-white/10 rounded-xl text-cream placeholder-muted focus:outline-none focus:border-coral transition-colors"
             />
           </div>
 
@@ -140,7 +146,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 bg-forest-dark/40 border border-cream/10 rounded-xl text-cream placeholder-muted focus:outline-none focus:border-coral transition-colors"
+              className="w-full px-4 py-3 bg-forest-dark/40 border border-white/10 rounded-xl text-cream placeholder-muted focus:outline-none focus:border-coral transition-colors"
             />
           </div>
 
@@ -162,7 +168,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         <button
           onClick={handleGoogleLogin}
           disabled={loading || isOffline}
-          className="w-full py-3 bg-forest-dark border border-cream/15 hover:bg-forest-dark/70 text-cream rounded-xl font-medium flex items-center justify-center gap-3 transition-colors disabled:opacity-50 cursor-pointer"
+          className="w-full py-3 bg-forest-dark border border-white/15 hover:bg-forest-dark/70 text-cream rounded-xl font-medium flex items-center justify-center gap-3 transition-colors disabled:opacity-50 cursor-pointer"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -192,7 +198,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         )}
 
         <div className="mt-6 text-center text-sm text-muted">
-          {isSignUp ? "Already have an account?" : "New to Rhythmia?"}{" "}
+          {isSignUp ? "Already have an account?" : "New to Vibeblower?"}{" "}
           <button
             onClick={() => {
               setIsSignUp(!isSignUp);

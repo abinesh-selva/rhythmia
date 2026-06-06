@@ -10,6 +10,8 @@ import { LikedSongsView } from "../components/views/LikedSongsView";
 import { QueueView } from "../components/views/QueueView";
 import { CloudinarySyncView } from "../components/views/CloudinarySyncView";
 import { LiveEventsView } from "../components/views/LiveEventsView";
+import { UserProfileView } from "../components/views/UserProfileView";
+import { RecentlyPlayedView } from "../components/views/RecentlyPlayedView";
 
 export default function Page() {
   const { view, playlists, addToQueue, addTrackToPlaylist } = useAudio();
@@ -29,10 +31,14 @@ export default function Page() {
     if (view === "search") return <SearchView onContextMenu={handleContextMenu} />;
     if (view === "liked")  return <LikedSongsView onContextMenu={handleContextMenu} />;
     if (view === "queue")  return <QueueView onContextMenu={handleContextMenu} />;
+    if (view === "recent") return <RecentlyPlayedView onContextMenu={handleContextMenu} />;
     if (view === "sync")   return <CloudinarySyncView />;
     if (view === "live")   return <LiveEventsView />;
     if (view.startsWith("playlist:")) {
       return <PlaylistView playlistId={view.split(":")[1]} onContextMenu={handleContextMenu} />;
+    }
+    if (view.startsWith("user:")) {
+      return <UserProfileView userId={view.split(":")[1]} onContextMenu={handleContextMenu} />;
     }
     return <HomeView onContextMenu={handleContextMenu} />;
   };
@@ -43,35 +49,36 @@ export default function Page() {
 
       {activeMenuTrackId && (
         <div
-          className="fixed z-50 w-48 bg-panel border border-cream/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
+          className="fixed z-50 w-48 bg-panel border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in py-1"
           style={{
-            top:  Math.min(menuPosition.y, window.innerHeight - 250),
-            left: Math.min(menuPosition.x, window.innerWidth  - 200),
+            top:  Math.min(menuPosition.y, window.innerHeight - 240),
+            left: Math.min(menuPosition.x, window.innerWidth - 200),
           }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={() => { addToQueue(activeMenuTrackId); setActiveMenuTrackId(null); addToast("Added to queue", "success"); }}
-            className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-panel-hover transition-colors font-medium border-b border-cream/5"
+            className="w-full text-left px-4 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors font-medium"
           >
             Add to Queue
           </button>
 
-          <div className="px-4 py-2 text-xs font-bold text-muted uppercase tracking-wider bg-black/20">
+          <div className="mx-3 my-1 border-t border-white/8" />
+          <div className="px-4 py-1.5 text-[10px] font-semibold text-muted uppercase tracking-wider">
             Add to Playlist
           </div>
-          <div className="max-h-40 overflow-y-auto">
+          <div className="max-h-36 overflow-y-auto pb-1">
             {playlists.map((pl) => (
               <button
                 key={pl.id}
                 onClick={() => { addTrackToPlaylist(pl.id, activeMenuTrackId); setActiveMenuTrackId(null); addToast(`Added to ${pl.name}`, "success"); }}
-                className="w-full text-left px-4 py-2 text-sm text-cream hover:bg-panel-hover transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-cream hover:bg-white/8 transition-colors"
               >
                 {pl.name}
               </button>
             ))}
             {playlists.length === 0 && (
-              <div className="px-4 py-3 text-xs text-muted">No custom playlists</div>
+              <div className="px-4 py-2.5 text-xs text-muted/60">No playlists yet</div>
             )}
           </div>
         </div>

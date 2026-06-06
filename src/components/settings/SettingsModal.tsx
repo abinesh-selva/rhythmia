@@ -43,14 +43,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
       <div 
-        className="w-full max-w-md bg-forest/95 border border-cream/10 rounded-2xl p-6 shadow-2xl text-cream relative"
+        className="w-full max-w-md bg-forest/95 border border-white/10 rounded-2xl p-6 shadow-2xl text-cream relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-6 pb-3 border-b border-cream/10">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-coral animate-pulse" />
-            <h3 className="font-display font-bold text-lg tracking-tight">Rhythmia Settings</h3>
+            <h3 className="font-display font-bold text-lg tracking-tight">Vibeblower Settings</h3>
           </div>
           <button
             onClick={onClose}
@@ -77,7 +77,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   className={`flex-1 text-xs py-1.5 rounded-md font-bold transition-all cursor-pointer ${
                     playbackSpeed === speed
                       ? "bg-coral text-forest-dark font-extrabold"
-                      : "bg-panel hover:bg-panel-hover text-muted hover:text-cream"
+                      : "bg-panel hover:bg-white/8 text-muted hover:text-cream"
                   }`}
                 >
                   {speed}x
@@ -123,7 +123,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   className={`flex-1 text-xs py-2 rounded-md font-semibold capitalize transition-all cursor-pointer ${
                     audioNormalization === level
                       ? "bg-coral text-forest-dark font-extrabold"
-                      : "bg-panel hover:bg-panel-hover text-muted hover:text-cream"
+                      : "bg-panel hover:bg-white/8 text-muted hover:text-cream"
                   }`}
                 >
                   {level}
@@ -182,7 +182,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           <div className="flex flex-col gap-1.5 mt-1 bg-coral/5 border border-coral/10 p-3 rounded-xl">
             <span className="font-semibold text-coral text-xs uppercase tracking-wider">Sync Manager</span>
             <p className="text-xs text-muted leading-relaxed">
-              Sync and import your original song catalog from your songs folder directly into Rhythmia Vibe.
+              Sync and import your original song catalog from your songs folder directly into Vibeblower Vibe.
             </p>
             <button
               onClick={() => {

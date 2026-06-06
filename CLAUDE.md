@@ -86,7 +86,7 @@ Use `src/lib/supabase.ts` (the singleton) for all client-side calls in context a
 4. Generates deterministic HSL cover gradients via string hash.
 5. Upserts into `tracks` on conflict `audio_url`.
 
-Background auto-sync fires on app load with a 1-hour localStorage gate (`rhythmia_last_sync_time`).
+Background auto-sync fires on app load with a 1-hour localStorage gate (`vibeblower_last_sync_time`).
 
 ### Database schema (Supabase / Postgres)
 
@@ -98,7 +98,7 @@ Migrations live in `supabase/migrations/` and are numbered `YYYYMMDDNNNNNN_*.sql
 
 ### Offline mode — full localStorage parity
 
-Every Supabase operation in `AudioContext` has an `else` branch writing to localStorage under `rhythmia_local_*` keys. The offline path is triggered automatically when `isSupabaseConfigured` is false. All features work identically offline except Google OAuth.
+Every Supabase operation in `AudioContext` has an `else` branch writing to localStorage under `vibeblower_local_*` keys. The offline path is triggered automatically when `isSupabaseConfigured` is false. All features work identically offline except Google OAuth.
 
 ## Design system
 

@@ -24,7 +24,7 @@ export function LiveEventsView() {
       </div>
 
       {liveTracks.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-6 p-12 text-center border border-cream/5 rounded-3xl bg-panel/20">
+        <div className="flex-1 flex flex-col items-center justify-center gap-6 p-12 text-center border border-white/5 rounded-3xl bg-white/4">
           <div className="w-20 h-20 rounded-full bg-coral/10 border border-coral/20 flex items-center justify-center">
             <svg viewBox="0 0 24 24" className="w-10 h-10 fill-coral opacity-70">
               <path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-1.99.89-1.99 2v4c1.1 0 1.99.9 1.99 2s-.89 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-9 7.5h-2v-2h2v2zm0-4.5h-2v-2h2v2zm0-4.5h-2v-2h2v2z" />
@@ -38,7 +38,7 @@ export function LiveEventsView() {
           </div>
           <div className="flex flex-wrap gap-2 justify-center mt-2">
             {["podcast", "audiobook", "live radio"].map((tag) => (
-              <span key={tag} className="px-3 py-1.5 rounded-full bg-panel border border-cream/5 text-xs text-muted font-medium">
+              <span key={tag} className="px-3 py-1.5 rounded-full bg-panel border border-white/5 text-xs text-muted font-medium">
                 {tag}
               </span>
             ))}
@@ -50,7 +50,7 @@ export function LiveEventsView() {
             <div
               key={track.id}
               onClick={() => playTrack(track.id)}
-              className="group flex gap-4 p-4 bg-panel/30 hover:bg-panel/60 rounded-2xl cursor-pointer transition-all border border-cream/5 hover:border-cream/10"
+              className="group flex gap-4 p-4 bg-white/4 hover:bg-panel/60 rounded-2xl cursor-pointer transition-all border border-white/5 hover:border-cream/10"
             >
               <div
                 className="w-16 h-16 rounded-xl flex-none shadow-md flex items-center justify-center relative overflow-hidden"

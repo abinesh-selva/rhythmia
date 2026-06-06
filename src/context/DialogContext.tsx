@@ -88,7 +88,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
           onClick={handleCancel}
         >
           <div
-            className="w-full max-w-sm bg-panel border border-cream/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="w-full max-w-sm bg-panel border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleKeyDown}
           >
@@ -120,7 +120,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder={(dialog.options as PromptOptions).placeholder}
-                  className="w-full px-4 py-3 bg-forest-dark border border-cream/10 rounded-xl text-cream placeholder-muted focus:outline-none focus:border-coral transition-colors text-sm"
+                  className="w-full px-4 py-3 bg-forest-dark border border-white/10 rounded-xl text-cream placeholder-muted focus:outline-none focus:border-coral transition-colors text-sm"
                 />
               )}
 
@@ -128,7 +128,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
               <div className="flex gap-3">
                 <button
                   onClick={handleCancel}
-                  className="flex-1 py-2.5 rounded-xl border border-cream/10 text-muted hover:text-cream hover:bg-panel-hover text-sm font-semibold transition-colors"
+                  className="flex-1 py-2.5 rounded-xl border border-white/10 text-muted hover:text-cream hover:bg-white/8 text-sm font-semibold transition-colors"
                 >
                   Cancel
                 </button>

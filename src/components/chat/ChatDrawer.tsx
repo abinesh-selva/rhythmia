@@ -28,9 +28,9 @@ export function ChatDrawer() {
   };
 
   return (
-    <div className="fixed right-0 bottom-24 top-0 w-full md:w-80 bg-panel border-l border-cream/5 shadow-2xl flex flex-col z-50 animate-fade-in">
+    <div className="fixed right-0 bottom-24 top-0 w-full md:w-80 bg-panel border-l border-white/5 shadow-2xl flex flex-col z-50 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-cream/5 bg-forest-dark/50 backdrop-blur-md">
+      <div className="flex items-center justify-between p-4 border-b border-white/5 bg-forest-dark/50 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="relative">
             {activeFriend?.avatar_url ? (
@@ -77,13 +77,13 @@ export function ChatDrawer() {
       </div>
 
       {/* Input Area */}
-      <form onSubmit={handleSend} className="p-3 border-t border-cream/5 bg-forest-dark flex gap-2">
+      <form onSubmit={handleSend} className="p-3 border-t border-white/5 bg-forest-dark flex gap-2">
         <input 
           type="text" 
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Type a message..."
-          className="flex-1 bg-white/5 border border-cream/10 rounded-full px-4 py-2 text-sm text-cream focus:outline-none focus:border-coral/50 transition-colors"
+          className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm text-cream focus:outline-none focus:border-coral/50 transition-colors"
         />
         <button 
           type="submit"

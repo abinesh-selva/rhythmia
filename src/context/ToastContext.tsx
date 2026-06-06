@@ -46,7 +46,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 ? "bg-green text-forest-dark"
                 : toast.type === "error"
                 ? "bg-coral text-forest-dark"
-                : "bg-panel border border-cream/10 text-cream"
+                : "bg-panel border border-white/10 text-cream"
             }`}
           >
             <span className="text-sm font-semibold">{toast.message}</span>

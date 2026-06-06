@@ -3,9 +3,9 @@ import "./globals.css";
 // Fonts loaded via CSS @import in globals.css — avoids Turbopack build-time resolution
 
 export const metadata: Metadata = {
-  title: "Rhythmia — Premium Spotify-Style Music Streaming Player",
+  title: "Vibeblower — Premium Spotify-Style Music Streaming Player",
   description:
-    "Experience Rhythmia, a Spotify-style music streaming application built in the warm, organic Green Amigos visual theme. Features full equalizer, visualizer, crossfade, sleep timer, custom playlists, and secure Supabase database persistence.",
+    "Experience Vibeblower, a Spotify-style music streaming application built in the warm, organic Green Amigos visual theme. Features full equalizer, visualizer, crossfade, sleep timer, custom playlists, and secure Supabase database persistence.",
   keywords: [
     "music player",
     "audio streaming",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "supabse",
     "cloudinary music player",
   ],
-  authors: [{ name: "Rhythmia Team" }],
+  authors: [{ name: "Vibeblower Team" }],
 };
 
 import { Providers } from "@/components/providers/Providers";

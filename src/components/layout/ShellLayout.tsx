@@ -5,7 +5,6 @@ import { useAudio } from "../../context/AudioContext";
 import { AuthModal } from "../auth/AuthModal";
 import { SettingsModal } from "../settings/SettingsModal";
 
-// Extracted Layout Components
 import { Sidebar } from "./Sidebar";
 import { TopNavigation } from "./TopNavigation";
 import { BottomPlayer } from "./BottomPlayer";
@@ -30,20 +29,43 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     toggleMute,
   } = useAudio();
 
-  // Dialog & Popover states managed at shell level
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  
-  // Sidebar toggles
   const [isNPOpen, setIsNPOpen] = useState(true);
   const [npTab, setNpTab] = useState<"lyrics" | "queue">("lyrics");
   const [isFriendOpen, setIsFriendOpen] = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(260);
 
-  // Global Keyboard Shortcuts Hook
+  useEffect(() => {
+    const saved = localStorage.getItem("vibeblower_sidebar_width");
+    if (saved) setSidebarWidth(parseInt(saved, 10));
+  }, []);
+
+  const handleSidebarResize = (e: MouseEvent) => {
+    document.body.style.userSelect = "none";
+    setSidebarWidth((prev) => {
+      const newWidth = prev + e.movementX;
+      return Math.min(Math.max(newWidth, 200), 450);
+    });
+  };
+
+  const stopSidebarResize = () => {
+    document.body.style.userSelect = "auto";
+    window.removeEventListener("mousemove", handleSidebarResize);
+    window.removeEventListener("mouseup", stopSidebarResize);
+    setSidebarWidth((w) => {
+      localStorage.setItem("vibeblower_sidebar_width", w.toString());
+      return w;
+    });
+  };
+
+  const startSidebarResize = () => {
+    window.addEventListener("mousemove", handleSidebarResize);
+    window.addEventListener("mouseup", stopSidebarResize);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Skip shortcuts if user is typing in forms/textareas
       const activeEl = document.activeElement;
       if (
         activeEl &&
@@ -79,35 +101,42 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [currentTrack, duration, currentTime, isMuted, isShuffle]);
 
   return (
-    <div className={`app flex flex-col md:grid h-full gap-2 p-2 bg-black overflow-hidden font-sans text-cream ${
-      isFriendOpen ? "shell-grid-3" : "shell-grid-2"
-    }`}>
-      {/* 1. SIDEBAR ZONE */}
-      <Sidebar />
+    <div
+      className={`app flex flex-col md:grid h-full gap-1.5 p-1.5 bg-black/90 overflow-hidden font-sans text-cream ${
+        isFriendOpen ? "shell-grid-3" : "shell-grid-2"
+      }`}
+      style={{
+        "--sidebar-width": `${sidebarWidth}px`,
+      } as React.CSSProperties}
+    >
+      {/* Sidebar Area */}
+      <div className="relative flex min-h-0 hidden md:flex">
+        <Sidebar />
+        <div 
+          className="w-1.5 hover:bg-white/10 active:bg-white/20 cursor-col-resize absolute right-0 top-0 bottom-0 z-50 transition-colors"
+          onMouseDown={startSidebarResize}
+        />
+      </div>
 
-      {/* 2. MAIN SCROLL CONTAINER */}
-      <main className="main bg-forest-dark border border-cream/5 rounded-2xl overflow-y-auto min-h-0 flex flex-col relative shadow-xl">
-        {/* TOPBAR HEAD */}
+      {/* Main content area */}
+      <main className="main bg-forest-dark border border-white/5 rounded-xl overflow-y-auto min-h-0 flex flex-col relative shadow-2xl">
         <TopNavigation
           isFriendOpen={isFriendOpen}
           setIsFriendOpen={setIsFriendOpen}
           setIsAuthOpen={setIsAuthOpen}
-          setIsFeaturesOpen={setIsFeaturesOpen}
           setIsSettingsOpen={setIsSettingsOpen}
         />
-
-        {/* View children page */}
         <div className="flex-1 min-h-0 relative">
           {children}
         </div>
       </main>
 
-      {/* Collapsible right-side Friend Activity Sidebar */}
+      {/* Friend Activity sidebar */}
       {isFriendOpen && (
         <FriendActivitySidebar setIsFriendOpen={setIsFriendOpen} />
       )}
 
-      {/* 3. NOW PLAYING PANEL (Right side collapsible overlay) */}
+      {/* Now Playing panel */}
       {isNPOpen && (
         <NowPlayingSidebar
           setIsNPOpen={setIsNPOpen}
@@ -116,7 +145,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         />
       )}
 
-      {/* 4. FIXED BOTTOM PLAYER BAR */}
+      {/* Bottom player bar */}
       <BottomPlayer
         isNPOpen={isNPOpen}
         setIsNPOpen={setIsNPOpen}
@@ -124,48 +153,13 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         setNpTab={setNpTab}
       />
 
-      {/* MOBILE BOTTOM NAVIGATION TABS (Visible only on screens <768px) */}
+      {/* Mobile navigation */}
       <MobileNav />
 
       {/* Modals */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
 
-      {/* Features popover overlay */}
-      {isFeaturesOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="w-96 bg-panel border border-cream/10 rounded-2xl p-6 shadow-2xl text-cream transform transition-all scale-100">
-            <div className="flex justify-between items-center mb-5 border-b border-cream/10 pb-3">
-              <h4 className="font-display font-bold text-lg text-coral drop-shadow">Rhythmia Features</h4>
-              <button onClick={() => setIsFeaturesOpen(false)} className="text-muted hover:text-cream text-2xl leading-none cursor-pointer">
-                &times;
-              </button>
-            </div>
-            <div className="flex flex-col gap-4 text-sm leading-relaxed max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-              <div className="bg-black/20 p-4 rounded-xl border border-cream/5">
-                <span className="font-bold text-coral uppercase text-xs tracking-widest block mb-2 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse"></span>
-                  Fully Functional
-                </span>
-                <p className="text-cream/90 text-xs">
-                  Dual-player Overlapping Crossfade, Web Audio 3-band Equalizer, real-time Canvas frequency visualizer, Likes, Playlists reordering, Queue, Sleep Timer, live Search, Private Session toggle, global Keyboard Shortcuts, responsive layout.
-                </p>
-              </div>
-              <div className="bg-black/20 p-4 rounded-xl border border-cream/5">
-                <span className="font-bold text-green uppercase text-xs tracking-widest block mb-2 flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse"></span>
-                  Database Sync
-                </span>
-                <p className="text-cream/90 text-xs">
-                  Saves likes, custom playlists, play logs, and track orders directly to Supabase with row-level security if connected, or falls back transparently to localStorage.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Realtime Chat Drawer */}
       <ChatDrawer />
     </div>
   );

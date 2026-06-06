@@ -118,10 +118,10 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col p-6 md:p-10 min-h-full pb-20 animate-pulse">
-        <div className="h-10 w-64 bg-cream/10 rounded-xl mb-3" />
-        <div className="h-4 w-48 bg-cream/10 rounded mb-8" />
-        {[1,2,3,4,5].map((i) => <div key={i} className="h-14 bg-cream/10 rounded-xl mb-2" />)}
+      <div className="flex flex-col p-6 md:p-8 min-h-full pb-20 animate-pulse">
+        <div className="h-9 w-56 bg-white/8 rounded-lg mb-2.5" />
+        <div className="h-4 w-40 bg-white/8 rounded mb-8" />
+        {[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-14 bg-white/8 rounded-lg mb-2" />)}
       </div>
     );
   }
@@ -136,10 +136,10 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
     : [];
 
   return (
-    <div className="flex flex-col p-6 md:p-10 min-h-full pb-20">
+    <div className="flex flex-col p-6 md:p-8 min-h-full pb-20">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-3xl md:text-4xl font-bold font-display text-cream tracking-tight">
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-cream tracking-tight">
           {searchQuery ? `Results for "${searchQuery}"` : activeGenre ? activeGenre.label : "Search Catalogue"}
         </h2>
         <p className="text-sm text-muted mt-1">
@@ -163,7 +163,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                     onClick={() => router.push(`/artist/${artist.id}/${artist.slug}`)}
                     className="flex flex-col items-center gap-2 min-w-32 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all"
                   >
-                    <div className="w-20 h-20 rounded-full bg-panel/50 border border-cream/5 overflow-hidden flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full bg-white/6 border border-white/8 overflow-hidden flex items-center justify-center">
                       {artist.image
                         ? <img src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
                         : <svg viewBox="0 0 24 24" className="w-10 h-10 fill-muted"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
@@ -210,7 +210,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
           {trackResults.length > 0 && (
             <section>
               <h3 className="text-lg font-bold text-cream mb-3">Tracks</h3>
-              <div className="bg-panel/10 rounded-2xl p-2 md:p-4 border border-cream/5">
+              <div className="rounded-xl border border-white/5 overflow-hidden">
                 {trackResults.map((t, idx) => (
                   <TrackRow key={t.id} track={t} index={idx} onContextMenu={onContextMenu} />
                 ))}
@@ -250,7 +250,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                 {singerResults.map((singer) => (
                   <a key={singer.id} href={`/singer/${singer.id}/${singer.slug}`}
                     className="flex flex-col items-center gap-2 min-w-32 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
-                    <div className="w-20 h-20 rounded-full bg-panel/50 border border-cream/5 overflow-hidden flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full bg-white/6 border border-white/8 overflow-hidden flex items-center justify-center">
                       {singer.image
                         ? <img src={singer.image} alt={singer.name} className="w-full h-full object-cover" />
                         : <svg viewBox="0 0 24 24" className="w-10 h-10 fill-muted">
@@ -298,7 +298,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
           )}
 
           {!searching && !hasResults && (
-            <div className="p-12 text-center text-muted text-sm border border-cream/5 rounded-2xl bg-panel/30 flex flex-col items-center gap-4">
+            <div className="p-12 text-center text-muted text-sm border border-white/5 rounded-2xl bg-panel/30 flex flex-col items-center gap-4">
               <svg viewBox="0 0 24 24" className="w-12 h-12 fill-current opacity-30">
                 <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
               </svg>
@@ -322,13 +322,13 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                 </button>
               </div>
               {genreFilteredTracks.length > 0 ? (
-                <div className="bg-panel/10 rounded-2xl p-2 md:p-4 border border-cream/5 mb-6">
+                <div className="rounded-xl overflow-hidden border border-white/5 mb-6">
                   {genreFilteredTracks.map((t, idx) => (
                     <TrackRow key={t.id} track={t} index={idx} onContextMenu={onContextMenu} />
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center text-muted text-sm border border-cream/5 rounded-2xl bg-panel/20 mb-6">
+                <div className="p-8 text-center text-muted text-sm border border-white/5 rounded-2xl bg-panel/20 mb-6">
                   No {activeGenre.label} tracks yet. Sync your Cloudinary library.
                 </div>
               )}
@@ -337,10 +337,8 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
 
           {/* Browse All genre grid */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold tracking-tight text-cream">Browse by Category</h3>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <h3 className="text-lg font-bold text-cream mb-3">Browse by Category</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {GENRES.map((genre) => {
                 const isActive = activeGenre?.id === genre.id;
                 const count = tracks.filter((t) => t.is_active !== false && matchesGenre(t, genre)).length;
@@ -348,21 +346,23 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                   <button
                     key={genre.id}
                     onClick={() => setActiveGenre(isActive ? null : genre)}
-                    className={`p-5 rounded-2xl font-bold text-xl md:text-2xl relative overflow-hidden shadow-lg cursor-pointer text-left transition-all hover:scale-105 active:scale-95 aspect-video ${
-                      isActive ? "ring-4 ring-cream/60 scale-105 brightness-110" : "hover:brightness-105"
+                    className={`p-4 rounded-xl relative overflow-hidden shadow-md cursor-pointer text-left transition-all hover:scale-[1.02] active:scale-[0.98] aspect-video ${
+                      isActive ? "ring-2 ring-white/50" : ""
                     }`}
                     style={{ background: `linear-gradient(135deg, ${genre.from}, ${genre.to})` }}
                   >
-                    <span className="relative z-10 text-white drop-shadow-md">{genre.label}</span>
-                    <span className="relative z-10 text-white/70 text-xs font-normal block mt-1">
+                    <span className="relative z-10 text-white font-bold text-lg leading-tight block">{genre.label}</span>
+                    <span className="relative z-10 text-white/60 text-xs block mt-1">
                       {count} track{count !== 1 ? "s" : ""}
                     </span>
                     {isActive && (
-                      <span className="absolute top-3 right-3 bg-white/30 rounded-full p-1 z-10">
-                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                      <span className="absolute top-2.5 right-2.5 bg-white/25 rounded-full p-1 z-10">
+                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white">
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                        </svg>
                       </span>
                     )}
-                    <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/15 rounded-xl transform rotate-12 backdrop-blur-md shadow-inner" />
+                    <div className="absolute -bottom-3 -right-3 w-20 h-20 bg-white/10 rounded-xl rotate-12" />
                   </button>
                 );
               })}

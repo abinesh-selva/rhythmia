@@ -14,7 +14,7 @@ interface AlbumRow  { id: string; title: string; slug: string; cover_colors: str
 export function Sidebar() {
   const router   = useRouter();
   const pathname = usePathname();
-  const { view, setView, playlists, collections, createPlaylist, likedSongs } = useAudio();
+  const { view, setView, playlists, collections, createPlaylist, likedSongs, addLocalFiles } = useAudio();
   const { theme, setTheme } = useTheme();
   const { addToast } = useToast();
   const { showPrompt } = useDialog();
@@ -67,6 +67,59 @@ export function Sidebar() {
     if (plId) setView(`playlist:${plId}`);
   };
 
+  const [folders, setFolders] = useState<{id: string, name: string, playlistIds: string[], expanded: boolean}[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("vibeblower_folders");
+    if (saved) {
+      try { setFolders(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  const saveFolders = (newFolders: typeof folders) => {
+    setFolders(newFolders);
+    localStorage.setItem("vibeblower_folders", JSON.stringify(newFolders));
+  };
+
+  const handleCreateFolder = async () => {
+    const fName = await showPrompt({
+      title: "New Folder",
+      description: "Give your folder a name.",
+      placeholder: "My Folder",
+      confirmLabel: "Create",
+    });
+    if (!fName) return;
+    saveFolders([...folders, { id: `folder-${Date.now()}`, name: fName, playlistIds: [], expanded: true }]);
+  };
+
+  const handleDropToFolder = (folderId: string, playlistId: string) => {
+    if (!playlistId.startsWith("playlist:")) return;
+    const plId = playlistId.replace("playlist:", "");
+    const newFolders = folders.map(f => {
+      // Remove from old folders
+      const cleanedIds = f.playlistIds.filter(id => id !== plId);
+      // Add to new folder
+      if (f.id === folderId) {
+        cleanedIds.push(plId);
+      }
+      return { ...f, playlistIds: cleanedIds };
+    });
+    saveFolders(newFolders);
+  };
+
+  const handleRemoveFromFolder = (playlistId: string) => {
+    const newFolders = folders.map(f => ({
+      ...f,
+      playlistIds: f.playlistIds.filter(id => id !== playlistId)
+    }));
+    saveFolders(newFolders);
+  };
+
+  // Determine which playlists are in folders
+  const playlistsInFolders = new Set(folders.flatMap(f => f.playlistIds));
+  const unassignedPlaylists = playlists.filter(pl => !playlistsInFolders.has(pl.id));
+
+  // Determine active view
   const isArtistActive = (id: string) => pathname === `/artist/${id}` || pathname.startsWith(`/artist/${id}/`);
   const isAlbumActive  = (id: string) => pathname === `/album/${id}`  || pathname.startsWith(`/album/${id}/`);
 
@@ -79,26 +132,49 @@ export function Sidebar() {
     return ["#F0824E", "#1E9E54"];
   };
 
+  const cycleTheme = () => {
+    const themes = ["vibeblower", "catppuccin", "nord", "spotify"] as const;
+    const idx = themes.indexOf(theme);
+    setTheme(themes[(idx + 1) % themes.length]);
+  };
+
+  const FILTERS = [
+    { key: "all", label: "All" },
+    { key: "playlists", label: "Playlists" },
+    { key: "collections", label: "Collections" },
+    { key: "artists", label: "Artists" },
+    { key: "albums", label: "Albums" },
+  ] as const;
+
   return (
-    <aside className="sidebar hidden md:flex flex-col gap-2 min-h-0 relative z-20">
+    <aside className="w-full h-full hidden md:flex flex-col gap-1.5 min-h-0 relative z-20">
       {/* Navigation panel */}
-      <nav className="nav bg-forest rounded-2xl py-4 px-3 flex flex-col gap-4 shadow-md border border-cream/5">
-        <div className="brand flex items-center gap-3 px-3">
-          <img src="/logo.png" alt="Rhythmia Logo" className="w-9 h-9 rounded-full shadow-inner object-cover flex-none" />
-          <h1 className="font-display font-black text-2xl tracking-tighter text-cream drop-shadow">Rhythmia</h1>
+      <nav className="bg-forest rounded-xl py-4 px-3 flex flex-col gap-3 border border-white/5">
+        {/* Brand */}
+        <div className="flex items-center gap-2.5 px-2 mb-1">
+          <img
+            src="/logo.png"
+            alt="Vibeblower"
+            className="w-8 h-8 rounded-lg object-cover flex-none shadow-md"
+          />
+          <h1 className="font-display font-bold text-xl tracking-tight text-cream">Vibeblower</h1>
         </div>
-        <ul className="flex flex-col gap-1 mt-1">
+
+        {/* Nav links */}
+        <ul className="flex flex-col gap-0.5">
           <li>
             <button
               onClick={() => setView("home")}
-              className={`w-full flex items-center gap-4 py-3 px-3 rounded-xl font-bold text-sm transition-all ${
-                view === "home" && pathname === "/" ? "text-cream bg-panel shadow-sm" : "text-muted hover:text-cream hover:bg-panel/30"
+              className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
+                view === "home" && pathname === "/"
+                  ? "bg-white/10 text-cream"
+                  : "text-muted hover:text-cream hover:bg-white/5"
               }`}
             >
-              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current flex-none">
                 {view === "home" && pathname === "/"
                   ? <path d="M12 3L4 9v12h5v-7h6v7h5V9z" />
-                  : <path d="M12 3.5l6.5 5v10.5h-4v-7h-5v7h-4V8.5z" />}
+                  : <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />}
               </svg>
               Home
             </button>
@@ -106,231 +182,349 @@ export function Sidebar() {
           <li>
             <button
               onClick={() => setView("search")}
-              className={`w-full flex items-center gap-4 py-3 px-3 rounded-xl font-bold text-sm transition-all ${
-                view === "search" ? "text-cream bg-panel shadow-sm" : "text-muted hover:text-cream hover:bg-panel/30"
+              className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
+                view === "search"
+                  ? "bg-white/10 text-cream"
+                  : "text-muted hover:text-cream hover:bg-white/5"
               }`}
             >
-              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current flex-none">
                 <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
               </svg>
               Search
             </button>
           </li>
+          <li>
+            <button
+              onClick={() => setView("recent")}
+              className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
+                view === "recent"
+                  ? "bg-white/10 text-cream"
+                  : "text-muted hover:text-cream hover:bg-white/5"
+              }`}
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current flex-none">
+                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+              </svg>
+              Recently Played
+            </button>
+          </li>
         </ul>
       </nav>
 
-      {/* Library Panel */}
-      <div className="lib bg-forest rounded-2xl flex-1 flex flex-col min-h-0 shadow-md border border-cream/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-coral/5 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex items-center justify-between px-4 py-3 relative z-10">
-          <button className="flex items-center gap-3 font-bold text-muted hover:text-cream transition-colors group">
-            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current group-hover:-translate-y-0.5 transition-transform">
-              <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z" />
-            </svg>
-            Library
-          </button>
-          <div className="flex items-center gap-1">
+      {/* Library panel */}
+      <div className="bg-forest rounded-xl flex-1 flex flex-col min-h-0 border border-white/5">
+        {/* Library header */}
+        <div className="flex items-center justify-between px-4 pt-3.5 pb-2 flex-none">
+          <span className="font-semibold text-sm text-muted">Your Library</span>
+          <div className="flex items-center gap-0.5">
             <button
-              onClick={() => {
-                const themes = ["rhythmia", "catppuccin", "nord", "spotify"] as const;
-                const idx = themes.indexOf(theme);
-                setTheme(themes[(idx + 1) % themes.length]);
-              }}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-panel transition-colors"
+              onClick={cycleTheme}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors"
               title={`Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`}
             >
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+                <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+              </svg>
+            </button>
+            <button
+              onClick={handleCreateFolder}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors"
+              title="Create folder"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10zM11 11h2v3h3v2h-3v3h-2v-3H8v-2h3z" />
+              </svg>
             </button>
             <button
               onClick={handleCreatePlaylist}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-panel transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors"
               title="Create playlist"
             >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+              </svg>
             </button>
-            <button
-              onClick={() => setView("sync")}
-              className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-                view === "sync" ? "text-coral bg-coral/10" : "text-muted hover:text-cream hover:bg-panel"
-              }`}
-              title="Sync"
+            <label
+              className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors cursor-pointer"
+              title="Add local files"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
+              </svg>
+              <input
+                type="file"
+                multiple
+                accept="audio/*"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files) addLocalFiles(e.target.files);
+                }}
+              />
+            </label>
+            <button
+              onClick={() => setView("sync")}
+              className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${
+                view === "sync" ? "text-coral bg-coral/10" : "text-muted hover:text-cream hover:bg-white/8"
+              }`}
+              title="Sync from Cloudinary"
+            >
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
                 <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
               </svg>
             </button>
             <button
               onClick={handleSpotifyEnrich}
               disabled={isEnriching}
-              className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-                isEnriching ? "text-green bg-green/10 cursor-wait" : "text-muted hover:text-green hover:bg-panel"
+              className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${
+                isEnriching ? "text-green bg-green/10 cursor-wait" : "text-muted hover:text-green hover:bg-white/8"
               }`}
-              title="Enrich Meta with Spotify"
+              title="Enrich metadata from Spotify"
             >
-              <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current ${isEnriching ? 'animate-spin' : ''}`}>
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.08c-.2.31-.61.41-.92.21-2.52-1.54-5.69-1.89-9.42-1.04-.36.08-.72-.15-.8-.51-.08-.36.15-.72.51-.8 4.14-.94 7.64-.53 10.42 1.17.31.2.41.61.21.92zm1.32-2.95c-.25.4-.77.53-1.17.27-2.87-1.77-7.25-2.3-10.74-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 4.02-1.19 8.86-.59 12.13 1.42.4.26.53.78.27 1.18zm.11-3.1c-3.41-2.03-9.04-2.21-12.27-1.23-.54.16-1.11-.14-1.27-.68-.16-.54.14-1.11.68-1.27 3.73-1.13 10.01-.92 13.97 1.44.49.29.65.92.36 1.41-.28.49-.91.64-1.4.35z"/>
+              <svg viewBox="0 0 24 24" className={`w-3.5 h-3.5 fill-current ${isEnriching ? "animate-spin" : ""}`}>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.08c-.2.31-.61.41-.92.21-2.52-1.54-5.69-1.89-9.42-1.04-.36.08-.72-.15-.8-.51-.08-.36.15-.72.51-.8 4.14-.94 7.64-.53 10.42 1.17.31.2.41.61.21.92zm1.32-2.95c-.25.4-.77.53-1.17.27-2.87-1.77-7.25-2.3-10.74-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 4.02-1.19 8.86-.59 12.13 1.42.4.26.53.78.27 1.18zm.11-3.1c-3.41-2.03-9.04-2.21-12.27-1.23-.54.16-1.11-.14-1.27-.68-.16-.54.14-1.11.68-1.27 3.73-1.13 10.01-.92 13.97 1.44.49.29.65.92.36 1.41-.28.49-.91.64-1.4.35z" />
               </svg>
             </button>
           </div>
         </div>
 
-        {/* Library Filters */}
-        <div className="px-3 py-2 grid grid-cols-5 gap-1 relative z-10">
-          {(["all", "playlists", "collections", "artists", "albums"] as const).map((f) => (
+        {/* Filter chips — scrollable row */}
+        <div className="flex gap-1.5 px-3 pb-2 overflow-x-auto no-scrollbar flex-none">
+          {FILTERS.map((f) => (
             <button
-              key={f}
-              onClick={() => setLibraryFilter(f)}
-              className={`py-1.5 rounded-full text-xs font-bold tracking-wide transition-all select-none text-center truncate ${
-                libraryFilter === f
-                  ? "bg-cream text-forest-dark shadow-sm"
-                  : "bg-panel/40 text-muted hover:text-cream hover:bg-panel/80"
+              key={f.key}
+              onClick={() => setLibraryFilter(f.key)}
+              className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-none ${
+                libraryFilter === f.key
+                  ? "bg-cream text-forest-dark"
+                  : "bg-white/6 text-muted hover:text-cream hover:bg-white/10"
               }`}
             >
-              {{ all: "All", playlists: "Lists", collections: "Colls", artists: "Artists", albums: "Albums" }[f]}
+              {f.label}
             </button>
           ))}
         </div>
 
-        {/* Library Items */}
-        <div className="flex-1 overflow-y-auto mt-2 px-2 pb-2 custom-scrollbar relative z-10">
+        {/* Library items */}
+        <div 
+          className="flex-1 overflow-y-auto px-2 pb-2"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            const id = e.dataTransfer.getData("text/plain");
+            if (id.startsWith("playlist:")) {
+              handleRemoveFromFolder(id.replace("playlist:", ""));
+            }
+          }}
+        >
           {/* Liked Songs */}
           {(libraryFilter === "all" || libraryFilter === "playlists") && (
-            <div
+            <LibraryItem
+              active={view === "liked"}
               onClick={() => setView("liked")}
-              className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all ${
-                view === "liked" ? "bg-panel/80 shadow-sm" : "hover:bg-panel/40"
-              }`}
-            >
-              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-coral to-pink flex items-center justify-center flex-none shadow-md">
-                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-cream shadow-inner">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className={`text-sm font-bold truncate ${view === "liked" ? "text-coral" : "text-cream"}`}>Liked Songs</span>
-                <div className="text-xs text-muted flex items-center gap-1.5">
-                  <span className="w-4 h-4 bg-coral rounded-sm inline-flex items-center justify-center font-bold text-xs text-forest-dark">S</span>
-                  Playlist · {likedSongs.size} songs
+              art={
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-coral to-pink flex items-center justify-center flex-none shadow-sm">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  </svg>
                 </div>
-              </div>
-            </div>
+              }
+              title="Liked Songs"
+              subtitle={`Playlist · ${likedSongs.size} songs`}
+            />
           )}
 
-          {/* User playlists */}
+          {/* Folders */}
           {(libraryFilter === "all" || libraryFilter === "playlists") &&
-            playlists.map((pl) => (
-              <div
-                key={pl.id}
-                onClick={() => setView(`playlist:${pl.id}`)}
-                className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all ${
-                  view === `playlist:${pl.id}` ? "bg-panel/80 shadow-sm" : "hover:bg-panel/40"
-                }`}
-              >
-                <div
-                  className="w-12 h-12 rounded-lg flex items-center justify-center flex-none shadow-sm"
-                  style={{ background: `linear-gradient(135deg, ${pl.cover_colors[0]}, ${pl.cover_colors[1]})` }}
+            folders.map((folder) => {
+              const folderPlaylists = playlists.filter(p => folder.playlistIds.includes(p.id));
+              return (
+                <div 
+                  key={folder.id} 
+                  className="mb-1"
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={(e) => {
+                    e.stopPropagation();
+                    handleDropToFolder(folder.id, e.dataTransfer.getData("text/plain"));
+                  }}
                 >
-                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-cream/80">
-                    <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
-                  </svg>
+                  <button
+                    onClick={() => saveFolders(folders.map(f => f.id === folder.id ? { ...f, expanded: !f.expanded } : f))}
+                    className="w-full flex items-center gap-3 p-2 rounded-lg text-left hover:bg-white/5 transition-colors group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-none shadow-sm">
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream/70">
+                        {folder.expanded ? (
+                          <path d="M19 8H5c-1.66 0-3 1.34-3 3v8c0 1.66 1.34 3 3 3h14c1.66 0 3-1.34 3-3v-8c0-1.66-1.34-3-3-3zm0 12H5c-.55 0-1-.45-1-1v-8c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z" />
+                        ) : (
+                          <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
+                        )}
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-cream truncate">{folder.name}</p>
+                      <p className="text-xs text-muted truncate">Folder · {folderPlaylists.length} playlists</p>
+                    </div>
+                  </button>
+                  {folder.expanded && (
+                    <div className="pl-4 border-l border-white/10 ml-6 mt-1 flex flex-col gap-0.5">
+                      {folderPlaylists.map(pl => (
+                        <div 
+                          key={pl.id} 
+                          draggable 
+                          onDragStart={(e) => e.dataTransfer.setData("text/plain", `playlist:${pl.id}`)}
+                        >
+                          <LibraryItem
+                            active={view === `playlist:${pl.id}`}
+                            onClick={() => setView(`playlist:${pl.id}`)}
+                            art={
+                              <div
+                                className="w-8 h-8 rounded-md flex items-center justify-center flex-none shadow-sm"
+                                style={{ background: `linear-gradient(135deg, ${pl.cover_colors[0]}, ${pl.cover_colors[1]})` }}
+                              >
+                                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-cream/70">
+                                  <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
+                                </svg>
+                              </div>
+                            }
+                            title={pl.name}
+                            subtitle={`Playlist${pl.collaborative ? " · Collab" : ""}`}
+                            badge={pl.collaborative ? <span className="w-1.5 h-1.5 rounded-full bg-green flex-none" /> : undefined}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="flex flex-col min-w-0">
-                  <span className={`text-sm font-bold truncate ${view === `playlist:${pl.id}` ? "text-coral" : "text-cream"}`}>{pl.name}</span>
-                  <div className="text-xs text-muted flex items-center gap-1 mt-0.5">
-                    {pl.collaborative && <span className="w-1.5 h-1.5 rounded-full bg-green" />}
-                    <span>Playlist · You</span>
-                  </div>
-                </div>
+              );
+            })}
+
+          {/* Unassigned User playlists */}
+          {(libraryFilter === "all" || libraryFilter === "playlists") &&
+            unassignedPlaylists.map((pl) => (
+              <div 
+                key={pl.id} 
+                draggable 
+                onDragStart={(e) => e.dataTransfer.setData("text/plain", `playlist:${pl.id}`)}
+              >
+                <LibraryItem
+                  active={view === `playlist:${pl.id}`}
+                  onClick={() => setView(`playlist:${pl.id}`)}
+                  art={
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center flex-none shadow-sm"
+                      style={{ background: `linear-gradient(135deg, ${pl.cover_colors[0]}, ${pl.cover_colors[1]})` }}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream/70">
+                        <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
+                      </svg>
+                    </div>
+                  }
+                  title={pl.name}
+                  subtitle={`Playlist${pl.collaborative ? " · Collaborative" : ""}`}
+                  badge={pl.collaborative ? <span className="w-1.5 h-1.5 rounded-full bg-green flex-none" /> : undefined}
+                />
               </div>
             ))}
 
-          {/* Collections (Cloudinary flat folders) */}
+          {/* Collections */}
           {(libraryFilter === "all" || libraryFilter === "collections") &&
             collections.map((col) => (
-              <div
+              <LibraryItem
                 key={col.id}
+                active={false}
                 onClick={() => router.push(`/collection/${col.id}/${col.slug}`)}
-                className="flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all hover:bg-panel/40"
-              >
-                <div
-                  className="w-12 h-12 rounded-lg flex items-center justify-center flex-none shadow-sm"
-                  style={{ background: `linear-gradient(135deg, ${col.cover_colors[0]}, ${col.cover_colors[1]})` }}
-                >
-                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-cream/70">
-                    <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 5h-3v5.5a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1 2.5-2.5c.57 0 1.08.19 1.5.51V5h4v2zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z" />
-                  </svg>
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-bold truncate text-cream">{col.name}</span>
-                  <div className="text-xs text-muted flex items-center gap-1 mt-0.5">
-                    <span>Collection · {col.track_count} songs</span>
+                art={
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-none shadow-sm"
+                    style={{ background: `linear-gradient(135deg, ${col.cover_colors[0]}, ${col.cover_colors[1]})` }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream/70">
+                      <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 5h-3v5.5a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1 2.5-2.5c.57 0 1.08.19 1.5.51V5h4v2zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z" />
+                    </svg>
                   </div>
-                </div>
-              </div>
+                }
+                title={col.name}
+                subtitle={`Collection · ${col.track_count} songs`}
+              />
             ))}
 
-          {/* DB Artists */}
+          {/* Artists */}
           {(libraryFilter === "all" || libraryFilter === "artists") &&
             dbArtists.map((artist) => (
-              <div
+              <LibraryItem
                 key={artist.id}
+                active={isArtistActive(artist.id)}
                 onClick={() => router.push(`/artist/${artist.id}/${artist.slug}`)}
-                className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all ${
-                  isArtistActive(artist.id) ? "bg-panel/80 shadow-sm" : "hover:bg-panel/40"
-                }`}
-              >
-                <div className="w-12 h-12 rounded-full bg-panel/50 border border-cream/5 flex items-center justify-center flex-none shadow-sm relative overflow-hidden">
-                  {artist.image
-                    ? <img src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
-                    : (
-                      <>
-                        <div className="absolute inset-0 bg-gradient-to-br from-coral/10 to-pink/10" />
-                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-muted">
-                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                        </svg>
-                      </>
+                art={
+                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center flex-none overflow-hidden relative">
+                    {artist.image ? (
+                      <img src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-muted">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
                     )}
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className={`text-sm font-bold truncate ${isArtistActive(artist.id) ? "text-coral" : "text-cream"}`}>
-                    {artist.display_name}
-                  </span>
-                  <span className="text-xs text-muted">Artist · {artist.track_count} songs</span>
-                </div>
-              </div>
+                  </div>
+                }
+                title={artist.display_name}
+                subtitle={`Artist · ${artist.track_count} songs`}
+              />
             ))}
 
-          {/* DB Albums */}
+          {/* Albums */}
           {(libraryFilter === "all" || libraryFilter === "albums") &&
             dbAlbums.map((album) => {
               const [c1, c2] = getAlbumColors(album);
               const artistInfo = Array.isArray(album.artists) ? album.artists[0] : album.artists;
               return (
-                <div
+                <LibraryItem
                   key={album.id}
+                  active={isAlbumActive(album.id)}
                   onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
-                  className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all ${
-                    isAlbumActive(album.id) ? "bg-panel/80 shadow-sm" : "hover:bg-panel/40"
-                  }`}
-                >
-                  <div
-                    className="w-12 h-12 rounded-md flex-none shadow-sm"
-                    style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
-                  />
-                  <div className="flex flex-col min-w-0">
-                    <span className={`text-sm font-bold truncate ${isAlbumActive(album.id) ? "text-coral" : "text-cream"}`}>
-                      {album.title}
-                    </span>
-                    <span className="text-xs text-muted truncate">
-                      Album{artistInfo ? ` · ${artistInfo.display_name}` : ""}
-                    </span>
-                  </div>
-                </div>
+                  art={
+                    <div
+                      className="w-10 h-10 rounded-md flex-none shadow-sm"
+                      style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
+                    />
+                  }
+                  title={album.title}
+                  subtitle={`Album${artistInfo ? ` · ${artistInfo.display_name}` : ""}`}
+                />
               );
             })}
         </div>
       </div>
     </aside>
+  );
+}
+
+interface LibraryItemProps {
+  active: boolean;
+  onClick: () => void;
+  art: React.ReactNode;
+  title: string;
+  subtitle: string;
+  badge?: React.ReactNode;
+}
+
+function LibraryItem({ active, onClick, art, title, subtitle, badge }: LibraryItemProps) {
+  return (
+    <div
+      onClick={onClick}
+      className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all ${
+        active ? "bg-white/10" : "hover:bg-white/5"
+      }`}
+    >
+      {art}
+      <div className="flex flex-col min-w-0 flex-1">
+        <span className={`text-sm font-semibold truncate leading-tight ${active ? "text-coral" : "text-cream"}`}>
+          {title}
+        </span>
+        <div className="flex items-center gap-1 mt-0.5">
+          {badge}
+          <span className="text-xs text-muted truncate">{subtitle}</span>
+        </div>
+      </div>
+    </div>
   );
 }

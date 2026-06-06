@@ -42,7 +42,7 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
     <div className="flex flex-col min-h-full pb-20" onClick={() => setActiveMenuTrackId(null)}>
       {/* Hero */}
       <div
-        className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-cream/5 overflow-hidden"
+        className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 overflow-hidden"
         style={{ background: `linear-gradient(to bottom, ${colors[0]}55, var(--theme-forest-dark))` }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark to-transparent z-0" />
@@ -96,7 +96,7 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Find in collection…"
-                className="w-full pl-9 pr-3 py-2 bg-panel/50 border border-cream/5 hover:border-cream/20 rounded-md text-cream text-sm placeholder-muted focus:outline-none focus:border-coral transition-colors"
+                className="w-full pl-9 pr-3 py-2 bg-white/6 border border-white/8 hover:border-white/20 rounded-md text-cream text-sm placeholder-muted focus:outline-none focus:border-coral transition-colors"
               />
               <svg viewBox="0 0 24 24" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 fill-muted">
                 <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
@@ -110,11 +110,11 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
         )}
 
         {filteredTracks.length === 0 ? (
-          <div className="p-12 text-center text-muted text-sm border border-cream/5 rounded-2xl bg-panel/30">
+          <div className="p-12 text-center text-muted text-sm border border-white/5 rounded-2xl bg-panel/30">
             {activeTracks.length === 0 ? "Collection is empty." : "No matching tracks."}
           </div>
         ) : (
-          <div className="flex flex-col gap-1 bg-panel/10 rounded-2xl p-2 md:p-4 border border-cream/5">
+          <div className="flex flex-col gap-1 rounded-xl overflow-hidden border border-white/5">
             {filteredTracks.map((t, idx) => (
               <TrackRow
                 key={t.id}
@@ -131,13 +131,13 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
       {/* Context menu */}
       {activeMenuTrackId && (
         <div
-          className="fixed z-50 w-44 bg-panel border border-cream/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
+          className="fixed z-50 w-44 bg-panel border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
           style={{ top: Math.min(menuPosition.y, window.innerHeight - 100), left: Math.min(menuPosition.x, window.innerWidth - 184) }}
           onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={() => { addToQueue(activeMenuTrackId); setActiveMenuTrackId(null); }}
-            className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-panel-hover transition-colors font-medium"
+            className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-white/8 transition-colors font-medium"
           >
             Add to Queue
           </button>

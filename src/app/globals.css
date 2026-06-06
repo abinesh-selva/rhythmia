@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* Self-hosted fonts — zero external network requests, no FOUT, better caching */
 @font-face {
   font-family: 'Quicksand';
   font-style: normal;
@@ -34,10 +33,13 @@
 
   --font-display: 'Quicksand', system-ui, sans-serif;
   --font-sans: 'Figtree', system-ui, sans-serif;
+
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-slide-in-right: slide-in-right 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --animate-slide-up: slide-up 0.2s ease-out;
 }
 
 :root {
-  /* Default Rhythmia Theme */
   --theme-forest: #0E3B35;
   --theme-forest-dark: #0c332c;
   --theme-panel: #11463d;
@@ -49,7 +51,7 @@
   --theme-green: #1E9E54;
   --theme-pink: #F4C9C2;
   --theme-blue: #3E8B96;
-  
+
   --background: var(--theme-forest-dark);
   --foreground: var(--theme-cream);
 }
@@ -106,12 +108,12 @@ body {
   font-family: var(--font-sans);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbars matching Rhythmia branding */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -119,26 +121,24 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(241, 237, 227, 0.15);
-  border-radius: 4px;
+  background: rgba(241, 237, 227, 0.12);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(241, 237, 227, 0.3);
+  background: rgba(241, 237, 227, 0.25);
 }
 
-/* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(241, 237, 227, 0.15) transparent;
+  scrollbar-color: rgba(241, 237, 227, 0.12) transparent;
 }
 
-/* Smooth range slider customizations for Player seek and EQ */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(241, 237, 227, 0.2);
-  height: 4px;
+  background: rgba(241, 237, 227, 0.15);
+  height: 3px;
   border-radius: 2px;
   outline: none;
   cursor: pointer;
@@ -150,16 +150,21 @@ input[type="range"]::-webkit-slider-thumb {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #F1EDE3;
-  transition: transform 0.1s ease;
+  background: var(--theme-cream);
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.1s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  background: #F0824E;
+  transform: scale(1.3);
+  background: var(--theme-coral);
 }
 
-/* Global pointer cursor + touch optimizations */
+input[type="range"] {
+  padding: 8px 0;
+  background-clip: content-box;
+}
+
 button,
 a,
 [role="button"],
@@ -177,12 +182,6 @@ input {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Make ranges highly thumb-responsive without increasing visual thickness */
-input[type="range"] {
-  padding: 6px 0;
-  background-clip: content-box;
-}
-
 @media (max-width: 768px) {
   html,
   body {
@@ -192,20 +191,74 @@ input[type="range"] {
   }
 }
 
-/* ── Shell layout grids (replaces arbitrary grid-cols/grid-rows) ── */
+/* Shell layout grids */
 @media (min-width: 768px) {
   .shell-grid-2 {
-    grid-template-columns: 260px 1fr;
-    grid-template-rows: 1fr 96px;
+    grid-template-columns: var(--sidebar-width, 260px) 1fr;
+    grid-template-rows: 1fr 88px;
   }
   .shell-grid-3 {
-    grid-template-columns: 260px 1fr 260px;
-    grid-template-rows: 1fr 96px;
+    grid-template-columns: var(--sidebar-width, 260px) 1fr 280px;
+    grid-template-rows: 1fr 88px;
   }
 }
 
 /* Track row column layout */
 .track-row-grid {
-  grid-template-columns: 40px 1fr 1.2fr 60px 60px;
+  grid-template-columns: 40px 1fr 1fr 52px 72px;
 }
 
+/* Animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out both;
+}
+
+/* Equalizer bars for now-playing indicator */
+@keyframes eq-bounce-1 {
+  0%, 100% { height: 30%; }
+  50%       { height: 100%; }
+}
+@keyframes eq-bounce-2 {
+  0%, 100% { height: 60%; }
+  50%       { height: 30%; }
+}
+@keyframes eq-bounce-3 {
+  0%, 100% { height: 80%; }
+  50%       { height: 50%; }
+}
+
+.eq-bar-1 { animation: eq-bounce-1 0.8s ease-in-out infinite; }
+.eq-bar-2 { animation: eq-bounce-2 0.8s ease-in-out 0.15s infinite; }
+.eq-bar-3 { animation: eq-bounce-3 0.8s ease-in-out 0.3s infinite; }
+
+/* Hide scrollbar while keeping scroll functionality */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

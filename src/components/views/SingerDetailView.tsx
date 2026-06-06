@@ -29,7 +29,7 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
   return (
     <div className="flex flex-col min-h-full pb-20" onClick={() => setActiveMenuTrackId(null)}>
       {/* Hero */}
-      <div className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-cream/5 overflow-hidden bg-gradient-to-b from-blue/40 to-forest-dark">
+      <div className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 overflow-hidden bg-gradient-to-b from-blue/40 to-forest-dark">
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark to-transparent z-0" />
 
         <div className="w-40 h-40 md:w-52 md:h-52 rounded-full shadow-2xl z-10 flex-none overflow-hidden flex items-center justify-center bg-gradient-to-br from-blue to-panel border-4 border-cream/10">
@@ -54,7 +54,7 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
 
       {/* Play all */}
       {activeTracks.length > 0 && (
-        <div className="px-6 md:px-10 py-6 flex items-center gap-4">
+        <div className="px-6 md:px-8 py-6 flex items-center gap-4">
           <button
             onClick={() => playTrack(activeTracks[0].id as any)}
             className="w-14 h-14 rounded-full bg-coral hover:bg-coral-bright flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all"
@@ -66,9 +66,9 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
 
       {/* Songs */}
       {activeTracks.length > 0 && (
-        <div className="px-6 md:px-10 mb-8">
+        <div className="px-6 md:px-8 mb-8">
           <h2 className="text-xl font-bold text-cream mb-4">Songs</h2>
-          <div className="flex flex-col bg-panel/10 rounded-2xl p-2 md:p-4 border border-cream/5">
+          <div className="flex flex-col rounded-xl overflow-hidden border border-white/5">
             {activeTracks.map((t, idx) => (
               <TrackRow key={t.id} track={t as any} index={idx} onContextMenu={handleContextMenu} />
             ))}
@@ -78,13 +78,13 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
 
       {/* Appears On */}
       {appearsOnAlbums.length > 0 && (
-        <div className="px-6 md:px-10">
+        <div className="px-6 md:px-8">
           <h2 className="text-xl font-bold text-cream mb-4">Appears On</h2>
           <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
             {appearsOnAlbums.map((album) => {
               const c = Array.isArray(album.cover_colors) ? album.cover_colors : ["#F0824E", "#1E9E54"];
               return (
-                <div key={album.id} className="flex flex-col gap-2 min-w-40 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
+                <div key={album.id} className="flex flex-col gap-2 min-w-40 p-3 bg-white/4 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
                   <div className="w-full aspect-square rounded-md" style={{ background: `linear-gradient(135deg, ${c[0]}, ${c[1]})` }} />
                   <span className="text-sm font-bold text-cream truncate">{album.title}</span>
                   <span className="text-xs text-muted truncate">{album.artist_name}</span>
@@ -98,12 +98,12 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
       {/* Context menu */}
       {activeMenuTrackId && (
         <div
-          className="fixed z-50 w-44 bg-panel border border-cream/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
+          className="fixed z-50 w-44 bg-panel border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
           style={{ top: Math.min(menuPosition.y, window.innerHeight - 100), left: Math.min(menuPosition.x, window.innerWidth - 184) }}
           onClick={(e) => e.stopPropagation()}
         >
           <button onClick={() => { addToQueue(activeMenuTrackId); setActiveMenuTrackId(null); }}
-            className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-panel-hover transition-colors font-medium">
+            className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-white/8 transition-colors font-medium">
             Add to Queue
           </button>
         </div>

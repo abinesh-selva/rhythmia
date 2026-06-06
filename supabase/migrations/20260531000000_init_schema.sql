@@ -134,12 +134,12 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 -- Seed the 6 tracks
 INSERT INTO public.tracks (title, artist, album, audio_url, cover_colors, duration_sec)
 VALUES 
-  ('In The Morning', 'Blue Beat Review', 'Singles', 'https://res.cloudinary.com/dodgaqogz/video/upload/v1780196803/In_The_Morning_-_Blue_Beat_Review_qepjk2.mp3', '["#F0824E", "#F4C9C2"]'::jsonb, 307.7),
-  ('Gone Away', 'Blue Beat Review', 'Singles', 'https://res.cloudinary.com/dodgaqogz/video/upload/v1780196801/Gone_Away_-_Blue_Beat_Review_sccetg.mp3', '["#1E9E54", "#0E3B35"]'::jsonb, 193.6),
-  ('I Love What You Do To Me', 'The Soundlings', 'Singles', 'https://res.cloudinary.com/dodgaqogz/video/upload/v1780196800/I_Love_What_You_Do_To_Me_-_The_Soundlings_qhqb8j.mp3', '["#3E8B96", "#0E3B35"]'::jsonb, 208.5),
-  ('Kuntry Boy', 'Anno Domini Beats', 'Beats', 'https://res.cloudinary.com/dodgaqogz/video/upload/v1780196799/Kuntry_Boy_-_Anno_Domini_Beats_u5t8r0.mp3', '["#F4C9C2", "#F0824E"]'::jsonb, 197.9),
-  ('Halfway In', 'Anno Domini Beats', 'Beats', 'https://res.cloudinary.com/dodgaqogz/video/upload/v1780196797/Halfway_In_-_Anno_Domini_Beats_fm35kh.mp3', '["#0E3B35", "#1E9E54"]'::jsonb, 154.2),
-  ('Wildfire', 'Jessie Villa', 'Singles', 'https://res.cloudinary.com/dodgaqogz/video/upload/v1780196795/Wildfire_-_Jessie_Villa_x62op9.mp3', '["#F0824E", "#1E9E54"]'::jsonb, 190.8)
+  ('In The Morning', 'Blue Beat Review', 'Singles', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', '["#F0824E", "#F4C9C2"]'::jsonb, 372.0),
+  ('Gone Away', 'Blue Beat Review', 'Singles', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', '["#1E9E54", "#0E3B35"]'::jsonb, 425.0),
+  ('I Love What You Do To Me', 'The Soundlings', 'Singles', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', '["#3E8B96", "#0E3B35"]'::jsonb, 344.0),
+  ('Kuntry Boy', 'Anno Domini Beats', 'Beats', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', '["#F4C9C2", "#F0824E"]'::jsonb, 302.0),
+  ('Halfway In', 'Anno Domini Beats', 'Beats', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', '["#0E3B35", "#1E9E54"]'::jsonb, 353.0),
+  ('Wildfire', 'Jessie Villa', 'Singles', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', '["#F0824E", "#1E9E54"]'::jsonb, 290.0)
 ON CONFLICT (audio_url) DO UPDATE 
 SET title = EXCLUDED.title,
     artist = EXCLUDED.artist,

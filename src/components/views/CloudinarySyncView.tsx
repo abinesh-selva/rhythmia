@@ -60,7 +60,7 @@ export function CloudinarySyncView() {
 
   return (
     <div className="flex flex-col p-6 md:p-10 min-h-full max-w-4xl mx-auto pb-20 w-full">
-      <div className="bg-panel/30 border border-cream/5 rounded-3xl p-8 md:p-12 shadow-xl flex flex-col justify-center items-center text-center gap-6 min-h-80 relative overflow-hidden animate-fade-in">
+      <div className="bg-white/4 border border-white/5 rounded-3xl p-8 md:p-12 shadow-xl flex flex-col justify-center items-center text-center gap-6 min-h-80 relative overflow-hidden animate-fade-in">
         <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 opacity-20 ${
           syncStatus === "success" ? "from-green/40 to-transparent" :
           syncStatus === "error"   ? "from-pink/40 to-transparent"  :
@@ -69,7 +69,7 @@ export function CloudinarySyncView() {
 
         {syncStatus === "idle" && (
           <div className="flex flex-col items-center gap-4 relative z-10">
-            <div className="w-20 h-20 rounded-full bg-panel border border-cream/10 flex items-center justify-center mb-2 shadow-inner">
+            <div className="w-20 h-20 rounded-full bg-panel border border-white/10 flex items-center justify-center mb-2 shadow-inner">
               <svg viewBox="0 0 24 24" className="w-10 h-10 fill-current text-muted opacity-70">
                 <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
               </svg>
@@ -115,7 +115,7 @@ export function CloudinarySyncView() {
                 { label: "ID3 Parsed",  value: result.metadataParsed },
                 { label: "Deactivated", value: result.deactivated },
               ].map(({ label, value }) => (
-                <div key={label} className="bg-black/20 rounded-xl p-3 text-center border border-cream/5">
+                <div key={label} className="bg-black/20 rounded-xl p-3 text-center border border-white/5">
                   <div className="text-2xl font-black text-cream">{value.toLocaleString()}</div>
                   <div className="text-xs text-muted mt-0.5">{label}</div>
                 </div>

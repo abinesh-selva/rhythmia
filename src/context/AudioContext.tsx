@@ -114,7 +114,7 @@ interface AudioContextType {
   analyserNode: AnalyserNode | null;
   
   // Playback Operations
-  playTrack: (trackId: string, customQueue?: string[], fallbackTrack?: Track) => void;
+  playTrack: (trackId: string, customQueue?: string[], fallbackTrack?: Track, isUserClick?: boolean) => void;
   togglePlay: () => void;
   nextTrack: () => void;
   prevTrack: () => void;
@@ -132,6 +132,7 @@ interface AudioContextType {
   addToQueue: (trackId: string) => void;
   playNext: (trackId: string) => void;
   removeFromQueue: (index: number) => void;
+  reorderQueue: (sourceIndex: number, destinationIndex: number) => void;
   clearQueue: () => void;
   
   // Database Operations
@@ -145,6 +146,7 @@ interface AudioContextType {
   toggleCollaborative: (playlistId: string) => Promise<void>;
   setView: (viewName: string) => void;
   refreshTracks: () => Promise<void>;
+  addLocalFiles: (files: FileList | File[]) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -180,6 +182,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const [view, setViewState] = useState("home");
   const [currentViewPlaylistId, setCurrentViewPlaylistId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [playbackContext, setPlaybackContext] = useState<string[]>([]);
 
   // App Settings States
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
@@ -339,20 +342,20 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
           setCollections(formattedCollections);
         }
       } else {
-        const localTracks = localStorage.getItem("rhythmia_local_tracks");
+        const localTracks = localStorage.getItem("vibeblower_local_tracks");
         setTracks(localTracks ? JSON.parse(localTracks) : []);
 
-        const localLikes = localStorage.getItem("rhythmia_local_likes");
+        const localLikes = localStorage.getItem("vibeblower_local_likes");
         setLikedSongs(localLikes ? new Set(JSON.parse(localLikes)) : new Set());
 
-        const localPlaylists = localStorage.getItem("rhythmia_local_playlists");
+        const localPlaylists = localStorage.getItem("vibeblower_local_playlists");
         setPlaylists(localPlaylists ? JSON.parse(localPlaylists) : []);
 
-        const localHistory = localStorage.getItem("rhythmia_local_history");
+        const localHistory = localStorage.getItem("vibeblower_local_history");
         setRecentlyPlayed(localHistory ? JSON.parse(localHistory) : []);
       }
     } catch (e) {
-      console.error("Rhythmia: Failed to load library", e);
+      console.error("Vibeblower: Failed to load library", e);
     } finally {
       setIsLoading(false);
     }
@@ -362,6 +365,38 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     loadTracksAndLibrary();
   }, [user]);
+
+  const addLocalFiles = async (files: FileList | File[]) => {
+    const newTracks: Track[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith("audio/")) continue;
+      
+      const url = URL.createObjectURL(file);
+      const audio = new Audio(url);
+      await new Promise<void>((resolve) => {
+        audio.onloadedmetadata = () => resolve();
+        audio.onerror = () => resolve();
+      });
+
+      if (audio.duration) {
+        newTracks.push({
+          id: `local-${Date.now()}-${i}`,
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          artist: "Local File",
+          album: "Local Storage",
+          audio_url: url,
+          cover_colors: ["#3E8B96", "#11463d"],
+          duration_sec: Math.round(audio.duration),
+          folder_type: "local",
+        });
+      }
+    }
+
+    if (newTracks.length > 0) {
+      setTracks((prev) => [...prev, ...newTracks]);
+    }
+  };
 
   // 1. Sync Playback Rate (Speed)
   useEffect(() => {
@@ -554,21 +589,21 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (queue.length > 0) return queue[0];
     if (repeatMode === 2 && currentTrack) return currentTrack.id;
 
-    const playlistSongs = getTracksForView();
-    if (playlistSongs.length === 0) return null;
+    const contextIds = playbackContext.length > 0 ? playbackContext : getTracksForView().map(t => t.id);
+    if (contextIds.length === 0) return null;
 
-    const currentIndex = playlistSongs.findIndex((t) => t.id === currentTrack?.id);
-    if (currentIndex === -1) return playlistSongs[0].id;
+    const currentIndex = contextIds.indexOf(currentTrack?.id || "");
+    if (currentIndex === -1) return contextIds[0];
 
     if (isShuffle || isSmartShuffle) {
-      const randomIndex = Math.floor(Math.random() * playlistSongs.length);
-      return playlistSongs[randomIndex].id;
+      const randomIndex = Math.floor(Math.random() * contextIds.length);
+      return contextIds[randomIndex];
     }
 
-    if (currentIndex + 1 < playlistSongs.length) {
-      return playlistSongs[currentIndex + 1].id;
+    if (currentIndex + 1 < contextIds.length) {
+      return contextIds[currentIndex + 1];
     } else if (repeatMode === 1) {
-      return playlistSongs[0].id;
+      return contextIds[0];
     }
 
     // Autoplay: pick a random library track (excluding collection tracks and current) when list ends
@@ -597,15 +632,22 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     const nextGain = nextPlayer === "A" ? gainNodeRefA.current! : gainNodeRefB.current!;
 
     // Set the path and prep next player at 0 volume
-    nextEl.src = nextTrack.audio_url || `/api/audio/${nextTrack.id}`;
+    const xDirectUrl = nextTrack.audio_url || `/api/audio/${nextTrack.id}`;
+    const xProxyUrl  = `/api/audio/${nextTrack.id}`;
+    nextEl.src = xDirectUrl;
     nextEl.currentTime = 0;
     nextEl.volume = 0;
-    nextEl.play().catch(() => {});
+    nextEl.play().catch(() => {
+      if (xDirectUrl !== xProxyUrl) {
+        nextEl.src = xProxyUrl;
+        nextEl.play().catch(() => {});
+      }
+    });
 
     // Sync state metadata
     setCurrentTrack(nextTrack);
     setDuration(nextTrack.duration_sec);
-    setLyrics(localStorage.getItem(`rhythmia_lyrics_${nextTrack.id}`) || "");
+    setLyrics(localStorage.getItem(`vibeblower_lyrics_${nextTrack.id}`) || "");
     setActivePlayer(nextPlayer);
 
     // Write play history log
@@ -651,7 +693,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  const playTrack = (trackId: string, customQueue?: string[], fallbackTrack?: Track) => {
+  const playTrack = (trackId: string, customQueue?: string[], fallbackTrack?: Track, isUserClick = true) => {
     initAudioGraph();
     if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
       audioCtxRef.current.resume();
@@ -673,10 +715,13 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Overlapping Crossfade for manual changes if crossfade is enabled
     if (currentTrack && crossfadeSec > 0) {
       triggerCrossfade(track);
-      if (customQueue) setQueue(customQueue.filter((id) => id !== trackId));
+      if (customQueue) {
+        setPlaybackContext(customQueue);
+      } else if (isUserClick) {
+        setPlaybackContext(getTracksForView().map(t => t.id));
+      }
       return;
     }
 
@@ -684,14 +729,16 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     activeEl.pause();
     
     // Play on Player A
-    audioRefA.current!.src = track.audio_url || `/api/audio/${track.id}`;
+    const directUrl = track.audio_url || `/api/audio/${track.id}`;
+    const proxyUrl  = `/api/audio/${track.id}`;
+    audioRefA.current!.src = directUrl;
     audioRefA.current!.currentTime = 0;
-    
+
     setActivePlayer("A");
     setCurrentTrack(track);
     setDuration(track.duration_sec);
     setIsPlaying(true);
-    setLyrics(localStorage.getItem(`rhythmia_lyrics_${track.id}`) || "");
+    setLyrics(localStorage.getItem(`vibeblower_lyrics_${track.id}`) || "");
 
     // Apply baseline gains
     if (isGraphInitialized.current) {
@@ -701,6 +748,16 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
     audioRefA.current!.play().catch((err) => {
       if (err.name === "AbortError") return; // pause() raced play() — harmless
+      // crossOrigin="anonymous" CORS failure on direct CDN URL — retry via same-origin proxy
+      if (directUrl !== proxyUrl && err.name === "NotSupportedError") {
+        audioRefA.current!.src = proxyUrl;
+        audioRefA.current!.play().catch((err2) => {
+          if (err2.name === "AbortError") return;
+          console.error("Playback failed", err2);
+          setIsPlaying(false);
+        });
+        return;
+      }
       console.error("Playback failed", err);
       setIsPlaying(false);
     });
@@ -709,12 +766,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     logPlayHistory(track.id);
 
     if (customQueue) {
-      setQueue(customQueue.filter((id) => id !== trackId));
-    } else {
-      setQueue((prev) => {
-        if (prev.length > 0 && prev[0] === trackId) return prev.slice(1);
-        return prev;
-      });
+      setPlaybackContext(customQueue);
+    } else if (isUserClick) {
+      setPlaybackContext(getTracksForView().map(t => t.id));
     }
   };
 
@@ -756,7 +810,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         setIsPlaying(false);
         return;
       }
-      playTrack(nextId);
+      playTrack(nextId, undefined, undefined, false);
     } else {
       setIsPlaying(false);
     }
@@ -770,14 +824,14 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const playlistSongs = getTracksForView();
-    if (playlistSongs.length === 0) return;
+    const contextIds = playbackContext.length > 0 ? playbackContext : getTracksForView().map(t => t.id);
+    if (contextIds.length === 0) return;
 
-    const currentIndex = playlistSongs.findIndex((t) => t.id === currentTrack?.id);
+    const currentIndex = contextIds.indexOf(currentTrack?.id || "");
     if (currentIndex === -1) return;
 
-    const prevIndex = (currentIndex - 1 + playlistSongs.length) % playlistSongs.length;
-    playTrack(playlistSongs[prevIndex].id);
+    const prevIndex = (currentIndex - 1 + contextIds.length) % contextIds.length;
+    playTrack(contextIds[prevIndex], undefined, undefined, false);
   };
 
   const seek = (seconds: number) => {
@@ -835,7 +889,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const updateLyrics = (text: string) => {
     if (!currentTrack) return;
     setLyrics(text);
-    localStorage.setItem(`rhythmia_lyrics_${currentTrack.id}`, text);
+    localStorage.setItem(`vibeblower_lyrics_${currentTrack.id}`, text);
   };
 
   // Queue Operations
@@ -853,6 +907,15 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
   const clearQueue = () => {
     setQueue([]);
+  };
+
+  const reorderQueue = (sourceIndex: number, destinationIndex: number) => {
+    setQueue((prev) => {
+      const newQueue = [...prev];
+      const [moved] = newQueue.splice(sourceIndex, 1);
+      newQueue.splice(destinationIndex, 0, moved);
+      return newQueue;
+    });
   };
 
   // Helper mapping view routes to songs lists
@@ -897,7 +960,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       // Offline local history persistence
       const historyArr = [trackId, ...recentlyPlayed.filter((id) => id !== trackId)].slice(0, 20);
-      localStorage.setItem("rhythmia_local_history", JSON.stringify(historyArr));
+      localStorage.setItem("vibeblower_local_history", JSON.stringify(historyArr));
     }
   };
 
@@ -921,7 +984,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         });
       }
     } else {
-      localStorage.setItem("rhythmia_local_likes", JSON.stringify(Array.from(updated)));
+      localStorage.setItem("vibeblower_local_likes", JSON.stringify(Array.from(updated)));
     }
   };
 
@@ -973,7 +1036,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
       const updated = [...playlists, newPl];
       setPlaylists(updated);
-      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("vibeblower_local_playlists", JSON.stringify(updated));
       return plId;
     }
   };
@@ -988,7 +1051,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.from("playlists").delete().eq("id", playlistId);
     } else {
       const updated = playlists.filter((p) => p.id !== playlistId);
-      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("vibeblower_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1007,7 +1070,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, collaborative: updatedCollab } : p
       );
-      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("vibeblower_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1020,7 +1083,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.from("playlists").update({ name }).eq("id", playlistId);
     } else {
       const updated = playlists.map((p) => (p.id === playlistId ? { ...p, name } : p));
-      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("vibeblower_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1043,7 +1106,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, songs: updatedSongs } : p
       );
-      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("vibeblower_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1062,7 +1125,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, songs: updatedSongs } : p
       );
-      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("vibeblower_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1083,7 +1146,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         setPlaylists((prev) =>
           prev.map((p) => (p.id === playlistId ? { ...p, songs: original } : p))
         );
-        console.error("Rhythmia: reorder delete failed, rolled back", delErr.message);
+        console.error("Vibeblower: reorder delete failed, rolled back", delErr.message);
         return;
       }
 
@@ -1095,14 +1158,14 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { error: insErr } = await supabase.from("playlist_tracks").insert(insertRows);
       if (insErr) {
-        console.error("Rhythmia: reorder insert failed, reloading library", insErr.message);
+        console.error("Vibeblower: reorder insert failed, reloading library", insErr.message);
         loadTracksAndLibrary();
       }
     } else {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, songs: reorderedTrackIds } : p
       );
-      localStorage.setItem("rhythmia_local_playlists", JSON.stringify(updated));
+      localStorage.setItem("vibeblower_local_playlists", JSON.stringify(updated));
     }
   };
 
@@ -1155,6 +1218,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     addToQueue,
     playNext,
     removeFromQueue,
+    reorderQueue,
     clearQueue,
     toggleLike,
     createPlaylist,
@@ -1164,6 +1228,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     removeTrackFromPlaylist,
     reorderPlaylistTracks,
     toggleCollaborative,
+    addLocalFiles,
     setView,
     searchQuery,
     setSearchQuery,

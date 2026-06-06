@@ -9,7 +9,7 @@ interface FriendActivitySidebarProps {
 }
 
 export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebarProps) {
-  const { isPrivateSession, currentTrack, isPlaying, recentlyPlayed, tracks } = useAudio();
+  const { setView, isPrivateSession, currentTrack, isPlaying, recentlyPlayed, tracks } = useAudio();
   const { onlineUsers, setActiveChatUser, setIsChatOpen } = useRealtime();
 
   const lastHeardTrack = useMemo(() => {
@@ -19,9 +19,9 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
   }, [currentTrack, recentlyPlayed, tracks]);
 
   return (
-    <aside className="friend-sidebar hidden md:flex flex-col bg-forest rounded-2xl p-4 shadow-md border border-cream/5 min-h-0 relative select-none z-30">
-      <div className="flex justify-between items-center mb-4 pb-2 border-b border-cream/10 flex-none">
-        <span className="font-display font-bold text-sm tracking-tight text-cream">Friend Activity</span>
+    <aside className="hidden md:flex flex-col bg-forest rounded-xl p-4 border border-white/5 min-h-0 relative select-none z-30">
+      <div className="flex justify-between items-center mb-3 pb-2.5 border-b border-white/8 flex-none">
+        <span className="font-semibold text-sm text-cream">Friend Activity</span>
         <button
           onClick={() => setIsFriendOpen(false)}
           className="text-muted hover:text-cream text-lg transition-colors cursor-pointer select-none leading-none"
@@ -33,7 +33,7 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
       <div className="flex-1 overflow-y-auto flex flex-col gap-3 pr-1 custom-scrollbar">
 
         {/* Current user's activity card */}
-        <div className="bg-panel border border-cream/5 rounded-xl p-3 text-xs shadow-sm">
+        <div className="bg-panel border border-white/5 rounded-xl p-3 text-xs shadow-sm">
           <div className="font-bold text-coral text-xs uppercase tracking-wider mb-2">Your Activity</div>
 
           {isPrivateSession ? (
@@ -80,7 +80,7 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
           )}
 
           {!isPrivateSession && (
-            <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-cream/5">
+            <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-white/5">
               <div className="w-1.5 h-1.5 rounded-full bg-green animate-pulse shadow-sm" />
               <span className="text-muted text-xs">Sharing with friends</span>
             </div>
@@ -99,7 +99,7 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
           onlineUsers.map((friend) => (
             <div
               key={friend.user_id}
-              className="flex gap-3 text-xs min-w-0 p-2 rounded-xl hover:bg-panel-hover transition-colors cursor-pointer group"
+              className="flex gap-3 text-xs min-w-0 p-2 rounded-xl hover:bg-white/8 transition-colors cursor-pointer group"
               onClick={() => {
                 setActiveChatUser(friend.user_id);
                 setIsChatOpen(true);
@@ -120,7 +120,13 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
 
               <div className="min-w-0 flex-1 flex flex-col justify-center">
                 <div className="flex justify-between items-center gap-2">
-                  <span className="font-bold text-cream truncate group-hover:text-coral transition-colors text-xs">
+                  <span 
+                    className="font-bold text-cream truncate group-hover:text-coral transition-colors text-xs hover:underline cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setView(`user:${friend.user_id}`);
+                    }}
+                  >
                     {friend.display_name}
                   </span>
                   <span className="text-xs text-muted whitespace-nowrap">Online</span>
@@ -140,7 +146,7 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
           ))
         )}
 
-        <p className="text-xs text-muted/50 text-center pt-2 border-t border-cream/5 mt-auto">
+        <p className="text-xs text-muted/50 text-center pt-2 border-t border-white/5 mt-auto">
           Friend activity updates when they listen
         </p>
       </div>

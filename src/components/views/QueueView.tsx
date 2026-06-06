@@ -31,14 +31,14 @@ export function QueueView({ onContextMenu }: QueueViewProps) {
 
       <div className="flex flex-col gap-1.5 flex-1 animate-fade-in">
         {qTracks.length === 0 ? (
-          <div className="p-12 text-center text-muted text-sm border border-cream/5 rounded-2xl bg-panel/30 flex flex-col items-center gap-4">
+          <div className="p-12 text-center text-muted text-sm border border-white/5 rounded-2xl bg-white/4 flex flex-col items-center gap-4">
              <svg viewBox="0 0 24 24" className="w-12 h-12 fill-current opacity-30">
                <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/>
              </svg>
              Queue is empty. Right-click or click track options (...) to add tracks to the queue.
           </div>
         ) : (
-          <div className="bg-panel/10 rounded-2xl p-2 md:p-4 border border-cream/5">
+          <div className="rounded-xl overflow-hidden border border-white/5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted mb-3 px-2">Next in Queue</h3>
             {qTracks.map((t, idx) => (
               <TrackRow 

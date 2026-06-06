@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "rhythmia" | "catppuccin" | "nord" | "spotify";
+type Theme = "vibeblower" | "catppuccin" | "nord" | "spotify";
 
 interface ThemeContextType {
   theme: Theme;
@@ -12,21 +12,23 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme>("rhythmia");
+  const [theme, setThemeState] = useState<Theme>("spotify");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem("rhythmia-theme") as Theme;
+    const savedTheme = localStorage.getItem("vibeblower-theme") as Theme;
     if (savedTheme) {
       setThemeState(savedTheme);
       document.documentElement.setAttribute("data-theme", savedTheme);
+    } else {
+      document.documentElement.setAttribute("data-theme", "spotify");
     }
   }, []);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem("rhythmia-theme", newTheme);
+    localStorage.setItem("vibeblower-theme", newTheme);
     document.documentElement.setAttribute("data-theme", newTheme);
   };
 

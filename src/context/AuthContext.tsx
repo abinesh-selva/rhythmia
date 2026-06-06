@@ -16,7 +16,7 @@ interface AuthContextType {
   loading: boolean;
   isOffline: boolean;
   loginWithEmail: (email: string, pass: string) => Promise<{ error: any }>;
-  signUpWithEmail: (email: string, pass: string, name: string) => Promise<{ error: any }>;
+  signUpWithEmail: (email: string, pass: string, name: string) => Promise<{ data?: any; error: any }>;
   loginWithGoogle: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   updateProfile: (name: string, avatar?: string) => Promise<{ error: any }>;
@@ -25,8 +25,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // LocalStorage mock key names
-const LOCAL_USER_KEY = "rhythmia_local_user";
-const LOCAL_PROFILE_KEY = "rhythmia_local_profile";
+const LOCAL_USER_KEY = "vibeblower_local_user";
+const LOCAL_PROFILE_KEY = "vibeblower_local_profile";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const guestId = "00000000-0000-0000-0000-000000000000";
         const dummyUser = {
           id: guestId,
-          email: "guest@rhythmia.com",
+          email: "guest@vibeblower.com",
           app_metadata: {},
           user_metadata: {},
           aud: "authenticated",
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error };
     } else {
       // Mock Offline Login: Create user matching this email
-      const localUserId = email === "guest@rhythmia.com" ? "00000000-0000-0000-0000-000000000000" : `user-${Math.random().toString(36).substring(2, 10)}`;
+      const localUserId = email === "guest@vibeblower.com" ? "00000000-0000-0000-0000-000000000000" : `user-${Math.random().toString(36).substring(2, 10)}`;
       const mockUser = {
         id: localUserId,
         email,
@@ -168,7 +168,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           },
         },
       });
-      return { error };
+      return { data, error };
     } else {
       // Mock Offline Signup
       const localUserId = `user-${Math.random().toString(36).substring(2, 10)}`;
@@ -190,7 +190,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setProfile(mockProfile);
       localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(mockUser));
       localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(mockProfile));
-      return { error: null };
+      return { data: { session: { user: mockUser } }, error: null };
     }
   };
 
@@ -219,7 +219,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const guestId = "00000000-0000-0000-0000-000000000000";
       const dummyUser = {
         id: guestId,
-        email: "guest@rhythmia.com",
+        email: "guest@vibeblower.com",
         aud: "authenticated",
         role: "authenticated",
         created_at: new Date().toISOString(),

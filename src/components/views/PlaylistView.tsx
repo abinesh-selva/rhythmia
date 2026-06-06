@@ -31,7 +31,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
   if (!pl) {
     return (
       <div className="flex items-center justify-center min-h-full">
-        <div className="p-12 text-center text-muted text-sm border border-cream/5 rounded-2xl bg-panel/30 flex flex-col gap-3">
+        <div className="p-12 text-center text-muted text-sm border border-white/5 rounded-2xl bg-white/4 flex flex-col gap-3">
           <svg viewBox="0 0 24 24" className="w-12 h-12 fill-current opacity-30 mx-auto">
              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
           </svg>
@@ -102,7 +102,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
     <div className="flex flex-col min-h-full pb-20">
       {/* Header Hero */}
       <div
-        className="hero p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-cream/5 transition-all relative overflow-hidden"
+        className="hero p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 transition-all relative overflow-hidden"
       >
         {/* Dynamic Background Blur */}
         <div 
@@ -153,7 +153,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
       </div>
 
       {/* Play Controls Row */}
-      <div className="px-6 md:px-10 py-6 flex items-center gap-6 relative z-10">
+      <div className="px-6 md:px-8 py-6 flex items-center gap-6 relative z-10">
         {plTracks.length > 0 && (
           <button
             onClick={() => playTrack(plTracks[0].id)}
@@ -184,10 +184,10 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
                </svg>
              </button>
-             <div className="absolute right-0 mt-2 w-48 bg-panel border border-cream/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+             <div className="absolute right-0 mt-2 w-48 bg-panel border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                <div className="p-1 flex flex-col">
-                 <button onClick={handleRename} className="text-left px-3 py-2 text-sm text-cream hover:bg-panel-hover rounded">Rename</button>
-                 <button onClick={() => toggleCollaborative(pl.id)} className="text-left px-3 py-2 text-sm text-cream hover:bg-panel-hover rounded">
+                 <button onClick={handleRename} className="text-left px-3 py-2 text-sm text-cream hover:bg-white/8 rounded">Rename</button>
+                 <button onClick={() => toggleCollaborative(pl.id)} className="text-left px-3 py-2 text-sm text-cream hover:bg-white/8 rounded">
                    {pl.collaborative ? "Make Private" : "Make Collaborative"}
                  </button>
                  <div className="h-px bg-cream/10 my-1"></div>
@@ -212,7 +212,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
       </div>
 
       {/* Playlist search & tracks (Reorderable) */}
-      <div className="px-6 md:px-10 flex flex-col gap-3 flex-1 mt-2">
+      <div className="px-6 md:px-8 flex flex-col gap-3 flex-1 mt-2">
         {plTracks.length > 0 && (
           <div className="flex items-center justify-between gap-4 pb-4">
             {/* Inline Playlist search bar */}
@@ -221,7 +221,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
                 value={playlistSearchQuery}
                 onChange={(e) => setPlaylistSearchQuery(e.target.value)}
                 placeholder="Find in playlist"
-                className="w-full pl-9 pr-3 py-2 bg-panel/50 border border-cream/5 hover:border-cream/20 rounded-md text-cream text-sm placeholder-muted focus:outline-none focus:border-cream/50 transition-colors"
+                className="w-full pl-9 pr-3 py-2 bg-white/6 border border-white/8 hover:border-white/20 rounded-md text-cream text-sm placeholder-muted focus:outline-none focus:border-white/30 transition-colors"
               />
               <svg viewBox="0 0 24 24" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 fill-muted group-hover:fill-cream/70 transition-colors">
                 <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
@@ -243,7 +243,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
         )}
 
         {filteredPlaylistTracks.length === 0 ? (
-          <div className="p-12 text-center text-muted text-sm border border-cream/5 rounded-2xl bg-panel/30 flex flex-col gap-3">
+          <div className="p-12 text-center text-muted text-sm border border-white/5 rounded-2xl bg-white/4 flex flex-col gap-3">
             <span>{plTracks.length === 0 ? "Playlist is empty." : "No matching tracks found."}</span>
             <span className="text-xs opacity-70">
               {plTracks.length === 0 
@@ -252,7 +252,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
             </span>
           </div>
         ) : (
-          <div className="flex flex-col gap-1 bg-panel/10 rounded-2xl p-2 md:p-4 border border-cream/5">
+          <div className="flex flex-col gap-1 rounded-xl overflow-hidden border border-white/5">
             {filteredPlaylistTracks.map((t, idx) =>
               <TrackRow 
                 key={t.id}

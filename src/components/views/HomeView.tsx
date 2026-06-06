@@ -178,16 +178,18 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
 
   return (
     <div className="flex flex-col min-h-full pb-10 overflow-x-hidden">
-      {/* Header Area */}
-      <div className="pt-6 px-6 md:px-10 sticky top-0 z-20 bg-forest/90 backdrop-blur-md border-b border-cream/5 pb-4">
-        <h2 className="font-display font-bold text-3xl text-cream tracking-tight mb-4">{greeting}</h2>
+      {/* Header */}
+      <div className="pt-5 px-6 md:px-8 sticky top-0 z-20 bg-forest-dark/95 backdrop-blur-md border-b border-white/5 pb-3.5">
+        <h2 className="font-display font-bold text-2xl md:text-3xl text-cream tracking-tight mb-3">{greeting}</h2>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {(["All", "Music", "Albums", "Artists", "Playlists"] as const).map(chip => (
+          {(["All", "Music", "Albums", "Artists", "Playlists"] as const).map((chip) => (
             <button
               key={chip}
               onClick={() => setActiveFilter(chip)}
               className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all flex-none ${
-                activeFilter === chip ? "bg-cream text-forest-dark" : "bg-panel/40 text-cream hover:bg-panel"
+                activeFilter === chip
+                  ? "bg-cream text-forest-dark"
+                  : "bg-white/6 text-muted hover:text-cream hover:bg-white/10"
               }`}
             >
               {chip}
@@ -196,26 +198,31 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
         </div>
       </div>
 
-      {/* Quick Picks Grid */}
+      {/* Quick Picks */}
       {shouldShow("playlists") && quickPicks.length > 0 && (
-        <div className="px-6 md:px-10 pt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {quickPicks.map(qp => (
-            <div 
-              key={qp.id} 
+        <div className="px-6 md:px-8 pt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          {quickPicks.map((qp) => (
+            <div
+              key={qp.id}
               onClick={qp.onClick}
-              className="group bg-panel/30 hover:bg-panel/60 rounded-md flex items-center gap-3 cursor-pointer transition-all pr-4 relative overflow-hidden shadow-sm"
+              className="group bg-white/5 hover:bg-white/10 rounded-lg flex items-center gap-0 cursor-pointer transition-all relative overflow-hidden"
             >
               {qp.image ? (
-                <img src={qp.image} alt={qp.title} className="w-16 h-16 object-cover flex-none shadow-md" />
+                <img src={qp.image} alt={qp.title} className="w-14 h-14 object-cover flex-none rounded-l-lg" />
               ) : (
-                <div className="w-16 h-16 flex-none shadow-md" style={{ background: `linear-gradient(135deg, ${qp.color1}, ${qp.color2})` }} />
+                <div
+                  className="w-14 h-14 flex-none rounded-l-lg"
+                  style={{ background: `linear-gradient(135deg, ${qp.color1}, ${qp.color2})` }}
+                />
               )}
-              <span className="font-bold text-cream text-sm truncate flex-1">{qp.title}</span>
-              <button 
+              <span className="font-semibold text-cream text-sm truncate px-3 flex-1">{qp.title}</span>
+              <button
                 onClick={qp.onPlay}
-                className="w-10 h-10 bg-coral rounded-full flex items-center justify-center shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all absolute right-2"
+                className="w-9 h-9 bg-coral rounded-full flex items-center justify-center shadow-lg opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all absolute right-3"
               >
-                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-forest-dark ml-0.5">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
               </button>
             </div>
           ))}
@@ -378,12 +385,12 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
 
 function Shelf({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="px-6 md:px-10 pt-10">
-      <div className="mb-4">
-        <h3 className="text-2xl font-bold tracking-tight text-cream hover:underline cursor-pointer inline-block">{title}</h3>
-        {subtitle && <p className="text-sm text-muted mt-0.5">{subtitle}</p>}
+    <div className="px-6 md:px-8 pt-8">
+      <div className="mb-4 flex items-baseline gap-3">
+        <h3 className="text-xl font-bold tracking-tight text-cream">{title}</h3>
+        {subtitle && <p className="text-xs text-muted">{subtitle}</p>}
       </div>
-      <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar scroll-smooth snap-x">
+      <div className="flex gap-3 overflow-x-auto pb-3 no-scrollbar">
         {children}
       </div>
     </div>
@@ -406,37 +413,37 @@ function Card({ title, subtitle, image, colors, type, onClick, onPlay }: CardPro
   const c2 = colors?.[1] || "#111";
 
   return (
-    <div 
+    <div
       onClick={onClick}
-      className="flex flex-col gap-3 min-w-[140px] md:min-w-[176px] max-w-[140px] md:max-w-[176px] p-4 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all snap-start"
+      className="flex flex-col gap-2.5 min-w-[148px] md:min-w-[168px] max-w-[148px] md:max-w-[168px] p-3 bg-white/4 hover:bg-white/8 rounded-xl cursor-pointer group transition-all"
     >
-      <div 
-        className={`w-full aspect-square shadow-lg relative overflow-hidden flex items-center justify-center flex-none ${isRounded ? "rounded-full" : "rounded-md"}`}
+      <div
+        className={`w-full aspect-square relative overflow-hidden flex items-center justify-center shadow-md ${isRounded ? "rounded-full" : "rounded-lg"}`}
         style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
       >
         {image ? (
           <img src={image} alt={title} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <svg viewBox="0 0 24 24" className={`fill-cream/50 ${isRounded ? "w-16 h-16" : "w-10 h-10"}`}>
-            {isRounded 
+          <svg viewBox="0 0 24 24" className={`fill-cream/40 ${isRounded ? "w-14 h-14" : "w-10 h-10"}`}>
+            {isRounded
               ? <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-              : <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
-            }
+              : <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />}
           </svg>
         )}
-
         {onPlay && (
-          <button 
+          <button
             onClick={onPlay}
-            className={`absolute right-2 bottom-2 w-12 h-12 bg-coral rounded-full flex items-center justify-center shadow-xl translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10 ${isRounded ? "right-3 bottom-3" : ""}`}
+            className="absolute right-2 bottom-2 w-10 h-10 bg-coral rounded-full flex items-center justify-center shadow-lg translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10"
           >
-            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
+            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-forest-dark ml-0.5">
+              <path d="M8 5v14l11-7z" />
+            </svg>
           </button>
         )}
       </div>
       <div className="min-w-0">
-        <span className="text-sm md:text-base font-bold text-cream truncate block">{title}</span>
-        {subtitle && <span className="text-xs md:text-sm text-muted truncate block mt-1">{subtitle}</span>}
+        <span className="text-sm font-semibold text-cream truncate block leading-tight">{title}</span>
+        {subtitle && <span className="text-xs text-muted truncate block mt-0.5">{subtitle}</span>}
       </div>
     </div>
   );
@@ -445,24 +452,24 @@ function Card({ title, subtitle, image, colors, type, onClick, onPlay }: CardPro
 function HomeSkeleton() {
   return (
     <div className="flex flex-col min-h-full pb-10 animate-pulse">
-      <div className="p-6 md:p-10 border-b border-cream/5">
-        <div className="h-8 w-48 bg-cream/10 rounded-lg mb-4" />
+      <div className="p-6 md:p-8 border-b border-white/5">
+        <div className="h-8 w-48 bg-white/8 rounded-lg mb-4" />
         <div className="flex gap-2">
-          {[1,2,3,4,5].map(i => <div key={i} className="h-8 w-20 bg-cream/10 rounded-full" />)}
+          {[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-8 w-20 bg-white/8 rounded-full" />)}
         </div>
       </div>
-      <div className="px-6 md:px-10 pt-6 grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="h-16 bg-cream/10 rounded-md" />)}
+      <div className="px-6 md:px-8 pt-6 grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => <div key={i} className="h-14 bg-white/8 rounded-lg" />)}
       </div>
       {[1, 2, 3].map((section) => (
-        <div key={section} className="px-6 md:px-10 pt-10">
-          <div className="h-6 w-48 bg-cream/10 rounded-lg mb-5" />
-          <div className="flex gap-4 overflow-hidden">
+        <div key={section} className="px-6 md:px-8 pt-8">
+          <div className="h-5 w-40 bg-white/8 rounded mb-4" />
+          <div className="flex gap-3 overflow-hidden">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="min-w-[140px] md:min-w-[176px] flex flex-col gap-3 p-4">
-                <div className="w-full aspect-square rounded-md bg-cream/10" />
-                <div className="h-4 w-3/4 bg-cream/10 rounded" />
-                <div className="h-3 w-1/2 bg-cream/10 rounded" />
+              <div key={i} className="min-w-[148px] md:min-w-[168px] flex flex-col gap-2.5 p-3">
+                <div className="w-full aspect-square rounded-lg bg-white/8" />
+                <div className="h-3.5 w-3/4 bg-white/8 rounded" />
+                <div className="h-3 w-1/2 bg-white/8 rounded" />
               </div>
             ))}
           </div>

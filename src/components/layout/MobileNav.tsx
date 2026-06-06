@@ -19,7 +19,7 @@ export function MobileNav() {
   };
 
   return (
-    <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-cream/5 py-3 px-4 z-40 select-none text-muted shrink-0 rounded-t-2xl shadow-xl">
+    <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-white/5 py-3 px-4 z-40 select-none text-muted shrink-0">
       <button
         onClick={() => setView("home")}
         className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${

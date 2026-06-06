@@ -22,7 +22,7 @@ export function GenreDetailView({ genre, tracks }: { genre: Genre; tracks: Track
 
   return (
     <div className="flex flex-col min-h-full pb-20" onClick={() => setActiveMenuTrackId(null)}>
-      <div className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-cream/5 overflow-hidden bg-gradient-to-b from-coral/30 to-forest-dark">
+      <div className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 overflow-hidden bg-gradient-to-b from-coral/30 to-forest-dark">
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark to-transparent z-0" />
         <div className="w-36 h-36 md:w-48 md:h-48 rounded-2xl shadow-2xl z-10 flex-none flex items-center justify-center bg-gradient-to-br from-coral to-pink">
           <svg viewBox="0 0 24 24" className="w-16 h-16 fill-forest-dark/70">
@@ -37,7 +37,7 @@ export function GenreDetailView({ genre, tracks }: { genre: Genre; tracks: Track
       </div>
 
       {activeTracks.length > 0 && (
-        <div className="px-6 md:px-10 py-6 flex items-center gap-4">
+        <div className="px-6 md:px-8 py-6 flex items-center gap-4">
           <button onClick={() => playTrack(activeTracks[0].id as any)}
             className="w-14 h-14 rounded-full bg-coral hover:bg-coral-bright flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all">
             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
@@ -45,11 +45,11 @@ export function GenreDetailView({ genre, tracks }: { genre: Genre; tracks: Track
         </div>
       )}
 
-      <div className="px-6 md:px-10">
+      <div className="px-6 md:px-8">
         {activeTracks.length === 0 ? (
-          <div className="p-12 text-center text-muted text-sm border border-cream/5 rounded-2xl bg-panel/30">No tracks in this genre yet.</div>
+          <div className="p-12 text-center text-muted text-sm border border-white/5 rounded-2xl bg-white/4">No tracks in this genre yet.</div>
         ) : (
-          <div className="flex flex-col bg-panel/10 rounded-2xl p-2 md:p-4 border border-cream/5">
+          <div className="flex flex-col rounded-xl overflow-hidden border border-white/5">
             {activeTracks.map((t, idx) => (
               <TrackRow key={t.id} track={t as any} index={idx} onContextMenu={handleContextMenu} />
             ))}
@@ -58,11 +58,11 @@ export function GenreDetailView({ genre, tracks }: { genre: Genre; tracks: Track
       </div>
 
       {activeMenuTrackId && (
-        <div className="fixed z-50 w-44 bg-panel border border-cream/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
+        <div className="fixed z-50 w-44 bg-panel border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
           style={{ top: Math.min(menuPosition.y, window.innerHeight - 100), left: Math.min(menuPosition.x, window.innerWidth - 184) }}
           onClick={(e) => e.stopPropagation()}>
           <button onClick={() => { addToQueue(activeMenuTrackId); setActiveMenuTrackId(null); }}
-            className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-panel-hover transition-colors font-medium">Add to Queue</button>
+            className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-white/8 transition-colors font-medium">Add to Queue</button>
         </div>
       )}
     </div>
