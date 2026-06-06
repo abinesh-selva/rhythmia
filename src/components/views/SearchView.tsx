@@ -330,7 +330,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                 </div>
               ) : (
                 <div className="p-8 text-center text-muted text-sm border border-white/5 rounded-2xl bg-panel/20 mb-6">
-                  No {activeGenre.label} tracks yet. Sync your Cloudinary library.
+                  No {activeGenre.label} tracks yet. Sync your library to add tracks.
                 </div>
               )}
             </div>

@@ -6,16 +6,14 @@ interface TopNavigationProps {
   isFriendOpen: boolean;
   setIsFriendOpen: (val: boolean) => void;
   setIsAuthOpen: (val: boolean) => void;
-  setIsSettingsOpen: (val: boolean) => void;
 }
 
 export function TopNavigation({
   isFriendOpen,
   setIsFriendOpen,
   setIsAuthOpen,
-  setIsSettingsOpen,
 }: TopNavigationProps) {
-  const { view, searchQuery, setSearchQuery, isPrivateSession, togglePrivateSession } = useAudio();
+  const { view, setView, searchQuery, setSearchQuery, isPrivateSession, togglePrivateSession } = useAudio();
   const { user, profile, signOut, isOffline } = useAuth();
 
   return (
@@ -80,7 +78,7 @@ export function TopNavigation({
 
         {/* Settings */}
         <button
-          onClick={() => setIsSettingsOpen(true)}
+          onClick={() => setView("settings")}
           className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-muted hover:text-cream transition-all"
           aria-label="Settings"
           title="Settings"
@@ -90,10 +88,10 @@ export function TopNavigation({
           </svg>
         </button>
 
-        {/* Friend activity toggle */}
+        {/* Friend activity toggle — only visible on lg+ where the panel actually renders */}
         <button
           onClick={() => setIsFriendOpen(!isFriendOpen)}
-          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+          className={`hidden lg:flex w-8 h-8 rounded-full items-center justify-center transition-all ${
             isFriendOpen
               ? "bg-coral text-forest-dark"
               : "bg-white/6 text-muted hover:text-cream hover:bg-white/12"
@@ -126,7 +124,7 @@ export function TopNavigation({
               <div className="p-1.5 flex flex-col">
                 <span className="px-3 py-2 text-xs text-muted truncate border-b border-white/5 mb-1">{user?.email}</span>
                 <button
-                  onClick={() => setIsSettingsOpen(true)}
+                  onClick={() => setView("settings")}
                   className="text-left px-3 py-2 text-sm text-cream hover:bg-white/8 rounded-lg transition-colors"
                 >
                   Settings &amp; Profile

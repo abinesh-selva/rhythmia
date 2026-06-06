@@ -35,14 +35,28 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
   
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterChip>("All");
-  const [greeting, setGreeting] = useState("Good day");
+  const getGreeting = () => {
+    const hr = new Date().getHours();
+    if (hr >= 5  && hr < 12) return "Good morning";
+    if (hr >= 12 && hr < 17) return "Good afternoon";
+    if (hr >= 17 && hr < 21) return "Good evening";
+    return "Good night";
+  };
+
+  const [greeting, setGreeting] = useState(getGreeting);
   const [madeForYou, setMadeForYou] = useState<Track[]>([]);
 
   useEffect(() => {
-    const hr = new Date().getHours();
-    if (hr < 12) setGreeting("Good morning");
-    else if (hr < 18) setGreeting("Good afternoon");
-    else setGreeting("Good evening");
+    setGreeting(getGreeting());
+    // Re-check at the top of every hour so the greeting stays accurate
+    const now = new Date();
+    const msUntilNextHour = (60 - now.getMinutes()) * 60_000 - now.getSeconds() * 1000;
+    const timeout = setTimeout(() => {
+      setGreeting(getGreeting());
+      const interval = setInterval(() => setGreeting(getGreeting()), 3_600_000);
+      return () => clearInterval(interval);
+    }, msUntilNextHour);
+    return () => clearTimeout(timeout);
   }, []);
 
   // Compute personalization from AudioContext synchronously
@@ -182,20 +196,23 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
       {/* Header */}
       <div className="pt-5 px-6 md:px-8 sticky top-0 z-20 bg-forest-dark/95 backdrop-blur-md border-b border-white/5 pb-3.5">
         <h2 className="font-display font-bold text-2xl md:text-3xl text-cream tracking-tight mb-3">{greeting}</h2>
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {(["All", "Music", "Albums", "Artists", "Playlists"] as const).map((chip) => (
-            <button
-              key={chip}
-              onClick={() => setActiveFilter(chip)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all flex-none ${
-                activeFilter === chip
-                  ? "bg-cream text-forest-dark"
-                  : "bg-white/6 text-muted hover:text-cream hover:bg-white/10"
-              }`}
-            >
-              {chip}
-            </button>
-          ))}
+        <div className="relative">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {(["All", "Music", "Albums", "Artists", "Playlists"] as const).map((chip) => (
+              <button
+                key={chip}
+                onClick={() => setActiveFilter(chip)}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all flex-none ${
+                  activeFilter === chip
+                    ? "bg-cream text-forest-dark"
+                    : "bg-white/6 text-muted hover:text-cream hover:bg-white/10"
+                }`}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+          <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-l from-forest-dark/95 to-transparent" />
         </div>
       </div>
 

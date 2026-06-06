@@ -12,6 +12,7 @@ import { QueueView } from "../components/views/QueueView";
 import { LiveEventsView } from "../components/views/LiveEventsView";
 import { UserProfileView } from "../components/views/UserProfileView";
 import { RecentlyPlayedView } from "../components/views/RecentlyPlayedView";
+import { SettingsView } from "../components/views/SettingsView";
 
 export default function Page() {
   const { view, playlists, addToQueue, addTrackToPlaylist } = useAudio();
@@ -33,7 +34,8 @@ export default function Page() {
     if (view === "queue")  return <QueueView onContextMenu={handleContextMenu} />;
     if (view === "recent") return <RecentlyPlayedView onContextMenu={handleContextMenu} />;
 
-    if (view === "live")   return <LiveEventsView />;
+    if (view === "live")     return <LiveEventsView />;
+    if (view === "settings") return <SettingsView />;
     if (view.startsWith("playlist:")) {
       return <PlaylistView playlistId={view.split(":")[1]} onContextMenu={handleContextMenu} />;
     }

@@ -837,7 +837,31 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    const contextIds = playbackContext.length > 0 ? playbackContext : getTracksForView().map(t => t.id);
+    const liveViewTracks = getTracksForView();
+    const viewIsStructured =
+      view.startsWith("playlist:") ||
+      view === "liked" ||
+      view.startsWith("collection:") ||
+      view.startsWith("artist:") ||
+      view.startsWith("album:");
+
+    const liveIds = liveViewTracks.map(t => t.id);
+
+    // In a structured view, always navigate within that view's track list — never escape to history.
+    if (viewIsStructured && liveIds.length > 0) {
+      const currentIndex = liveIds.indexOf(currentTrack?.id || "");
+      if (currentIndex <= 0) {
+        // Wrap to last track in the playlist/album/etc.
+        playTrack(liveIds[liveIds.length - 1], liveIds, undefined, false);
+      } else {
+        playTrack(liveIds[currentIndex - 1], liveIds, undefined, false);
+      }
+      return;
+    }
+
+    // Non-structured view: use stored playback context or live tracks
+    const contextIds = playbackContext.length > 0 ? playbackContext : liveIds;
+
     if (contextIds.length === 0) {
       if (playbackHistory.length > 0) {
         const historyCopy = [...playbackHistory];
@@ -850,12 +874,21 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
     const currentIndex = contextIds.indexOf(currentTrack?.id || "");
     if (currentIndex === -1) {
-      playTrack(contextIds[0], undefined, undefined, false);
+      playTrack(contextIds[0], contextIds, undefined, false);
+      return;
+    }
+
+    // At the start: use history if available, else wrap
+    if (currentIndex === 0 && playbackHistory.length > 0) {
+      const historyCopy = [...playbackHistory];
+      const lastPlayedId = historyCopy.pop()!;
+      setPlaybackHistory(historyCopy);
+      playTrack(lastPlayedId, contextIds, undefined, false);
       return;
     }
 
     const prevIndex = (currentIndex - 1 + contextIds.length) % contextIds.length;
-    playTrack(contextIds[prevIndex], undefined, undefined, false);
+    playTrack(contextIds[prevIndex], contextIds, undefined, false);
   };
 
   const seek = (seconds: number) => {

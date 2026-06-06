@@ -82,7 +82,7 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
           </button>
           <div className="text-sm text-muted">
-            Compilation from Cloudinary — artist & album data from ID3 tags
+            Compilation — artist &amp; album data from ID3 tags
           </div>
         </div>
       )}

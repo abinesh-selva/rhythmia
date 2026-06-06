@@ -43,7 +43,7 @@ export function Sidebar() {
 
   const handleCloudinarySync = async () => {
     setIsSyncing(true);
-    addToast("Started syncing from Cloudinary. This might take a while...", "success");
+    addToast("Started syncing your library. This might take a while...", "success");
     try {
       const res = await fetch("/api/cloudinary-sync", { method: "POST" });
       const data = await res.json();
@@ -232,32 +232,19 @@ export function Sidebar() {
 
       {/* Library panel */}
       <div className="bg-forest rounded-xl flex-1 flex flex-col min-h-0 border border-white/5">
-        {/* Library header */}
-        <div className="flex items-center justify-between px-4 pt-3.5 pb-2 flex-none">
-          <span className="font-semibold text-sm text-muted">Your Library</span>
+        {/* Library header — primary row: title + create */}
+        <div className="flex items-center justify-between px-4 pt-3.5 pb-1 flex-none">
+          <button
+            onClick={() => setView("liked")}
+            className="font-semibold text-sm text-muted hover:text-cream transition-colors"
+          >
+            Your Library
+          </button>
           <div className="flex items-center gap-0.5">
-            <button
-              onClick={cycleTheme}
-              className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors"
-              title={`Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`}
-            >
-              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
-                <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
-              </svg>
-            </button>
-            <button
-              onClick={handleCreateFolder}
-              className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors"
-              aria-label="Create folder"
-              title="Create folder"
-            >
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10zM11 11h2v3h3v2h-3v3h-2v-3H8v-2h3z" />
-              </svg>
-            </button>
+            {/* Create playlist — primary visible action */}
             <button
               onClick={handleCreatePlaylist}
-              className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
               aria-label="Create playlist"
               title="Create playlist"
             >
@@ -265,59 +252,103 @@ export function Sidebar() {
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
               </svg>
             </button>
-            <label
-              className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors cursor-pointer"
-              aria-label="Add local files"
-              title="Add local files"
-            >
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
-              </svg>
-              <input
-                type="file"
-                multiple
-                accept="audio/*"
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files) addLocalFiles(e.target.files);
-                }}
-              />
-            </label>
-            <button
-              onClick={handleCloudinarySync}
-              disabled={isSyncing}
-              className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${
-                isSyncing ? "text-coral bg-coral/10 cursor-wait" : "text-muted hover:text-cream hover:bg-white/8"
-              }`}
-              aria-label="Sync from Cloudinary"
-              title="Sync from Cloudinary"
-            >
-              <svg viewBox="0 0 24 24" className={`w-3.5 h-3.5 fill-current ${isSyncing ? "animate-pulse" : ""}`}>
-                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
-              </svg>
-            </button>
-            <button
-              onClick={handleSpotifyEnrich}
-              disabled={isEnriching}
-              className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${
-                isEnriching ? "text-green bg-green/10 cursor-wait" : "text-muted hover:text-green hover:bg-white/8"
-              }`}
-              title="Enrich metadata from Spotify"
-            >
-              <svg viewBox="0 0 24 24" className={`w-3.5 h-3.5 fill-current ${isEnriching ? "animate-spin" : ""}`}>
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.08c-.2.31-.61.41-.92.21-2.52-1.54-5.69-1.89-9.42-1.04-.36.08-.72-.15-.8-.51-.08-.36.15-.72.51-.8 4.14-.94 7.64-.53 10.42 1.17.31.2.41.61.21.92zm1.32-2.95c-.25.4-.77.53-1.17.27-2.87-1.77-7.25-2.3-10.74-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 4.02-1.19 8.86-.59 12.13 1.42.4.26.53.78.27 1.18zm.11-3.1c-3.41-2.03-9.04-2.21-12.27-1.23-.54.16-1.11-.14-1.27-.68-.16-.54.14-1.11.68-1.27 3.73-1.13 10.01-.92 13.97 1.44.49.29.65.92.36 1.41-.28.49-.91.64-1.4.35z" />
-              </svg>
-            </button>
+
+            {/* Overflow utility menu */}
+            <div className="relative group">
+              <button
+                className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
+                title="More options"
+                aria-label="Library options"
+              >
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                </svg>
+              </button>
+
+              {/* Dropdown panel */}
+              <div className="absolute right-0 top-8 w-52 bg-panel border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1.5">
+                {/* Create folder */}
+                <button
+                  onClick={handleCreateFolder}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
+                    <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10zM11 11h2v3h3v2h-3v3h-2v-3H8v-2h3z" />
+                  </svg>
+                  Create folder
+                </button>
+
+                {/* Add local files */}
+                <label className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors cursor-pointer">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
+                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
+                  </svg>
+                  Add local files
+                  <input
+                    type="file"
+                    multiple
+                    accept="audio/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files) addLocalFiles(e.target.files);
+                    }}
+                  />
+                </label>
+
+                <div className="h-px bg-white/8 my-1 mx-3" />
+
+                {/* Sync from Cloudinary */}
+                <button
+                  onClick={handleCloudinarySync}
+                  disabled={isSyncing}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                    isSyncing ? "text-coral cursor-wait" : "text-cream hover:bg-white/8"
+                  }`}
+                >
+                  <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isSyncing ? "text-coral animate-pulse" : "text-muted"}`}>
+                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                  </svg>
+                  {isSyncing ? "Syncing…" : "Sync Library"}
+                </button>
+
+                {/* Enrich from Spotify */}
+                <button
+                  onClick={handleSpotifyEnrich}
+                  disabled={isEnriching}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                    isEnriching ? "text-green cursor-wait" : "text-cream hover:bg-white/8"
+                  }`}
+                >
+                  <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isEnriching ? "text-green animate-spin" : "text-muted"}`}>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.08c-.2.31-.61.41-.92.21-2.52-1.54-5.69-1.89-9.42-1.04-.36.08-.72-.15-.8-.51-.08-.36.15-.72.51-.8 4.14-.94 7.64-.53 10.42 1.17.31.2.41.61.21.92zm1.32-2.95c-.25.4-.77.53-1.17.27-2.87-1.77-7.25-2.3-10.74-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 4.02-1.19 8.86-.59 12.13 1.42.4.26.53.78.27 1.18zm.11-3.1c-3.41-2.03-9.04-2.21-12.27-1.23-.54.16-1.11-.14-1.27-.68-.16-.54.14-1.11.68-1.27 3.73-1.13 10.01-.92 13.97 1.44.49.29.65.92.36 1.41-.28.49-.91.64-1.4.35z" />
+                  </svg>
+                  {isEnriching ? "Enriching…" : "Enrich from Spotify"}
+                </button>
+
+                <div className="h-px bg-white/8 my-1 mx-3" />
+
+                {/* Theme cycle */}
+                <button
+                  onClick={cycleTheme}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
+                    <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+                  </svg>
+                  Theme: {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Filter chips — wrap on small sidebars */}
-        <div className="flex gap-1.5 px-3 pb-2 flex-wrap flex-none">
+        {/* Filter chips — wrap to 2 rows so all are always visible */}
+        <div className="flex flex-wrap gap-1 px-3 pb-2">
           {FILTERS.map((f) => (
             <button
               key={f.key}
               onClick={() => setLibraryFilter(f.key)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-none ${
+              className={`px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-none ${
                 libraryFilter === f.key
                   ? "bg-cream text-forest-dark"
                   : "bg-white/6 text-muted hover:text-cream hover:bg-white/10"

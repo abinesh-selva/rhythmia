@@ -19,7 +19,7 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
   }, [currentTrack, recentlyPlayed, tracks]);
 
   return (
-    <aside className="hidden md:flex flex-col bg-forest rounded-xl p-4 border border-white/5 min-h-0 relative select-none z-30">
+    <aside className="hidden lg:flex flex-col bg-forest rounded-xl p-4 border border-white/5 min-h-0 relative select-none z-30">
       <div className="flex justify-between items-center mb-3 pb-2.5 border-b border-white/8 flex-none">
         <span className="font-semibold text-sm text-cream">Friend Activity</span>
         <button

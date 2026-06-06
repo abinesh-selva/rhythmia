@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useAudio } from "../../context/AudioContext";
 import { AuthModal } from "../auth/AuthModal";
-import { SettingsModal } from "../settings/SettingsModal";
 
 import { Sidebar } from "./Sidebar";
 import { TopNavigation } from "./TopNavigation";
@@ -30,15 +29,18 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   } = useAudio();
 
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNPOpen, setIsNPOpen] = useState(true);
   const [npTab, setNpTab] = useState<"lyrics" | "queue">("lyrics");
-  const [isFriendOpen, setIsFriendOpen] = useState(true);
+  const [isFriendOpen, setIsFriendOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(260);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const saved = localStorage.getItem("vibeblower_sidebar_width");
     if (saved) setSidebarWidth(parseInt(saved, 10));
+    const savedFriendOpen = localStorage.getItem("vibeblower_friend_open");
+    setIsFriendOpen(savedFriendOpen !== "false");
   }, []);
 
   const handleSidebarResize = (e: MouseEvent) => {
@@ -104,16 +106,24 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTrack, duration, currentTime, isMuted, isShuffle]);
 
+  const handleFriendToggle = (val: boolean) => {
+    setIsFriendOpen(val);
+    localStorage.setItem("vibeblower_friend_open", String(val));
+  };
+
   return (
     <div
       suppressHydrationWarning
       className={`app flex flex-col md:grid h-full gap-1.5 p-1.5 bg-black overflow-hidden font-sans text-cream relative ${
-        isFriendOpen ? "shell-grid-3" : "shell-grid-2"
+        mounted && isFriendOpen ? "shell-grid-3" : "shell-grid-2"
       }`}
-      style={{
+      style={mounted ? {
         "--sidebar-width": `${sidebarWidth}px`,
         "--bg-color-1": currentTrack ? currentTrack.cover_colors[0] : "var(--theme-forest)",
         "--bg-color-2": currentTrack ? currentTrack.cover_colors[1] : "var(--theme-forest-dark)",
+      } as React.CSSProperties : {
+        "--bg-color-1": "var(--theme-forest)",
+        "--bg-color-2": "var(--theme-forest-dark)",
       } as React.CSSProperties}
     >
       {/* Dynamic Background Blur */}
@@ -123,7 +133,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       />
 
       {/* Sidebar Area */}
-      <div className="relative flex min-h-0 hidden md:flex">
+      <div className="relative hidden md:flex min-h-0">
         <Sidebar />
         <div 
           className="w-1.5 hover:bg-white/10 active:bg-white/20 cursor-col-resize absolute right-0 top-0 bottom-0 z-50 transition-colors"
@@ -135,9 +145,8 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       <main className="main bg-forest-dark/80 backdrop-blur-md border border-white/5 rounded-xl overflow-y-auto min-h-0 flex flex-col relative shadow-2xl transition-all">
         <TopNavigation
           isFriendOpen={isFriendOpen}
-          setIsFriendOpen={setIsFriendOpen}
+          setIsFriendOpen={handleFriendToggle}
           setIsAuthOpen={setIsAuthOpen}
-          setIsSettingsOpen={setIsSettingsOpen}
         />
         <div className="flex-1 min-h-0 relative">
           {children}
@@ -145,8 +154,8 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       </main>
 
       {/* Friend Activity sidebar */}
-      {isFriendOpen && (
-        <FriendActivitySidebar setIsFriendOpen={setIsFriendOpen} />
+      {mounted && isFriendOpen && (
+        <FriendActivitySidebar setIsFriendOpen={handleFriendToggle} />
       )}
 
       {/* Now Playing panel */}
@@ -170,7 +179,6 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       <MobileNav />
 
       {/* Modals */}
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
 
       <ChatDrawer />

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "next.js music",
     "web audio api",
     "supabse",
-    "cloudinary music player",
+    "music player",
   ],
   authors: [{ name: "Vibeblower Team" }],
 };

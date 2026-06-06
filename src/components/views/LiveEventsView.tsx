@@ -33,7 +33,7 @@ export function LiveEventsView() {
           <div>
             <p className="text-cream font-bold text-lg mb-1">No episodes yet</p>
             <p className="text-muted text-sm max-w-sm">
-              Upload podcast or audiobook files to your Cloudinary folder and run a sync to see them here.
+              Upload podcast or audiobook files to your media library and run a sync to see them here.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 justify-center mt-2">
