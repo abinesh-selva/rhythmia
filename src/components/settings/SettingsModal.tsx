@@ -178,24 +178,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
           <div className="h-px bg-cream/5" />
 
-          {/* Sync Manager Navigation */}
-          <div className="flex flex-col gap-1.5 mt-1 bg-coral/5 border border-coral/10 p-3 rounded-xl">
-            <span className="font-semibold text-coral text-xs uppercase tracking-wider">Sync Manager</span>
-            <p className="text-xs text-muted leading-relaxed">
-              Sync and import your original song catalog from your songs folder directly into Vibeblower Vibe.
-            </p>
-            <button
-              onClick={() => {
-                setView("sync");
-                onClose();
-              }}
-              className="mt-1 w-full bg-coral/15 hover:bg-coral/25 text-coral text-xs py-2 rounded-lg font-bold transition-colors cursor-pointer border border-coral/20 text-center"
-            >
-              Open Sync Manager
-            </button>
-          </div>
 
-          <div className="h-px bg-cream/5" />
 
           {/* G. Troubleshooting - Clear Cache */}
           <div className="flex flex-col gap-1.5 mt-1 bg-red-500/5 border border-red-500/10 p-3 rounded-xl">

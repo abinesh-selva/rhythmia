@@ -89,7 +89,7 @@ export function UserProfileView({ userId, onContextMenu }: UserProfileViewProps)
             <svg viewBox="0 0 24 24" className="w-12 h-12 fill-muted/30 mb-4">
               <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
             </svg>
-            <p className="text-muted font-medium">This user hasn't created any public playlists yet.</p>
+            <p className="text-muted font-medium">This user hasn&apos;t created any public playlists yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">

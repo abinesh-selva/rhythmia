@@ -1,0 +1,41 @@
+/var/www/html/own-project/rhythmia/src/app/album/[id]/[slug]/page.tsx
+/var/www/html/own-project/rhythmia/src/app/api/cloudinary-sync/route.ts
+/var/www/html/own-project/rhythmia/src/app/api/spotify-enrich/route.ts
+/var/www/html/own-project/rhythmia/src/app/collection/[id]/[slug]/page.tsx
+/var/www/html/own-project/rhythmia/src/app/genre/[id]/[slug]/page.tsx
+/var/www/html/own-project/rhythmia/src/app/language/[id]/[slug]/page.tsx
+/var/www/html/own-project/rhythmia/src/app/singer/[id]/[slug]/page.tsx
+/var/www/html/own-project/rhythmia/src/components/auth/AuthModal.tsx
+/var/www/html/own-project/rhythmia/src/components/chat/ChatDrawer.tsx
+/var/www/html/own-project/rhythmia/src/components/layout/BottomPlayer.tsx
+/var/www/html/own-project/rhythmia/src/components/layout/FriendActivitySidebar.tsx
+  Line 46: react/no-unescaped-entities
+/var/www/html/own-project/rhythmia/src/components/layout/ShellLayout.tsx
+  Line 101: react-hooks/exhaustive-deps
+/var/www/html/own-project/rhythmia/src/components/layout/Sidebar.tsx
+/var/www/html/own-project/rhythmia/src/components/ui/TrackRow.tsx
+/var/www/html/own-project/rhythmia/src/components/views/AlbumDetailView.tsx
+/var/www/html/own-project/rhythmia/src/components/views/ArtistDetailView.tsx
+/var/www/html/own-project/rhythmia/src/components/views/CloudinarySyncView.tsx
+/var/www/html/own-project/rhythmia/src/components/views/CollectionDetailView.tsx
+/var/www/html/own-project/rhythmia/src/components/views/GenreDetailView.tsx
+/var/www/html/own-project/rhythmia/src/components/views/HomeView.tsx
+/var/www/html/own-project/rhythmia/src/components/views/LanguageDetailView.tsx
+/var/www/html/own-project/rhythmia/src/components/views/SearchView.tsx
+  Line 117: react-hooks/exhaustive-deps
+/var/www/html/own-project/rhythmia/src/components/views/SingerDetailView.tsx
+/var/www/html/own-project/rhythmia/src/components/views/UserProfileView.tsx
+  Line 92: react/no-unescaped-entities
+/var/www/html/own-project/rhythmia/src/context/AudioContext.tsx
+  Line 367: react-hooks/exhaustive-deps
+  Line 556: react-hooks/exhaustive-deps
+  Line 1242: react-hooks/exhaustive-deps
+/var/www/html/own-project/rhythmia/src/context/AuthContext.tsx
+  Line 100: react-hooks/exhaustive-deps
+/var/www/html/own-project/rhythmia/src/context/DialogContext.tsx
+/var/www/html/own-project/rhythmia/src/context/RealtimeContext.tsx
+  Line 149: react-hooks/exhaustive-deps
+  Line 164: react-hooks/exhaustive-deps
+/var/www/html/own-project/rhythmia/src/context/ThemeContext.tsx
+/var/www/html/own-project/rhythmia/src/lib/supabase.ts
+/var/www/html/own-project/rhythmia/src/lib/supabase/middleware.ts

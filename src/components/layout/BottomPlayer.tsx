@@ -96,12 +96,16 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         {currentTrack ? (
           <>
             <div
-              className="w-10 h-10 md:w-12 md:h-12 rounded md:rounded-lg flex items-center justify-center flex-none shadow-md overflow-hidden"
+              className="w-10 h-10 md:w-12 md:h-12 rounded md:rounded-lg flex items-center justify-center flex-none shadow-md overflow-hidden flex-shrink-0"
               style={{ background: `linear-gradient(135deg, ${currentTrack.cover_colors[0]}, ${currentTrack.cover_colors[1]})` }}
             >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream/80">
-                <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
-              </svg>
+              {currentTrack.cover_image ? (
+                <img src={currentTrack.cover_image} alt={currentTrack.album} className="w-full h-full object-cover" />
+              ) : (
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream/80">
+                  <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
+                </svg>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold text-cream truncate leading-tight">{currentTrack.title}</div>
@@ -112,6 +116,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               className={`hidden sm:flex flex-none transition-all hover:scale-110 active:scale-90 ${
                 likedSongs.has(currentTrack.id) ? "text-coral" : "text-muted/50 hover:text-muted"
               }`}
+              aria-label={likedSongs.has(currentTrack.id) ? "Remove from Liked Songs" : "Save to Liked Songs"}
               title={likedSongs.has(currentTrack.id) ? "Remove from Liked Songs" : "Save to Liked Songs"}
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4">
@@ -147,6 +152,8 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             <button
               onClick={() => { const speeds = [0.5, 1.0, 1.25, 1.5, 2.0]; setPlaybackSpeed(speeds[(speeds.indexOf(playbackSpeed) + 1) % speeds.length]); }}
               className="hidden md:flex text-xs font-bold text-coral border border-coral/30 px-2.5 py-1 rounded-md bg-coral/8 hover:bg-coral/15 transition-colors min-w-10 items-center justify-center"
+              aria-label={`Change playback speed, current is ${playbackSpeed}x`}
+              title="Change playback speed"
             >
               {playbackSpeed}x
             </button>
@@ -154,7 +161,8 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             <button
               onClick={toggleShuffle}
               className={`hidden md:block transition-all hover:scale-110 active:scale-90 ${isShuffle ? "text-coral" : "text-muted hover:text-cream"}`}
-              title="Shuffle"
+              aria-label={isShuffle ? "Disable Shuffle" : "Enable Shuffle"}
+              title={isShuffle ? "Disable Shuffle" : "Enable Shuffle"}
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
                 <path d="M17 3l4 4-4 4V8h-3l-2.5 3.5-1.4-1.9L12.5 6H17V3zM3 6h4l3 4-1.4 1.9L6 8H3V6zm14 9v-3l4 4-4 4v-3h-4.5l-2.6-3.6 1.4-1.9L14 15h3zM3 16h3l2.5-3.5 1.4 1.9L7 18H3v-2z" />
@@ -166,6 +174,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             <button
               onClick={() => seek(Math.max(0, currentTime - 15))}
               className="hidden md:flex text-muted hover:text-cream transition-all hover:scale-110 active:scale-90 items-center justify-center relative w-7 h-7"
+              aria-label="Rewind 15 seconds"
               title="Rewind 15s"
             >
               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
@@ -176,7 +185,8 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           ) : (
             <button
               onClick={prevTrack}
-              className="hidden md:block text-muted hover:text-cream transition-all hover:scale-110 active:scale-90"
+              className="text-muted hover:text-cream transition-all hover:scale-110 active:scale-90"
+              aria-label="Previous Track"
               title="Previous"
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
@@ -188,6 +198,8 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           <button
             onClick={togglePlay}
             className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-cream hover:bg-white text-forest-dark flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg flex-none"
+            aria-label={isPlaying ? "Pause" : "Play"}
+            title={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? (
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
@@ -204,6 +216,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             <button
               onClick={() => seek(Math.min(duration, currentTime + 15))}
               className="text-muted hover:text-cream transition-all hover:scale-110 active:scale-90 flex items-center justify-center relative w-7 h-7"
+              aria-label="Forward 15 seconds"
               title="Forward 15s"
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-6 md:h-6 fill-current">
@@ -215,6 +228,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             <button
               onClick={nextTrack}
               className="text-muted hover:text-cream transition-all hover:scale-110 active:scale-90"
+              aria-label="Next Track"
               title="Next"
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
@@ -228,6 +242,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             className={`hidden md:block transition-all hover:scale-110 active:scale-90 relative ${
               repeatMode > 0 ? "text-coral" : "text-muted hover:text-cream"
             }`}
+            aria-label={`Repeat mode ${repeatMode === 0 ? "off" : repeatMode === 1 ? "track" : "all"}`}
             title="Repeat"
           >
             <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -262,6 +277,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         <button
           onClick={() => { setIsNPOpen(true); setNpTab("lyrics"); }}
           className={`transition-all hover:scale-110 active:scale-90 ${isNPOpen && npTab === "lyrics" ? "text-coral" : "text-muted hover:text-cream"}`}
+          aria-label="Open Lyrics"
           title="Lyrics"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -273,6 +289,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         <button
           onClick={() => setView("queue")}
           className={`transition-all hover:scale-110 active:scale-90 ${view === "queue" ? "text-coral" : "text-muted hover:text-cream"}`}
+          aria-label="Open Queue"
           title="Queue"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -284,6 +301,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         <button
           onClick={() => setIsNPOpen(!isNPOpen)}
           className={`transition-all hover:scale-110 active:scale-90 ${isNPOpen ? "text-coral" : "text-muted hover:text-cream"}`}
+          aria-label="Toggle Now Playing"
           title="Now playing"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -295,6 +313,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         <button
           onClick={() => setIsDevicesOpen(!isDevicesOpen)}
           className={`transition-all hover:scale-110 active:scale-90 ${isDevicesOpen ? "text-coral" : "text-muted hover:text-cream"}`}
+          aria-label="Open Device Connect"
           title="Vibeblower Connect"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -306,6 +325,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         <button
           onClick={() => setIsEQOpen(!isEQOpen)}
           className={`transition-all hover:scale-110 active:scale-90 relative ${isEQOpen ? "text-coral" : "text-muted hover:text-cream"}`}
+          aria-label="Open Equalizer"
           title="Equalizer"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -320,6 +340,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
         <button
           onClick={() => setIsSleepOpen(!isSleepOpen)}
           className={`transition-all hover:scale-110 active:scale-90 relative ${sleepTimer !== null || sleepTimerRemaining !== null ? "text-coral" : "text-muted hover:text-cream"}`}
+          aria-label="Open Sleep Timer"
           title="Sleep timer"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -335,6 +356,8 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           <button
             onClick={toggleMute}
             className="text-muted hover:text-cream transition-all hover:scale-110 active:scale-90 flex-none"
+            aria-label={isMuted ? "Unmute" : "Mute"}
+            title={isMuted ? "Unmute" : "Mute"}
           >
             {isMuted || volume === 0 ? (
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-pink">

@@ -43,7 +43,7 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
               </svg>
               <span className="font-bold text-cream text-xs">Private Session Active</span>
               <p className="text-xs text-muted leading-relaxed">
-                Friends can't see your listening activity.
+                Friends can&apos;t see your listening activity.
               </p>
             </div>
           ) : lastHeardTrack ? (

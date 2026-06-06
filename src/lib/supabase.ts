@@ -14,11 +14,11 @@ export const isSupabaseConfigured =
 const getSupabaseClient = (): SupabaseClient | null => {
   if (!isSupabaseConfigured) return null;
 
-  const globalVar = globalThis as any;
+  const globalVar = globalThis as { supabaseClient?: SupabaseClient };
   if (!globalVar.supabaseClient) {
     globalVar.supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
   }
-  return globalVar.supabaseClient as SupabaseClient;
+  return globalVar.supabaseClient;
 };
 
 // Standard Supabase client (only created if configured, otherwise falls back gracefully)

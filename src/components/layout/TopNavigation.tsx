@@ -25,6 +25,7 @@ export function TopNavigation({
         <button
           className="w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-cream/40 hover:text-cream/80 hover:bg-black/50 transition-all"
           onClick={() => window.history.back()}
+          aria-label="Go back"
           title="Go back"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -34,6 +35,7 @@ export function TopNavigation({
         <button
           className="w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-cream/40 hover:text-cream/80 hover:bg-black/50 transition-all"
           onClick={() => window.history.forward()}
+          aria-label="Go forward"
           title="Go forward"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -80,6 +82,7 @@ export function TopNavigation({
         <button
           onClick={() => setIsSettingsOpen(true)}
           className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-muted hover:text-cream transition-all"
+          aria-label="Settings"
           title="Settings"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -95,6 +98,7 @@ export function TopNavigation({
               ? "bg-coral text-forest-dark"
               : "bg-white/6 text-muted hover:text-cream hover:bg-white/12"
           }`}
+          aria-label={isFriendOpen ? "Close Friend Activity" : "Open Friend Activity"}
           title="Friend Activity"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">

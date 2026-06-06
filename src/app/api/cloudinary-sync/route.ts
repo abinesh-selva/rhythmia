@@ -491,7 +491,7 @@ export async function POST(_req: Request) {
       8,
       async (row) => {
         try {
-          let meta = await fetchId3Metadata(row.audio_url);
+          const meta = await fetchId3Metadata(row.audio_url);
 
           // Cloudinary context overrides ID3 for singers/genre/language
           const resource = resourceByAssetId.get(row.asset_id);

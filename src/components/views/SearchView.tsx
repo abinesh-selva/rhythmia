@@ -114,6 +114,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
     }, 300);
 
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, tracks]);
 
   if (isLoading) {

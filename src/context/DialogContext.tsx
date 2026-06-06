@@ -38,6 +38,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (dialog?.type === "prompt") {
       const opts = dialog.options as PromptOptions;
+       
       setInputValue(opts.defaultValue ?? "");
       setTimeout(() => inputRef.current?.focus(), 50);
     }

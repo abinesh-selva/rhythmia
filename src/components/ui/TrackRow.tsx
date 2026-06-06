@@ -110,12 +110,16 @@ export function TrackRow({
       {/* Title + artist + cover */}
       <div className="flex items-center gap-3 min-w-0" onClick={() => playTrack(track.id, playQueue, track)}>
         <div
-          className="w-9 h-9 rounded-md flex items-center justify-center flex-none shadow-sm"
+          className="w-9 h-9 rounded-md flex items-center justify-center flex-none shadow-sm overflow-hidden"
           style={{ background: `linear-gradient(135deg, ${track.cover_colors[0]}, ${track.cover_colors[1]})` }}
         >
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-cream/70">
-            <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
-          </svg>
+          {track.cover_image ? (
+            <img src={track.cover_image} alt={track.album} className="w-full h-full object-cover" />
+          ) : (
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-cream/70">
+              <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
+            </svg>
+          )}
         </div>
         <div className="min-w-0">
           <div className={`text-sm font-medium truncate leading-tight ${isCurrent ? "text-coral" : "text-cream"}`}>

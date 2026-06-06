@@ -23,6 +23,7 @@ export function Sidebar() {
   const [dbArtists, setDbArtists] = useState<ArtistRow[]>([]);
   const [dbAlbums,  setDbAlbums]  = useState<AlbumRow[]>([]);
   const [isEnriching, setIsEnriching] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSpotifyEnrich = async () => {
     setIsEnriching(true);
@@ -38,6 +39,23 @@ export function Sidebar() {
       addToast("Error: " + err.message, "error");
     }
     setIsEnriching(false);
+  };
+
+  const handleCloudinarySync = async () => {
+    setIsSyncing(true);
+    addToast("Started syncing from Cloudinary. This might take a while...", "success");
+    try {
+      const res = await fetch("/api/cloudinary-sync", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        addToast(`Sync complete! Added ${data.added} tracks, skipped ${data.skipped}.`, "success");
+      } else {
+        addToast("Error: " + data.error, "error");
+      }
+    } catch (err: any) {
+      addToast("Error: " + err.message, "error");
+    }
+    setIsSyncing(false);
   };
 
   useEffect(() => {
@@ -230,6 +248,7 @@ export function Sidebar() {
             <button
               onClick={handleCreateFolder}
               className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors"
+              aria-label="Create folder"
               title="Create folder"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -239,6 +258,7 @@ export function Sidebar() {
             <button
               onClick={handleCreatePlaylist}
               className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors"
+              aria-label="Create playlist"
               title="Create playlist"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -247,6 +267,7 @@ export function Sidebar() {
             </button>
             <label
               className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:text-cream hover:bg-white/8 transition-colors cursor-pointer"
+              aria-label="Add local files"
               title="Add local files"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -263,13 +284,15 @@ export function Sidebar() {
               />
             </label>
             <button
-              onClick={() => setView("sync")}
+              onClick={handleCloudinarySync}
+              disabled={isSyncing}
               className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${
-                view === "sync" ? "text-coral bg-coral/10" : "text-muted hover:text-cream hover:bg-white/8"
+                isSyncing ? "text-coral bg-coral/10 cursor-wait" : "text-muted hover:text-cream hover:bg-white/8"
               }`}
+              aria-label="Sync from Cloudinary"
               title="Sync from Cloudinary"
             >
-              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+              <svg viewBox="0 0 24 24" className={`w-3.5 h-3.5 fill-current ${isSyncing ? "animate-pulse" : ""}`}>
                 <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
               </svg>
             </button>
@@ -288,8 +311,8 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Filter chips — scrollable row */}
-        <div className="flex gap-1.5 px-3 pb-2 overflow-x-auto no-scrollbar flex-none">
+        {/* Filter chips — wrap on small sidebars */}
+        <div className="flex gap-1.5 px-3 pb-2 flex-wrap flex-none">
           {FILTERS.map((f) => (
             <button
               key={f.key}

@@ -15,11 +15,11 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   isOffline: boolean;
-  loginWithEmail: (email: string, pass: string) => Promise<{ error: any }>;
-  signUpWithEmail: (email: string, pass: string, name: string) => Promise<{ data?: any; error: any }>;
-  loginWithGoogle: () => Promise<{ error: any }>;
+  loginWithEmail: (email: string, pass: string) => Promise<{ error: Error | null }>;
+  signUpWithEmail: (email: string, pass: string, name: string) => Promise<{ data?: unknown; error: Error | null }>;
+  loginWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  updateProfile: (name: string, avatar?: string) => Promise<{ error: any }>;
+  updateProfile: (name: string, avatar?: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +33,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const isOffline = !isSupabaseConfigured;
+
+  async function fetchProfile(userId: string) {
+    if (!supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        // Profile might not be created yet, let's poll or wait
+        throw error;
+      }
+      setProfile(data);
+    } catch {
+      // Create fallback profile from metadata
+      setProfile({
+        id: userId,
+        display_name: user?.email ? user.email.split("@")[0] : "Amigo",
+        avatar_url: "",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Initialize and load auth state
   useEffect(() => {
@@ -69,6 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const localProfile = localStorage.getItem(LOCAL_PROFILE_KEY);
 
       if (localUser && localProfile) {
+         
         setUser(JSON.parse(localUser));
         setProfile(JSON.parse(localProfile));
       } else {
@@ -97,37 +124,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOffline]);
-
-  const fetchProfile = async (userId: string) => {
-    if (!supabase) return;
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, display_name, avatar_url")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        // Profile might not be created yet, let's poll or wait
-        throw error;
-      }
-      setProfile(data);
-    } catch (e) {
-      // Create fallback profile from metadata
-      setProfile({
-        id: userId,
-        display_name: user?.email ? user.email.split("@")[0] : "Amigo",
-        avatar_url: "",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loginWithEmail = async (email: string, pass: string) => {
     if (!isOffline && supabase) {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password: pass,
       });
@@ -196,7 +198,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loginWithGoogle = async () => {
     if (!isOffline && supabase) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -204,7 +206,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       return { error };
     } else {
-      return { error: "Google OAuth is disabled in Offline Mode. Please use Email login." };
+      return { error: new Error("Google OAuth is disabled in Offline Mode. Please use Email login.") };
     }
   };
 

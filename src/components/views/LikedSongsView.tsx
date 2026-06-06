@@ -42,7 +42,7 @@ export function LikedSongsView({ onContextMenu }: LikedSongsViewProps) {
       {likedTracks.length > 0 && (
         <div className="px-6 md:px-8 py-6 flex items-center gap-6 relative z-10">
           <button
-            onClick={() => playTrack(likedTracks[0].id)}
+            onClick={() => playTrack(likedTracks[0].id, likedTracks.map(t => t.id))}
             className="w-14 h-14 rounded-full bg-coral hover:bg-coral-bright flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all"
           >
             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-forest-dark ml-1">
@@ -68,6 +68,7 @@ export function LikedSongsView({ onContextMenu }: LikedSongsViewProps) {
                 key={t.id} 
                 track={t} 
                 index={idx} 
+                playQueue={likedTracks.map(x => x.id)}
                 onContextMenu={onContextMenu} 
               />
             ))}

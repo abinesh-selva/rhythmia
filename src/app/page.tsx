@@ -8,7 +8,7 @@ import { SearchView } from "../components/views/SearchView";
 import { PlaylistView } from "../components/views/PlaylistView";
 import { LikedSongsView } from "../components/views/LikedSongsView";
 import { QueueView } from "../components/views/QueueView";
-import { CloudinarySyncView } from "../components/views/CloudinarySyncView";
+
 import { LiveEventsView } from "../components/views/LiveEventsView";
 import { UserProfileView } from "../components/views/UserProfileView";
 import { RecentlyPlayedView } from "../components/views/RecentlyPlayedView";
@@ -32,7 +32,7 @@ export default function Page() {
     if (view === "liked")  return <LikedSongsView onContextMenu={handleContextMenu} />;
     if (view === "queue")  return <QueueView onContextMenu={handleContextMenu} />;
     if (view === "recent") return <RecentlyPlayedView onContextMenu={handleContextMenu} />;
-    if (view === "sync")   return <CloudinarySyncView />;
+
     if (view === "live")   return <LiveEventsView />;
     if (view.startsWith("playlist:")) {
       return <PlaylistView playlistId={view.split(":")[1]} onContextMenu={handleContextMenu} />;

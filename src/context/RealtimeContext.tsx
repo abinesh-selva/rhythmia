@@ -73,6 +73,7 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
 
     // 1. Setup Presence Channel
     const room = supabase.channel('vibeblower_activity');
+     
     setChannel(room);
 
     room
@@ -81,7 +82,7 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
         const users: ActivityState[] = [];
         
         Object.keys(state).forEach((key) => {
-          const presences = state[key] as any[];
+          const presences = state[key] as unknown[];
           if (presences.length > 0) {
             users.push(presences[0] as ActivityState);
           }
@@ -146,6 +147,7 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
       room.unsubscribe();
       messageListener.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile]);
 
   // Track updates for Presence
@@ -161,6 +163,7 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
         status: "online",
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTrack]);
 
   const sendMessage = async (receiverId: string, content: string) => {

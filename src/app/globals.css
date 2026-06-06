@@ -205,7 +205,13 @@ input {
 
 /* Track row column layout */
 .track-row-grid {
-  grid-template-columns: 40px 1fr 1fr 52px 72px;
+  grid-template-columns: 40px 1fr 52px 72px;
+}
+
+@media (min-width: 768px) {
+  .track-row-grid {
+    grid-template-columns: 40px 1fr 1fr 52px 72px;
+  }
 }
 
 /* Animations */

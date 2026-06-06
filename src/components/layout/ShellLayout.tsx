@@ -42,6 +42,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const handleSidebarResize = (e: MouseEvent) => {
+     
     document.body.style.userSelect = "none";
     setSidebarWidth((prev) => {
       const newWidth = prev + e.movementX;
@@ -50,10 +51,12 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const stopSidebarResize = () => {
+    // eslint-disable-next-line react-hooks/immutability
     document.body.style.userSelect = "auto";
     window.removeEventListener("mousemove", handleSidebarResize);
     window.removeEventListener("mouseup", stopSidebarResize);
     setSidebarWidth((w) => {
+       
       localStorage.setItem("vibeblower_sidebar_width", w.toString());
       return w;
     });
@@ -98,17 +101,27 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTrack, duration, currentTime, isMuted, isShuffle]);
 
   return (
     <div
-      className={`app flex flex-col md:grid h-full gap-1.5 p-1.5 bg-black/90 overflow-hidden font-sans text-cream ${
+      suppressHydrationWarning
+      className={`app flex flex-col md:grid h-full gap-1.5 p-1.5 bg-black overflow-hidden font-sans text-cream relative ${
         isFriendOpen ? "shell-grid-3" : "shell-grid-2"
       }`}
       style={{
         "--sidebar-width": `${sidebarWidth}px`,
+        "--bg-color-1": currentTrack ? currentTrack.cover_colors[0] : "var(--theme-forest)",
+        "--bg-color-2": currentTrack ? currentTrack.cover_colors[1] : "var(--theme-forest-dark)",
       } as React.CSSProperties}
     >
+      {/* Dynamic Background Blur */}
+      <div 
+        className="absolute inset-0 opacity-20 blur-[100px] pointer-events-none transition-colors duration-1000" 
+        style={{ background: "radial-gradient(circle at 50% 0%, var(--bg-color-1), transparent 50%), radial-gradient(circle at 0% 100%, var(--bg-color-2), transparent 50%)" }}
+      />
+
       {/* Sidebar Area */}
       <div className="relative flex min-h-0 hidden md:flex">
         <Sidebar />
@@ -119,7 +132,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       </div>
 
       {/* Main content area */}
-      <main className="main bg-forest-dark border border-white/5 rounded-xl overflow-y-auto min-h-0 flex flex-col relative shadow-2xl">
+      <main className="main bg-forest-dark/80 backdrop-blur-md border border-white/5 rounded-xl overflow-y-auto min-h-0 flex flex-col relative shadow-2xl transition-all">
         <TopNavigation
           isFriendOpen={isFriendOpen}
           setIsFriendOpen={setIsFriendOpen}

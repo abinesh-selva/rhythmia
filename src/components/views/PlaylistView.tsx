@@ -156,7 +156,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
       <div className="px-6 md:px-8 py-6 flex items-center gap-6 relative z-10">
         {plTracks.length > 0 && (
           <button
-            onClick={() => playTrack(plTracks[0].id)}
+            onClick={() => playTrack(plTracks[0].id, pl.songs)}
             className="w-14 h-14 rounded-full bg-coral hover:bg-coral-bright flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all"
           >
             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-forest-dark ml-1">
@@ -261,6 +261,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
                 isReorderable={true}
                 playlistId={pl.id}
                 playlistTrackIds={pl.songs}
+                playQueue={pl.songs}
                 draggedIndex={draggedIndex}
                 dragOverIndex={dragOverIndex}
                 onDragStart={handleDragStart}

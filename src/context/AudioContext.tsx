@@ -11,6 +11,7 @@ export interface Track {
   album: string;
   audio_url: string;
   cover_colors: string[];
+  cover_image?: string | null;  // album cover art from albums table
   duration_sec: number;
   type?: "music" | "podcast" | "audiobook";
   // catalog hierarchy
@@ -95,6 +96,9 @@ interface AudioContextType {
   recentlyPlayed: string[]; // List of track IDs
   view: string; // "home", "search", "liked", "playlist:[id]", "queue"
   currentViewPlaylistId: string | null;
+  playbackContext: string[];
+  playbackHistory: string[];
+  setPlaybackContext: (queue: string[]) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   
@@ -183,6 +187,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentViewPlaylistId, setCurrentViewPlaylistId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [playbackContext, setPlaybackContext] = useState<string[]>([]);
+  const [playbackHistory, setPlaybackHistory] = useState<string[]>([]);
 
   // App Settings States
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
@@ -235,7 +240,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
             artist_id, album_id, track_number, is_active, asset_id, language_id, folder_type,
             languages(id, name),
             track_singers(singers(id, name, slug)),
-            track_genres(genres(id, name, slug))
+            track_genres(genres(id, name, slug)),
+            albums(cover_image)
           `)
           .order("title");
 
@@ -266,7 +272,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
             artist: t.artist,
             album: t.album,
             audio_url: t.audio_url,
-            cover_colors: t.cover_colors,
+            cover_colors: Array.isArray(t.cover_colors) ? t.cover_colors : ["#1E9E54", "#0E3B35"],
+            cover_image: t.albums?.cover_image ?? null,
             duration_sec: Number(t.duration_sec),
             type: t.type,
             artist_id: t.artist_id,
@@ -364,6 +371,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   // Load tracks and user library on mount / user switch
   useEffect(() => {
     loadTracksAndLibrary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const addLocalFiles = async (files: FileList | File[]) => {
@@ -553,6 +561,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }, 1000);
 
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sleepTimer]);
 
   // Handle current time updates at runtime
@@ -596,6 +605,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (currentIndex === -1) return contextIds[0];
 
     if (isShuffle || isSmartShuffle) {
+       
       const randomIndex = Math.floor(Math.random() * contextIds.length);
       return contextIds[randomIndex];
     }
@@ -610,6 +620,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (isAutoplay && tracks.length > 0) {
       const candidates = tracks.filter((t) => t.id !== currentTrack?.id && t.folder_type !== "collection");
       if (candidates.length > 0) {
+         
         const randomCand = candidates[Math.floor(Math.random() * candidates.length)];
         return randomCand.id;
       }
@@ -645,6 +656,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     // Sync state metadata
+    if (currentTrack) {
+        setPlaybackHistory(prev => [...prev, currentTrack.id]);
+    }
     setCurrentTrack(nextTrack);
     setDuration(nextTrack.duration_sec);
     setLyrics(localStorage.getItem(`vibeblower_lyrics_${nextTrack.id}`) || "");
@@ -668,8 +682,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       nextGain.gain.linearRampToValueAtTime(targetVolume, now + crossfadeSec);
     } else {
       // Degraded fallback volume crossfade
-      let steps = 20;
-      let intervalTime = (crossfadeSec * 1000) / steps;
+      const steps = 20;
+      const intervalTime = (crossfadeSec * 1000) / steps;
       let step = 0;
       const targetVolume = isMuted ? 0 : volume;
 
@@ -704,10 +718,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
     const activeEl = activePlayer === "A" ? audioRefA.current! : audioRefB.current!;
     const nextPlayer = activePlayer === "A" ? "B" : "A";
-    const nextEl = nextPlayer === "A" ? audioRefA.current! : audioRefB.current!;
-
-    const activeGain = activePlayer === "A" ? gainNodeRefA.current! : gainNodeRefB.current!;
-    const nextGain = nextPlayer === "A" ? gainNodeRefA.current! : gainNodeRefB.current!;
 
     // If same track is tapped and is playing, toggle pause.
     if (currentTrack?.id === trackId) {
@@ -735,6 +745,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     audioRefA.current!.currentTime = 0;
 
     setActivePlayer("A");
+    if (currentTrack) {
+      setPlaybackHistory(prev => [...prev, currentTrack.id]);
+    }
     setCurrentTrack(track);
     setDuration(track.duration_sec);
     setIsPlaying(true);
@@ -825,10 +838,21 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     const contextIds = playbackContext.length > 0 ? playbackContext : getTracksForView().map(t => t.id);
-    if (contextIds.length === 0) return;
+    if (contextIds.length === 0) {
+      if (playbackHistory.length > 0) {
+        const historyCopy = [...playbackHistory];
+        const lastPlayedId = historyCopy.pop()!;
+        setPlaybackHistory(historyCopy);
+        playTrack(lastPlayedId, undefined, undefined, false);
+      }
+      return;
+    }
 
     const currentIndex = contextIds.indexOf(currentTrack?.id || "");
-    if (currentIndex === -1) return;
+    if (currentIndex === -1) {
+      playTrack(contextIds[0], undefined, undefined, false);
+      return;
+    }
 
     const prevIndex = (currentIndex - 1 + contextIds.length) % contextIds.length;
     playTrack(contextIds[prevIndex], undefined, undefined, false);
@@ -1199,6 +1223,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     eqHigh,
     setEQ,
     isLoading,
+     
     analyserNode: analyserRef.current,
     playTrack,
     togglePlay,
@@ -1238,7 +1263,11 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     setIsAutoplay,
     audioNormalization,
     setAudioNormalization,
+    playbackContext,
+    playbackHistory,
+    setPlaybackContext,
     refreshTracks: loadTracksAndLibrary,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [
     tracks,
     playlists,
@@ -1269,11 +1298,14 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     playbackSpeed,
     isAutoplay,
     audioNormalization,
+    playbackContext,
+    playbackHistory,
     graphInitialized,
     isLoading,
   ]);
 
   return (
+     
     <AudioContext.Provider value={contextValue}>
       {children}
 

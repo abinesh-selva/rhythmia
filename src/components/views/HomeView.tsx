@@ -36,6 +36,7 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterChip>("All");
   const [greeting, setGreeting] = useState("Good day");
+  const [madeForYou, setMadeForYou] = useState<Track[]>([]);
 
   useEffect(() => {
     const hr = new Date().getHours();
@@ -127,11 +128,11 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
     return () => { cancelled = true; };
   }, [historyTracks, topArtistId]);
 
-  // Heuristic Mix "Made for you" — must stay above any early return (Rules of Hooks)
-  const madeForYou = useMemo(() => {
-    if (!topGenreId && !topArtistId) return [];
+  // Heuristic Mix "Made for you" — client-side only to avoid SSR hydration mismatch with Math.random()
+  useEffect(() => {
+    if (!topGenreId && !topArtistId) { setMadeForYou([]); return; }
     const candidates = libraryTracks.filter(t => t.genre_id === topGenreId || t.artist_id === topArtistId);
-    return candidates.sort(() => Math.random() - 0.5).slice(0, 10);
+    setMadeForYou(candidates.sort(() => Math.random() - 0.5).slice(0, 10));
   }, [libraryTracks, topGenreId, topArtistId]);
 
   if (isLoading || catalogLoading) return <HomeSkeleton />;

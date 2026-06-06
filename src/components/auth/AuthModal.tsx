@@ -29,9 +29,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     try {
       if (isSignUp) {
         const { data, error } = await signUpWithEmail(email, password, name);
-        if (error) throw new Error(error.message || error);
+        if (error) throw new Error(typeof error === "string" ? error : (error.message || "Unknown error"));
         
-        if (data?.session) {
+        if ((data as any)?.session) {
           // Auto sign-in was successful (email confirmation disabled or offline mode)
           onClose();
         } else {
@@ -46,7 +46,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           if (error.message?.includes("Email not confirmed")) {
             throw new Error("Please check your email and click the confirmation link before logging in.");
           }
-          throw new Error(error.message || error);
+          throw new Error(typeof error === "string" ? error : (error.message || "Unknown error"));
         }
         onClose();
       }
@@ -61,7 +61,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setErrorMsg("");
     try {
       const { error } = await loginWithGoogle();
-      if (error) throw new Error(error.message || error);
+      if (error) throw new Error(typeof error === "string" ? error : (error.message || "Unknown error"));
     } catch (err: any) {
       setErrorMsg(err.message || "OAuth initiation failed.");
     }
