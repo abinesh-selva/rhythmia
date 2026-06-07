@@ -15,7 +15,7 @@ interface AlbumRow  { id: string; title: string; slug: string; cover_colors: str
 export function Sidebar() {
   const router   = useRouter();
   const pathname = usePathname();
-  const { view, setView, playlists, collections, createPlaylist, likedSongs, addLocalFiles } = useAudio();
+  const { view, setView, playlists, collections, createPlaylist, likedSongs, addLocalFiles, tracks } = useAudio();
   const { theme, setTheme } = useTheme();
   const { addToast } = useToast();
   const { showPrompt } = useDialog();
@@ -60,19 +60,45 @@ export function Sidebar() {
   };
 
   useEffect(() => {
-    if (!supabase) return;
-    supabase.from("artists")
-      .select("id,display_name,slug,image,track_count")
-      .order("track_count", { ascending: false })
-      .limit(30)
-      .then(({ data }) => setDbArtists((data as ArtistRow[]) ?? []));
+    const client = supabase;
+    if (!client) return;
 
-    supabase.from("albums")
-      .select("id,title,slug,cover_colors,artist_id,artists(display_name)")
-      .order("created_at", { ascending: false })
-      .limit(30)
-      .then(({ data }) => setDbAlbums((data as unknown as AlbumRow[]) ?? []));
-  }, []);
+    const loadData = async () => {
+      try {
+        const { data: artistData, error: artistError } = await client
+          .from("artists")
+          .select("id,display_name,slug,image,track_count")
+          .order("track_count", { ascending: false })
+          .limit(30);
+
+        if (artistError) {
+          console.error("Sidebar artists query error:", artistError.message);
+        } else if (artistData) {
+          setDbArtists(artistData as ArtistRow[]);
+        }
+      } catch (err) {
+        console.error("Sidebar artists catch error:", err);
+      }
+
+      try {
+        const { data: albumData, error: albumError } = await client
+          .from("albums")
+          .select("id,title,slug,cover_colors,artist_id,artists(display_name)")
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (albumError) {
+          console.error("Sidebar albums query error:", albumError.message);
+        } else if (albumData) {
+          setDbAlbums(albumData as unknown as AlbumRow[]);
+        }
+      } catch (err) {
+        console.error("Sidebar albums catch error:", err);
+      }
+    };
+
+    loadData();
+  }, [tracks]);
 
   const handleCreatePlaylist = async () => {
     const pName = await showPrompt({

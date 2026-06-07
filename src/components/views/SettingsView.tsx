@@ -75,14 +75,23 @@ export function SettingsView() {
     isPrivateSession, togglePrivateSession } = useAudio();
   const { showConfirm } = useDialog();
   const { addToast } = useToast();
-  const { user, profile, updateProfile, signOut, isOffline } = useAuth();
+  const { user, profile, updateProfile, signOut, isOffline, loading } = useAuth();
   const { theme, setTheme } = useTheme();
 
-  const [activeSection, setActiveSection] = useState<Section>("account");
+  const isGuest = !user || user.email === "guest@vibeblower.com";
+  const visibleNav = NAV.filter((item) => !(isGuest && item.key === "account"));
+
+  const [activeSection, setActiveSection] = useState<Section>("playback");
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile?.display_name || "");
   const [savingName, setSavingName] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!loading) {
+      setActiveSection(isGuest ? "playback" : "account");
+    }
+  }, [user, loading, isGuest]);
 
   const scrollTop = () => contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -117,7 +126,7 @@ export function SettingsView() {
       <aside className="hidden md:flex w-52 flex-none border-r border-white/8 flex-col py-8 gap-0.5 px-3 overflow-y-auto shrink-0 self-stretch">
         <h2 className="text-2xl font-bold text-cream tracking-tight px-3 mb-6">Settings</h2>
 
-        {NAV.map((item) => (
+        {visibleNav.map((item) => (
           <button
             key={item.key}
             onClick={() => { setActiveSection(item.key); scrollTop(); }}
@@ -134,17 +143,19 @@ export function SettingsView() {
           </button>
         ))}
 
-        <div className="mt-auto pt-4 border-t border-white/8 mx-1">
-          <button
-            onClick={async () => { await signOut(); setView("home"); }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-pink hover:bg-pink/10 transition-all"
-          >
-            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current flex-none">
-              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
-            </svg>
-            Log out
-          </button>
-        </div>
+        {!isGuest && (
+          <div className="mt-auto pt-4 border-t border-white/8 mx-1">
+            <button
+              onClick={async () => { await signOut(); setView("home"); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-pink hover:bg-pink/10 transition-all"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current flex-none">
+                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+              </svg>
+              Log out
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* ── Right scrollable content */}
@@ -153,7 +164,7 @@ export function SettingsView() {
 
           {/* Mobile section tabs */}
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-4 md:hidden">
-            {NAV.map((item) => (
+            {visibleNav.map((item) => (
               <button key={item.key} onClick={() => setActiveSection(item.key)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-none transition-all ${
                   activeSection === item.key ? "bg-cream text-forest-dark" : "bg-white/6 text-muted hover:text-cream"

@@ -27,6 +27,7 @@ export interface Track {
   genre?:        string;      // primary genre name
   genre_id?:     string;
   singers?:      string[];    // vocal performer display names
+  singer_ids?:   string[];
   folder_type?:  string;     // 'artist_album' | 'collection'
 }
 
@@ -305,6 +306,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
             language_id: t.language_id,
             language: t.languages?.name ?? undefined,
             singers: (t.track_singers ?? []).map((ts: any) => ts.singers?.name).filter(Boolean),
+            singer_ids: (t.track_singers ?? []).map((ts: any) => ts.singers?.id).filter(Boolean),
             genre: (t.track_genres ?? [])[0]?.genres?.name ?? undefined,
             genre_id: (t.track_genres ?? [])[0]?.genres?.id ?? undefined,
             folder_type: t.folder_type ?? undefined,
@@ -835,7 +837,10 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       view === "liked" ||
       view.startsWith("collection:") ||
       view.startsWith("artist:") ||
-      view.startsWith("album:");
+      view.startsWith("album:") ||
+      view.startsWith("singer:") ||
+      view.startsWith("genre:") ||
+      view.startsWith("language:");
 
     if (viewIsStructured && liveViewTracks.length > 0) {
       const liveIds = liveViewTracks.map(t => t.id);
@@ -894,7 +899,10 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       view === "liked" ||
       view.startsWith("collection:") ||
       view.startsWith("artist:") ||
-      view.startsWith("album:");
+      view.startsWith("album:") ||
+      view.startsWith("singer:") ||
+      view.startsWith("genre:") ||
+      view.startsWith("language:");
 
     const liveIds = liveViewTracks.map(t => t.id);
 
@@ -1037,6 +1045,34 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
     if (view === "queue") {
       return queue.map((id) => tracks.find((t) => t.id === id)!).filter(Boolean);
+    }
+    if (view.startsWith("collection:")) {
+      const colId = view.split(":")[1];
+      const col = collections.find((c) => c.id === colId);
+      if (!col) return [];
+      return col.songs.map((id) => tracks.find((t) => t.id === id)!).filter(Boolean);
+    }
+    if (view.startsWith("album:")) {
+      const albumId = view.split(":")[1];
+      return tracks
+        .filter((t) => t.album_id === albumId)
+        .sort((a, b) => (a.track_number ?? 0) - (b.track_number ?? 0));
+    }
+    if (view.startsWith("artist:")) {
+      const artistId = view.split(":")[1];
+      return tracks.filter((t) => t.artist_id === artistId);
+    }
+    if (view.startsWith("singer:")) {
+      const singerId = view.split(":")[1];
+      return tracks.filter((t) => t.singer_ids?.includes(singerId));
+    }
+    if (view.startsWith("genre:")) {
+      const genreId = view.split(":")[1];
+      return tracks.filter((t) => t.genre_id === genreId);
+    }
+    if (view.startsWith("language:")) {
+      const langId = view.split(":")[1];
+      return tracks.filter((t) => t.language_id === langId);
     }
     // Default: use library tracks only (exclude raw collection tracks with numbered names)
     return tracks.filter(t => t.folder_type !== "collection");
