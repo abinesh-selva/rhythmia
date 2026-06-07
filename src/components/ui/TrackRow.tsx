@@ -36,7 +36,7 @@ export const TrackRow = React.memo(function TrackRow({
   onDrop,
   onDragEnd,
 }: TrackRowProps) {
-  const { currentTrack, isPlaying, likedSongs, playTrack, toggleLike } = useAudio();
+  const { currentTrack, isPlaying, likedSongs, playTrack, toggleLike, togglePlay } = useAudio();
   const { openTrackMenu } = useTrackMenu();
   const isCurrent = currentTrack?.id === track.id;
   const isLiked = likedSongs.has(track.id);
@@ -65,6 +65,7 @@ export const TrackRow = React.memo(function TrackRow({
       onDragOver={(e) => isReorderable && onDragOver && onDragOver(e, index)}
       onDrop={(e) => isReorderable && playlistId && playlistTrackIds && onDrop && onDrop(e, index, playlistId, playlistTrackIds)}
       onDragEnd={isReorderable && onDragEnd ? onDragEnd : undefined}
+      onDoubleClick={() => playTrack(track.id, playQueue, track)}
       className={`group grid grid-cols-[40px_1fr_52px_72px] md:grid-cols-[40px_1fr_1fr_52px_72px] gap-4 items-center px-4 py-2.5 rounded-lg transition-colors cursor-pointer select-none border border-transparent ${
         isCurrent ? "bg-white/8" : "hover:bg-white/5"
       } ${dragOverIndex === index && draggedIndex !== index ? "border-dashed border-coral/40 bg-coral/5" : ""} ${
@@ -75,16 +76,39 @@ export const TrackRow = React.memo(function TrackRow({
       {/* Index / play indicator */}
       <div className="relative w-8 h-8 flex items-center justify-center flex-none">
         {isCurrent && isPlaying ? (
-          /* Animated equalizer bars */
-          <div className="flex items-end gap-[2px] h-4 w-4">
-            <div className="w-[3px] bg-coral rounded-sm animate-eq-bar-1" style={{ height: "40%" }} />
-            <div className="w-[3px] bg-coral rounded-sm animate-eq-bar-2" style={{ height: "70%" }} />
-            <div className="w-[3px] bg-coral rounded-sm animate-eq-bar-3" style={{ height: "55%" }} />
-          </div>
+          <>
+            {/* Animated equalizer bars (shown by default, hidden on hover) */}
+            <div className="flex items-end gap-[2px] h-4 w-4 group-hover:hidden">
+              <div className="w-[3px] bg-coral rounded-sm animate-eq-bar-1" style={{ height: "40%" }} />
+              <div className="w-[3px] bg-coral rounded-sm animate-eq-bar-2" style={{ height: "70%" }} />
+              <div className="w-[3px] bg-coral rounded-sm animate-eq-bar-3" style={{ height: "55%" }} />
+            </div>
+            {/* Pause button (hidden by default, shown on hover) */}
+            <button
+              onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+              className="hidden group-hover:flex items-center justify-center w-full h-full text-coral hover:scale-105 active:scale-95 transition-transform"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              </svg>
+            </button>
+          </>
         ) : isCurrent ? (
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-coral">
-            <path d="M8 5v14l11-7z" />
-          </svg>
+          <>
+            {/* Red play/paused status icon (shown by default, hidden on hover) */}
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-coral group-hover:hidden">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            {/* Play button (hidden by default, shown on hover) */}
+            <button
+              onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+              className="hidden group-hover:flex items-center justify-center w-full h-full text-coral hover:scale-105 active:scale-95 transition-transform"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </button>
+          </>
         ) : isReorderable ? (
           <>
             <span className="text-xs text-muted group-hover:hidden">{index + 1}</span>
@@ -97,9 +121,9 @@ export const TrackRow = React.memo(function TrackRow({
             <span className="text-xs text-muted group-hover:hidden">{index + 1}</span>
             <button
               onClick={(e) => { e.stopPropagation(); playTrack(track.id, playQueue, track); }}
-              className="hidden group-hover:flex items-center justify-center w-full h-full"
+              className="hidden group-hover:flex items-center justify-center w-full h-full text-muted hover:text-cream hover:scale-105 active:scale-95 transition-transform"
             >
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-coral">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </button>
