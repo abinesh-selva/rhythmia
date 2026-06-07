@@ -185,208 +185,136 @@ export function Sidebar() {
     <aside className={`w-full h-full hidden md:flex flex-col bg-forest rounded-xl py-4 min-h-0 relative z-20 border border-white/5 transition-all duration-300 ${
       isLibraryCollapsed ? "px-2 gap-3" : "px-3 gap-4"
     }`}>
-      {/* Brand */}
-      <div className={`flex items-center justify-between px-2 flex-none ${isLibraryCollapsed ? "flex-col gap-4" : ""}`}>
-        <div className="flex items-center gap-2.5">
-          <img
-            src="/logo.png"
-            alt="Vibeblower"
-            className="w-8 h-8 rounded-lg object-cover flex-none shadow-md"
-          />
-          {!isLibraryCollapsed && (
-            <h1 className="font-display font-bold text-xl tracking-tight text-cream">Vibeblower</h1>
-          )}
-        </div>
-        
-        {/* Toggle Library Collapse */}
+      {/* Library Header */}
+      <div className={`flex flex-none ${isLibraryCollapsed ? "flex-col items-center gap-4 px-0 pb-2" : "items-center justify-between px-2 pb-1.5"}`}>
         <button
           onClick={toggleLibraryCollapse}
-          className="w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors flex-none"
+          className="flex items-center gap-2 font-semibold text-sm text-muted hover:text-cream transition-colors group/lib"
           title={isLibraryCollapsed ? "Expand Library" : "Collapse Library"}
         >
-          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current text-muted hover:text-cream transition-colors flex-none">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current text-muted group-hover/lib:text-cream transition-colors flex-none">
             <path d="M4 19H2V5h2v14zm4 0H6V5h2v14zm1.75-1.12l-1.22-1.6 9.5-7.2 1.22 1.6-9.5 7.2zM22 5v14H10V5h12z" />
           </svg>
+          {!isLibraryCollapsed && <span className="truncate">Your Library</span>}
         </button>
-      </div>
 
-      {/* Navigation panel */}
-      <nav className="flex flex-col gap-0.5 flex-none">
-        <ul className="flex flex-col gap-0.5">
-          <li>
-            <Link
-              href="/"
-              title="Home"
-              className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
-                isLibraryCollapsed ? "justify-center px-0" : ""
-              } ${
-                view === "home"
-                  ? "bg-white/10 text-cream"
-                  : "text-muted hover:text-cream hover:bg-white/5"
-              }`}
+        {isLibraryCollapsed ? (
+          <button
+            onClick={handleCreatePlaylist}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-muted hover:text-cream hover:bg-white/10 transition-colors flex-none"
+            aria-label="Create playlist"
+            title="Create playlist"
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+          </button>
+        ) : (
+          <div className="flex items-center gap-0.5 flex-none">
+            {/* Create playlist */}
+            <button
+              onClick={handleCreatePlaylist}
+              className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
+              aria-label="Create playlist"
+              title="Create playlist"
             >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current flex-none">
-                {view === "home"
-                  ? <path d="M12 3L4 9v12h5v-7h6v7h5V9z" />
-                  : <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />}
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
               </svg>
-              {!isLibraryCollapsed && <span>Home</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/search"
-              title="Search"
-              className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
-                isLibraryCollapsed ? "justify-center px-0" : ""
-              } ${
-                view === "search"
-                  ? "bg-white/10 text-cream"
-                  : "text-muted hover:text-cream hover:bg-white/5"
-              }`}
-            >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current flex-none">
-                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-              </svg>
-              {!isLibraryCollapsed && <span>Search</span>}
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/recent"
-              title="Recently Played"
-              className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
-                isLibraryCollapsed ? "justify-center px-0" : ""
-              } ${
-                view === "recent"
-                  ? "bg-white/10 text-cream"
-                  : "text-muted hover:text-cream hover:bg-white/5"
-              }`}
-            >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current flex-none">
-                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
-              </svg>
-              {!isLibraryCollapsed && <span>Recently Played</span>}
-            </Link>
-          </li>
-        </ul>
-      </nav>
+            </button>
 
-      {/* Divider */}
-      <div className="h-px bg-white/5 mx-2 flex-none" />
-
-      {/* Library panel */}
-      <div className="flex-1 flex flex-col min-h-0">
-        {/* Library header — primary row: title + create */}
-        {!isLibraryCollapsed && (
-          <div className="flex items-center justify-between px-2 pb-1.5 flex-none">
-            <span className="font-semibold text-sm text-muted">Your Library</span>
-            
-            <div className="flex items-center gap-0.5 flex-none">
-              {/* Create playlist — primary visible action */}
+            {/* Overflow utility menu */}
+            <div className="relative group">
               <button
-                onClick={handleCreatePlaylist}
                 className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
-                aria-label="Create playlist"
-                title="Create playlist"
+                title="More options"
+                aria-label="Library options"
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                 </svg>
               </button>
 
-              {/* Overflow utility menu */}
-              <div className="relative group">
+              {/* Dropdown panel */}
+              <div className="absolute right-0 top-8 w-52 bg-panel border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1.5">
+                {/* Create folder */}
                 <button
-                  className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
-                  title="More options"
-                  aria-label="Library options"
+                  onClick={handleCreateFolder}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
                 >
-                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
-                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
+                    <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
                   </svg>
+                  Create folder
                 </button>
 
-                {/* Dropdown panel */}
-                <div className="absolute right-0 top-8 w-52 bg-panel border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1.5">
-                  {/* Create folder */}
-                  <button
-                    onClick={handleCreateFolder}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
-                  >
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
-                      <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
-                    </svg>
-                    Create folder
-                  </button>
+                {/* Add local files */}
+                <label className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors cursor-pointer">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
+                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
+                  </svg>
+                  Add local files
+                  <input
+                    type="file"
+                    multiple
+                    accept="audio/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files) addLocalFiles(e.target.files);
+                    }}
+                  />
+                </label>
 
-                  {/* Add local files */}
-                  <label className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors cursor-pointer">
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
-                      <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
-                    </svg>
-                    Add local files
-                    <input
-                      type="file"
-                      multiple
-                      accept="audio/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        if (e.target.files) addLocalFiles(e.target.files);
-                      }}
-                    />
-                  </label>
+                <div className="h-px bg-white/8 my-1 mx-3" />
 
-                  <div className="h-px bg-white/8 my-1 mx-3" />
+                {/* Sync from Cloudinary */}
+                <button
+                  onClick={handleCloudinarySync}
+                  disabled={isSyncing}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                    isSyncing ? "text-coral cursor-wait" : "text-cream hover:bg-white/8"
+                  }`}
+                >
+                  <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isSyncing ? "text-coral animate-pulse" : "text-muted"}`}>
+                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                  </svg>
+                  {isSyncing ? "Syncing…" : "Sync Library"}
+                </button>
 
-                  {/* Sync from Cloudinary */}
-                  <button
-                    onClick={handleCloudinarySync}
-                    disabled={isSyncing}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-                      isSyncing ? "text-coral cursor-wait" : "text-cream hover:bg-white/8"
-                    }`}
-                  >
-                    <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isSyncing ? "text-coral animate-pulse" : "text-muted"}`}>
-                      <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
-                    </svg>
-                    {isSyncing ? "Syncing…" : "Sync Library"}
-                  </button>
+                {/* Enrich from Spotify */}
+                <button
+                  onClick={handleSpotifyEnrich}
+                  disabled={isEnriching}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                    isEnriching ? "text-green cursor-wait" : "text-cream hover:bg-white/8"
+                  }`}
+                >
+                  <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isEnriching ? "text-green animate-spin" : "text-muted"}`}>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.08c-.2.31-.61.41-.92.21-2.52-1.54-5.69-1.89-9.42-1.04-.36.08-.72-.15-.8-.51-.08-.36.15-.72.51-.8 4.14-.94 7.64-.53 10.42 1.17.31.2.41.61.21.92zm1.32-2.95c-.25.4-.77.53-1.17.27-2.87-1.77-7.25-2.3-10.74-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 4.02-1.19 8.86-.59 12.13 1.42.4.26.53.78.27 1.18zm.11-3.1c-3.41-2.03-9.04-2.21-12.27-1.23-.54.16-1.11-.14-1.27-.68-.16-.54.14-1.11.68-1.27 3.73-1.13 10.01-.92 13.97 1.44.49.29.65.92.36 1.41-.28.49-.91.64-1.4.35z" />
+                  </svg>
+                  {isEnriching ? "Enriching…" : "Enrich from Spotify"}
+                </button>
 
-                  {/* Enrich from Spotify */}
-                  <button
-                    onClick={handleSpotifyEnrich}
-                    disabled={isEnriching}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-                      isEnriching ? "text-green cursor-wait" : "text-cream hover:bg-white/8"
-                    }`}
-                  >
-                    <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isEnriching ? "text-green animate-spin" : "text-muted"}`}>
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.08c-.2.31-.61.41-.92.21-2.52-1.54-5.69-1.89-9.42-1.04-.36.08-.72-.15-.8-.51-.08-.36.15-.72.51-.8 4.14-.94 7.64-.53 10.42 1.17.31.2.41.61.21.92zm1.32-2.95c-.25.4-.77.53-1.17.27-2.87-1.77-7.25-2.3-10.74-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 4.02-1.19 8.86-.59 12.13 1.42.4.26.53.78.27 1.18zm.11-3.1c-3.41-2.03-9.04-2.21-12.27-1.23-.54.16-1.11-.14-1.27-.68-.16-.54.14-1.11.68-1.27 3.73-1.13 10.01-.92 13.97 1.44.49.29.65.92.36 1.41-.28.49-.91.64-1.4.35z" />
-                    </svg>
-                    {isEnriching ? "Enriching…" : "Enrich from Spotify"}
-                  </button>
+                <div className="h-px bg-white/8 my-1 mx-3" />
 
-                  <div className="h-px bg-white/8 my-1 mx-3" />
-
-                  {/* Theme cycle */}
-                  <button
-                    onClick={cycleTheme}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
-                  >
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
-                      <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
-                    </svg>
-                    Theme: {theme.charAt(0).toUpperCase() + theme.slice(1)}
-                  </button>
-                </div>
+                {/* Theme cycle */}
+                <button
+                  onClick={cycleTheme}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
+                    <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+                  </svg>
+                  Theme: {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                </button>
               </div>
             </div>
           </div>
         )}
+      </div>
 
-        {/* Library Content */}
-        <div className="flex-1 flex flex-col min-h-0">
+      {/* Library Content */}
+      <div className="flex-1 flex flex-col min-h-0">
           {!isLibraryCollapsed && (
             <div className="flex flex-wrap gap-1 px-2 pb-2">
               {FILTERS.map((f) => (
@@ -598,7 +526,6 @@ export function Sidebar() {
               })}
           </div>
         </div>
-      </div>
     </aside>
   );
 }

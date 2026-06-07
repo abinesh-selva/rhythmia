@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 import { useAudio } from "../../context/AudioContext";
 import { useAuth } from "../../context/AuthContext";
 
@@ -13,53 +14,83 @@ export function TopNavigation({
   setIsFriendOpen,
   setIsAuthOpen,
 }: TopNavigationProps) {
+  const router = useRouter();
   const { view, setView, searchQuery, setSearchQuery, isPrivateSession, togglePrivateSession } = useAudio();
   const { user, profile, signOut, isOffline } = useAuth();
 
+  const handleHomeClick = () => {
+    setView("home");
+    router.push("/");
+  };
+
+  const handleSearchFocus = () => {
+    if (view !== "search") {
+      setView("search");
+      router.push("/search");
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 py-3 px-5 bg-forest-dark/95 backdrop-blur-xl border-b border-white/5">
-      {/* History navigation */}
-      <div className="flex items-center gap-1.5 flex-none">
-        <button
-          className="w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-cream/40 hover:text-cream/80 hover:bg-black/50 transition-all"
-          onClick={() => window.history.back()}
-          aria-label="Go back"
-          title="Go back"
-        >
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" />
-          </svg>
-        </button>
-        <button
-          className="w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-cream/40 hover:text-cream/80 hover:bg-black/50 transition-all"
-          onClick={() => window.history.forward()}
-          aria-label="Go forward"
-          title="Go forward"
-        >
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-          </svg>
-        </button>
+    <header className="w-full md:col-span-full flex items-center justify-between gap-4 py-3 px-6 bg-forest-dark text-cream border-b border-white/5 relative z-40 select-none transition-all duration-300">
+      {/* Left side: Brand Logo */}
+      <div 
+        onClick={handleHomeClick}
+        className="flex items-center gap-2 cursor-pointer transition-transform hover:scale-[1.02]"
+      >
+        <img
+          src="/logo.png"
+          alt="Vibeblower"
+          className="w-8 h-8 rounded-lg object-cover flex-none shadow-md"
+        />
+        <span className="font-display font-bold text-lg tracking-tight text-cream hidden sm:inline">Vibeblower</span>
       </div>
 
-      {/* Search input — shown only in search view */}
-      {view === "search" && (
-        <div className="flex-1 max-w-md mx-auto relative animate-fade-in">
-          <svg viewBox="0 0 24 24" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 fill-muted pointer-events-none">
+      {/* Center navigation: Home Button + Search input pill */}
+      <div className="flex-1 max-w-xl flex items-center gap-3 justify-center mx-auto">
+        {/* Home Button (Circle) */}
+        <button
+          onClick={handleHomeClick}
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+            view === "home"
+              ? "bg-white text-black hover:scale-105 active:scale-95"
+              : "bg-white/8 text-cream hover:bg-white/12 hover:scale-105 active:scale-95"
+          }`}
+          aria-label="Home"
+          title="Home"
+        >
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+            <path d="M12 3L4 9v12h5v-7h6v7h5V9z" />
+          </svg>
+        </button>
+
+        {/* Search input pill */}
+        <div className="flex-1 relative max-w-md flex items-center bg-white/8 hover:bg-white/12 hover:border-white/20 focus-within:bg-white/10 focus-within:border-white/30 border border-white/10 rounded-full px-3.5 py-2 transition-all">
+          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-muted mr-2 flex-none">
             <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
           </svg>
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={handleSearchFocus}
             placeholder="What do you want to play?"
-            className="w-full pl-10 pr-4 py-2.5 bg-white/8 border border-white/10 hover:border-white/20 rounded-full text-cream text-sm placeholder-muted/60 focus:outline-none focus:border-coral/60 focus:bg-white/10 transition-all"
-            autoFocus
+            className="flex-1 bg-transparent border-none outline-none text-cream text-sm placeholder-muted/60 focus:ring-0 p-0"
           />
+          <div className="h-4 w-px bg-white/15 mx-2 flex-none" />
+          <button 
+            onClick={handleSearchFocus}
+            className="text-muted hover:text-cream flex items-center justify-center p-0.5 transition-colors flex-none"
+            title="Browse all categories"
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="9" y1="3" x2="9" y2="21" />
+            </svg>
+          </button>
         </div>
-      )}
+      </div>
 
-      {/* Right-side controls */}
-      <div className="flex items-center gap-2 flex-none">
+      {/* Right side navigation controls */}
+      <div className="flex items-center gap-2.5 flex-none">
         {/* Private session toggle */}
         <button
           onClick={togglePrivateSession}
@@ -76,7 +107,14 @@ export function TopNavigation({
           <span className="hidden sm:inline">Private</span>
         </button>
 
-        {/* Friend activity toggle — only visible on lg+ where the panel actually renders */}
+        {/* Bell Notifications */}
+        <button className="w-8 h-8 rounded-full bg-white/6 text-muted hover:text-cream hover:bg-white/12 transition-all flex items-center justify-center flex-none">
+          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
+          </svg>
+        </button>
+
+        {/* Friend activity toggle */}
         <button
           onClick={() => setIsFriendOpen(!isFriendOpen)}
           className={`hidden lg:flex w-8 h-8 rounded-full items-center justify-center transition-all ${
@@ -95,24 +133,27 @@ export function TopNavigation({
         {/* Offline badge */}
         {isOffline && (
           <span
-            className="text-xs text-coral/90 font-semibold uppercase tracking-wider bg-coral/10 border border-coral/20 px-2.5 py-1 rounded-full hidden md:block"
+            className="text-xs text-coral/90 font-semibold uppercase tracking-wider bg-coral/10 border border-coral/20 px-2.5 py-1 rounded-full hidden md:block animate-pulse"
             title="Running in offline mode. Add Supabase keys to .env.local to persist data."
           >
             Offline
           </span>
         )}
 
-        {/* User profile */}
-        {profile ? (
+        {/* User profile avatar / dropdown */}
+        {profile && user?.email !== "guest@vibeblower.com" ? (
           <div className="relative group">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-coral to-pink flex items-center justify-center font-bold text-xs text-forest-dark cursor-pointer ring-2 ring-transparent group-hover:ring-cream/30 transition-all shadow-sm">
               {(user?.email || "A")[0].toUpperCase()}
             </div>
-            <div className="absolute right-0 mt-2 w-48 bg-panel border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 animate-slide-up">
-              <div className="p-1.5 flex flex-col">
+            <div className="absolute right-0 mt-2 w-48 bg-panel border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1.5">
+              <div className="p-1 flex flex-col">
                 <span className="px-3 py-2 text-xs text-muted truncate border-b border-white/5 mb-1">{user?.email}</span>
                 <button
-                  onClick={() => setView("settings")}
+                  onClick={() => {
+                    setView("settings");
+                    router.push("/settings");
+                  }}
                   className="text-left px-3 py-2 text-sm text-cream hover:bg-white/8 rounded-lg transition-colors"
                 >
                   Settings

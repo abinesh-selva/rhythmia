@@ -251,14 +251,14 @@ input {
 @utility shell-grid-2 {
   @media (min-width: 768px) {
     grid-template-columns: var(--sidebar-width, 260px) 1fr;
-    grid-template-rows: 1fr 88px;
+    grid-template-rows: auto 1fr auto;
   }
 }
 
 @utility shell-grid-3 {
   @media (min-width: 768px) {
     grid-template-columns: var(--sidebar-width, 260px) 1fr;
-    grid-template-rows: 1fr 88px;
+    grid-template-rows: auto 1fr auto;
   }
   @media (min-width: 1024px) {
     grid-template-columns: var(--sidebar-width, 260px) 1fr 280px;

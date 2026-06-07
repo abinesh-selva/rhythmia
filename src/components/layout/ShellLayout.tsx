@@ -140,6 +140,13 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         style={{ background: "radial-gradient(circle at 50% 0%, var(--bg-color-1), transparent 50%), radial-gradient(circle at 0% 100%, var(--bg-color-2), transparent 50%)" }}
       />
 
+      {/* Top Header Navigation (spans full width) */}
+      <TopNavigation
+        isFriendOpen={isFriendOpen}
+        setIsFriendOpen={handleFriendToggle}
+        setIsAuthOpen={setIsAuthOpen}
+      />
+
       {/* Sidebar Area */}
       <div className="relative hidden md:flex min-h-0">
         <Sidebar />
@@ -173,11 +180,6 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
       {/* Main content area */}
       <main className="main bg-forest-dark/80 backdrop-blur-md border border-white/5 rounded-xl overflow-y-auto min-h-0 flex flex-col relative shadow-2xl transition-all">
-        <TopNavigation
-          isFriendOpen={isFriendOpen}
-          setIsFriendOpen={handleFriendToggle}
-          setIsAuthOpen={setIsAuthOpen}
-        />
         <div className="flex-1 min-h-0 relative">
           {children}
         </div>
