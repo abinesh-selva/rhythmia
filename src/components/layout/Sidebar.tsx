@@ -151,6 +151,7 @@ export function Sidebar() {
     const newVal = !isLibraryCollapsed;
     setIsLibraryCollapsed(newVal);
     localStorage.setItem("vibeblower_library_collapsed", String(newVal));
+    window.dispatchEvent(new Event("sidebar-collapse-toggle"));
   };
 
   // Determine active view
@@ -181,15 +182,19 @@ export function Sidebar() {
   ] as const;
 
   return (
-    <aside className="w-full h-full hidden md:flex flex-col bg-forest rounded-xl py-4 px-3 min-h-0 relative z-20 border border-white/5 gap-4">
+    <aside className={`w-full h-full hidden md:flex flex-col bg-forest rounded-xl py-4 min-h-0 relative z-20 border border-white/5 transition-all duration-300 ${
+      isLibraryCollapsed ? "px-2 gap-3" : "px-3 gap-4"
+    }`}>
       {/* Brand */}
-      <div className="flex items-center gap-2.5 px-2 flex-none">
+      <div className={`flex items-center gap-2.5 px-2 flex-none ${isLibraryCollapsed ? "justify-center" : ""}`}>
         <img
           src="/logo.png"
           alt="Vibeblower"
           className="w-8 h-8 rounded-lg object-cover flex-none shadow-md"
         />
-        <h1 className="font-display font-bold text-xl tracking-tight text-cream">Vibeblower</h1>
+        {!isLibraryCollapsed && (
+          <h1 className="font-display font-bold text-xl tracking-tight text-cream">Vibeblower</h1>
+        )}
       </div>
 
       {/* Navigation panel */}
@@ -198,7 +203,10 @@ export function Sidebar() {
           <li>
             <Link
               href="/"
+              title="Home"
               className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
+                isLibraryCollapsed ? "justify-center px-0" : ""
+              } ${
                 view === "home"
                   ? "bg-white/10 text-cream"
                   : "text-muted hover:text-cream hover:bg-white/5"
@@ -209,13 +217,16 @@ export function Sidebar() {
                   ? <path d="M12 3L4 9v12h5v-7h6v7h5V9z" />
                   : <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />}
               </svg>
-              Home
+              {!isLibraryCollapsed && <span>Home</span>}
             </Link>
           </li>
           <li>
             <Link
               href="/search"
+              title="Search"
               className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
+                isLibraryCollapsed ? "justify-center px-0" : ""
+              } ${
                 view === "search"
                   ? "bg-white/10 text-cream"
                   : "text-muted hover:text-cream hover:bg-white/5"
@@ -224,13 +235,16 @@ export function Sidebar() {
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current flex-none">
                 <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
               </svg>
-              Search
+              {!isLibraryCollapsed && <span>Search</span>}
             </Link>
           </li>
           <li>
             <Link
               href="/recent"
+              title="Recently Played"
               className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
+                isLibraryCollapsed ? "justify-center px-0" : ""
+              } ${
                 view === "recent"
                   ? "bg-white/10 text-cream"
                   : "text-muted hover:text-cream hover:bg-white/5"
@@ -239,7 +253,7 @@ export function Sidebar() {
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current flex-none">
                 <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
               </svg>
-              Recently Played
+              {!isLibraryCollapsed && <span>Recently Played</span>}
             </Link>
           </li>
         </ul>
@@ -251,7 +265,7 @@ export function Sidebar() {
       {/* Library panel */}
       <div className="flex-1 flex flex-col min-h-0">
         {/* Library header — primary row: title + create */}
-        <div className="flex items-center justify-between px-2 pb-1.5 flex-none">
+        <div className={`flex items-center justify-between px-2 pb-1.5 flex-none ${isLibraryCollapsed ? "flex-col gap-4 px-0" : ""}`}>
           <button
             onClick={toggleLibraryCollapse}
             className="flex items-center gap-2 font-semibold text-sm text-muted hover:text-cream transition-colors group/lib"
@@ -260,21 +274,13 @@ export function Sidebar() {
             <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current text-muted group-hover/lib:text-cream transition-colors flex-none">
               <path d="M4 19H2V5h2v14zm4 0H6V5h2v14zm1.75-1.12l-1.22-1.6 9.5-7.2 1.22 1.6-9.5 7.2zM22 5v14H10V5h12z" />
             </svg>
-            <span className="truncate">Your Library</span>
-            <svg
-              viewBox="0 0 24 24"
-              className={`w-4 h-4 fill-current transition-transform duration-200 flex-none ${
-                isLibraryCollapsed ? "-rotate-90" : ""
-              }`}
-            >
-              <path d="M7 10l5 5 5-5z" />
-            </svg>
+            {!isLibraryCollapsed && <span className="truncate">Your Library</span>}
           </button>
-          <div className="flex items-center gap-0.5">
-            {/* Create playlist — primary visible action */}
+          
+          {isLibraryCollapsed ? (
             <button
               onClick={handleCreatePlaylist}
-              className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors flex-none"
               aria-label="Create playlist"
               title="Create playlist"
             >
@@ -282,118 +288,122 @@ export function Sidebar() {
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
               </svg>
             </button>
-
-            {/* Overflow utility menu */}
-            <div className="relative group">
+          ) : (
+            <div className="flex items-center gap-0.5 flex-none">
               <button
+                onClick={handleCreatePlaylist}
                 className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
-                title="More options"
-                aria-label="Library options"
+                aria-label="Create playlist"
+                title="Create playlist"
               >
-                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
-                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                 </svg>
               </button>
 
-              {/* Dropdown panel */}
-              <div className="absolute right-0 top-8 w-52 bg-panel border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1.5">
-                {/* Create folder */}
+              <div className="relative group">
                 <button
-                  onClick={handleCreateFolder}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
+                  title="More options"
+                  aria-label="Library options"
                 >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
-                    <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10zM11 11h2v3h3v2h-3v3h-2v-3H8v-2h3z" />
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                   </svg>
-                  Create folder
                 </button>
 
-                {/* Add local files */}
-                <label className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors cursor-pointer">
-                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
-                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
-                  </svg>
-                  Add local files
-                  <input
-                    type="file"
-                    multiple
-                    accept="audio/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files) addLocalFiles(e.target.files);
-                    }}
-                  />
-                </label>
+                <div className="absolute right-0 top-8 w-52 bg-panel border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1.5">
+                  <button
+                    onClick={handleCreateFolder}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
+                      <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
+                    </svg>
+                    Create folder
+                  </button>
 
-                <div className="h-px bg-white/8 my-1 mx-3" />
+                  <label className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors cursor-pointer">
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
+                      <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
+                    </svg>
+                    Add local files
+                    <input
+                      type="file"
+                      multiple
+                      accept="audio/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files) addLocalFiles(e.target.files);
+                      }}
+                    />
+                  </label>
 
-                {/* Sync from Cloudinary */}
-                <button
-                  onClick={handleCloudinarySync}
-                  disabled={isSyncing}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-                    isSyncing ? "text-coral cursor-wait" : "text-cream hover:bg-white/8"
-                  }`}
-                >
-                  <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isSyncing ? "text-coral animate-pulse" : "text-muted"}`}>
-                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
-                  </svg>
-                  {isSyncing ? "Syncing…" : "Sync Library"}
-                </button>
+                  <div className="h-px bg-white/8 my-1 mx-3" />
 
-                {/* Enrich from Spotify */}
-                <button
-                  onClick={handleSpotifyEnrich}
-                  disabled={isEnriching}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-                    isEnriching ? "text-green cursor-wait" : "text-cream hover:bg-white/8"
-                  }`}
-                >
-                  <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isEnriching ? "text-green animate-spin" : "text-muted"}`}>
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.08c-.2.31-.61.41-.92.21-2.52-1.54-5.69-1.89-9.42-1.04-.36.08-.72-.15-.8-.51-.08-.36.15-.72.51-.8 4.14-.94 7.64-.53 10.42 1.17.31.2.41.61.21.92zm1.32-2.95c-.25.4-.77.53-1.17.27-2.87-1.77-7.25-2.3-10.74-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 4.02-1.19 8.86-.59 12.13 1.42.4.26.53.78.27 1.18zm.11-3.1c-3.41-2.03-9.04-2.21-12.27-1.23-.54.16-1.11-.14-1.27-.68-.16-.54.14-1.11.68-1.27 3.73-1.13 10.01-.92 13.97 1.44.49.29.65.92.36 1.41-.28.49-.91.64-1.4.35z" />
-                  </svg>
-                  {isEnriching ? "Enriching…" : "Enrich from Spotify"}
-                </button>
+                  <button
+                    onClick={handleCloudinarySync}
+                    disabled={isSyncing}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                      isSyncing ? "text-coral cursor-wait" : "text-cream hover:bg-white/8"
+                    }`}
+                  >
+                    <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isSyncing ? "text-coral animate-pulse" : "text-muted"}`}>
+                      <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                    </svg>
+                    {isSyncing ? "Syncing…" : "Sync Library"}
+                  </button>
 
-                <div className="h-px bg-white/8 my-1 mx-3" />
+                  <button
+                    onClick={handleSpotifyEnrich}
+                    disabled={isEnriching}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                      isEnriching ? "text-green cursor-wait" : "text-cream hover:bg-white/8"
+                    }`}
+                  >
+                    <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isEnriching ? "text-green animate-spin" : "text-muted"}`}>
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.08c-.2.31-.61.41-.92.21-2.52-1.54-5.69-1.89-9.42-1.04-.36.08-.72-.15-.8-.51-.08-.36.15-.72.51-.8 4.14-.94 7.64-.53 10.42 1.17.31.2.41.61.21.92zm1.32-2.95c-.25.4-.77.53-1.17.27-2.87-1.77-7.25-2.3-10.74-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 4.02-1.19 8.86-.59 12.13 1.42.4.26.53.78.27 1.18zm.11-3.1c-3.41-2.03-9.04-2.21-12.27-1.23-.54.16-1.11-.14-1.27-.68-.16-.54.14-1.11.68-1.27 3.73-1.13 10.01-.92 13.97 1.44.49.29.65.92.36 1.41-.28.49-.91.64-1.4.35z" />
+                    </svg>
+                    {isEnriching ? "Enriching…" : "Enrich from Spotify"}
+                  </button>
 
-                {/* Theme cycle */}
-                <button
-                  onClick={cycleTheme}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
-                >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
-                    <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
-                  </svg>
-                  Theme: {theme.charAt(0).toUpperCase() + theme.slice(1)}
-                </button>
+                  <div className="h-px bg-white/8 my-1 mx-3" />
+
+                  <button
+                    onClick={cycleTheme}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
+                      <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+                    </svg>
+                    Theme: {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Library Content — Collapsible */}
-        <div className={`flex-1 flex flex-col min-h-0 transition-all duration-300 ease-in-out ${
-          isLibraryCollapsed ? "opacity-0 h-0 pointer-events-none overflow-hidden" : "opacity-100"
-        }`}>
-          {/* Filter chips — wrap to 2 rows so all are always visible */}
-          <div className="flex flex-wrap gap-1 px-2 pb-2">
-            {FILTERS.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setLibraryFilter(f.key)}
-                className={`px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-none ${
-                  libraryFilter === f.key
-                    ? "bg-cream text-forest-dark"
-                    : "bg-white/6 text-muted hover:text-cream hover:bg-white/10"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+        {/* Library Content */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {!isLibraryCollapsed && (
+            <div className="flex flex-wrap gap-1 px-2 pb-2">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  onClick={() => setLibraryFilter(f.key)}
+                  className={`px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-none ${
+                    libraryFilter === f.key
+                      ? "bg-cream text-forest-dark"
+                      : "bg-white/6 text-muted hover:text-cream hover:bg-white/10"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          )}
 
-          {/* Library items */}
           <div 
             className="flex-1 overflow-y-auto px-1 pb-2"
             onDragOver={(e) => e.preventDefault()}
@@ -404,11 +414,11 @@ export function Sidebar() {
               }
             }}
           >
-            {/* Liked Songs */}
             {(libraryFilter === "all" || libraryFilter === "playlists") && (
               <LibraryItem
                 active={view === "liked"}
                 onClick={() => setView("liked")}
+                collapsed={isLibraryCollapsed}
                 art={
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-coral to-pink flex items-center justify-center flex-none shadow-sm">
                     <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream">
@@ -421,7 +431,6 @@ export function Sidebar() {
               />
             )}
 
-            {/* Folders */}
             {(libraryFilter === "all" || libraryFilter === "playlists") &&
               folders.map((folder) => {
                 const folderPlaylists = playlists.filter(p => folder.playlistIds.includes(p.id));
@@ -437,7 +446,10 @@ export function Sidebar() {
                   >
                     <button
                       onClick={() => saveFolders(folders.map(f => f.id === folder.id ? { ...f, expanded: !f.expanded } : f))}
-                      className="w-full flex items-center gap-3 p-2 rounded-lg text-left hover:bg-white/5 transition-colors group"
+                      className={`w-full flex items-center gap-3 p-2 rounded-lg text-left hover:bg-white/5 transition-colors group ${
+                        isLibraryCollapsed ? "justify-center p-1.5" : ""
+                      }`}
+                      title={isLibraryCollapsed ? folder.name : undefined}
                     >
                       <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-none shadow-sm">
                         <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream/70">
@@ -448,13 +460,15 @@ export function Sidebar() {
                           )}
                         </svg>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-cream truncate">{folder.name}</p>
-                        <p className="text-xs text-muted truncate">Folder · {folderPlaylists.length} playlists</p>
-                      </div>
+                      {!isLibraryCollapsed && (
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-cream truncate">{folder.name}</p>
+                          <p className="text-xs text-muted truncate">Folder · {folderPlaylists.length} playlists</p>
+                        </div>
+                      )}
                     </button>
                     {folder.expanded && (
-                      <div className="pl-4 border-l border-white/10 ml-6 mt-1 flex flex-col gap-0.5">
+                      <div className={`${isLibraryCollapsed ? "pl-0 ml-0 border-l-0" : "pl-4 border-l border-white/10 ml-6"} mt-1 flex flex-col gap-0.5`}>
                         {folderPlaylists.map(pl => (
                           <div 
                             key={pl.id} 
@@ -464,6 +478,7 @@ export function Sidebar() {
                             <LibraryItem
                               active={view === `playlist:${pl.id}`}
                               onClick={() => setView(`playlist:${pl.id}`)}
+                              collapsed={isLibraryCollapsed}
                               art={
                                 <div
                                   className="w-8 h-8 rounded-md flex items-center justify-center flex-none shadow-sm"
@@ -486,7 +501,6 @@ export function Sidebar() {
                 );
               })}
 
-            {/* Unassigned User playlists */}
             {(libraryFilter === "all" || libraryFilter === "playlists") &&
               unassignedPlaylists.map((pl) => (
                 <div 
@@ -497,6 +511,7 @@ export function Sidebar() {
                   <LibraryItem
                     active={view === `playlist:${pl.id}`}
                     onClick={() => setView(`playlist:${pl.id}`)}
+                    collapsed={isLibraryCollapsed}
                     art={
                       <div
                         className="w-10 h-10 rounded-lg flex items-center justify-center flex-none shadow-sm"
@@ -514,13 +529,13 @@ export function Sidebar() {
                 </div>
               ))}
 
-            {/* Collections */}
             {(libraryFilter === "all" || libraryFilter === "collections") &&
               collections.map((col) => (
                 <LibraryItem
                   key={col.id}
                   active={false}
                   onClick={() => router.push(`/collection/${col.id}/${col.slug}`)}
+                  collapsed={isLibraryCollapsed}
                   art={
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center flex-none shadow-sm"
@@ -536,13 +551,13 @@ export function Sidebar() {
                 />
               ))}
 
-            {/* Artists */}
             {(libraryFilter === "all" || libraryFilter === "artists") &&
               dbArtists.map((artist) => (
                 <LibraryItem
                   key={artist.id}
                   active={isArtistActive(artist.id)}
                   onClick={() => router.push(`/artist/${artist.id}/${artist.slug}`)}
+                  collapsed={isLibraryCollapsed}
                   art={
                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center flex-none overflow-hidden relative">
                       {artist.image ? (
@@ -559,7 +574,6 @@ export function Sidebar() {
                 />
               ))}
 
-            {/* Albums */}
             {(libraryFilter === "all" || libraryFilter === "albums") &&
               dbAlbums.map((album) => {
                 const [c1, c2] = getAlbumColors(album);
@@ -569,6 +583,7 @@ export function Sidebar() {
                     key={album.id}
                     active={isAlbumActive(album.id)}
                     onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
+                    collapsed={isLibraryCollapsed}
                     art={
                       <div
                         className="w-10 h-10 rounded-md flex-none shadow-sm"
@@ -594,26 +609,32 @@ interface LibraryItemProps {
   title: string;
   subtitle: string;
   badge?: React.ReactNode;
+  collapsed?: boolean;
 }
 
-function LibraryItem({ active, onClick, art, title, subtitle, badge }: LibraryItemProps) {
+function LibraryItem({ active, onClick, art, title, subtitle, badge, collapsed }: LibraryItemProps) {
   return (
     <div
       onClick={onClick}
       className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all ${
-        active ? "bg-white/10" : "hover:bg-white/5"
+        collapsed ? "justify-center px-1" : "hover:bg-white/5"
+      } ${
+        active ? "bg-white/10" : ""
       }`}
+      title={collapsed ? `${title} • ${subtitle}` : undefined}
     >
       {art}
-      <div className="flex flex-col min-w-0 flex-1">
-        <span className={`text-sm font-semibold truncate leading-tight ${active ? "text-coral" : "text-cream"}`}>
-          {title}
-        </span>
-        <div className="flex items-center gap-1 mt-0.5">
-          {badge}
-          <span className="text-xs text-muted truncate">{subtitle}</span>
+      {!collapsed && (
+        <div className="flex flex-col min-w-0 flex-1">
+          <span className={`text-sm font-semibold truncate leading-tight ${active ? "text-coral" : "text-cream"}`}>
+            {title}
+          </span>
+          <div className="flex items-center gap-1 mt-0.5">
+            {badge}
+            <span className="text-xs text-muted truncate">{subtitle}</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

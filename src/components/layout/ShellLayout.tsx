@@ -33,6 +33,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isFriendOpen, setIsFriendOpen] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(260);
   const [mounted, setMounted] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -40,6 +41,14 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     if (saved) setSidebarWidth(parseInt(saved, 10));
     const savedFriendOpen = localStorage.getItem("vibeblower_friend_open");
     setIsFriendOpen(savedFriendOpen !== "false");
+
+    const checkCollapse = () => {
+      const savedCollapsed = localStorage.getItem("vibeblower_library_collapsed");
+      setIsSidebarCollapsed(savedCollapsed === "true");
+    };
+    checkCollapse();
+    window.addEventListener("sidebar-collapse-toggle", checkCollapse);
+    return () => window.removeEventListener("sidebar-collapse-toggle", checkCollapse);
   }, []);
 
   const handleSidebarResize = (e: MouseEvent) => {
@@ -117,7 +126,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         mounted && isFriendOpen ? "shell-grid-3" : "shell-grid-2"
       }`}
       style={mounted ? {
-        "--sidebar-width": `${sidebarWidth}px`,
+        "--sidebar-width": isSidebarCollapsed ? "72px" : `${sidebarWidth}px`,
         "--bg-color-1": currentTrack ? currentTrack.cover_colors[0] : "var(--theme-forest)",
         "--bg-color-2": currentTrack ? currentTrack.cover_colors[1] : "var(--theme-forest-dark)",
       } as React.CSSProperties : {
@@ -135,29 +144,31 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       <div className="relative hidden md:flex min-h-0">
         <Sidebar />
         {/* Resize bar — mouse drag + keyboard-accessible range input */}
-        <div
-          role="separator"
-          aria-orientation="vertical"
-          className="LayoutResizer__resize-bar w-1.5 hover:bg-white/10 active:bg-white/20 cursor-col-resize absolute right-0 top-0 bottom-0 z-50 transition-colors"
-          onMouseDown={startSidebarResize}
-        >
-          <label className="sr-only">
-            Resize main navigation
-            <input
-              className="LayoutResizer__input"
-              type="range"
-              min={200}
-              max={450}
-              step={10}
-              value={sidebarWidth}
-              onChange={(e) => {
-                const w = Number(e.target.value);
-                setSidebarWidth(w);
-                localStorage.setItem("vibeblower_sidebar_width", String(w));
-              }}
-            />
-          </label>
-        </div>
+        {!isSidebarCollapsed && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            className="LayoutResizer__resize-bar w-1.5 hover:bg-white/10 active:bg-white/20 cursor-col-resize absolute right-0 top-0 bottom-0 z-50 transition-colors"
+            onMouseDown={startSidebarResize}
+          >
+            <label className="sr-only">
+              Resize main navigation
+              <input
+                className="LayoutResizer__input"
+                type="range"
+                min={200}
+                max={450}
+                step={10}
+                value={sidebarWidth}
+                onChange={(e) => {
+                  const w = Number(e.target.value);
+                  setSidebarWidth(w);
+                  localStorage.setItem("vibeblower_sidebar_width", String(w));
+                }}
+              />
+            </label>
+          </div>
+        )}
       </div>
 
       {/* Main content area */}
