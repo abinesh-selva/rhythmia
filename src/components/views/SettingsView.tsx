@@ -66,7 +66,7 @@ const THEMES = [
   { key: "vibeblower", label: "Vibeblower", color: "#F0824E" },
   { key: "catppuccin", label: "Catppuccin", color: "#cba6f7" },
   { key: "nord",       label: "Nord",       color: "#88c0d0" },
-  { key: "spotify",    label: "Spotify",    color: "#1DB954" },
+  { key: "spotify",    label: "Emerald",    color: "#1DB954" },
 ] as const;
 
 export function SettingsView() {

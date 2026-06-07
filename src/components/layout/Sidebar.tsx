@@ -307,7 +307,7 @@ export function Sidebar() {
                   {isSyncing ? "Syncing…" : "Sync Library"}
                 </button>
 
-                {/* Enrich from Spotify */}
+                {/* Enrich Metadata */}
                 <button
                   onClick={handleSpotifyEnrich}
                   disabled={isEnriching}
@@ -318,7 +318,7 @@ export function Sidebar() {
                   <svg viewBox="0 0 24 24" className={`w-4 h-4 fill-current flex-none ${isEnriching ? "text-green animate-spin" : "text-muted"}`}>
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.08c-.2.31-.61.41-.92.21-2.52-1.54-5.69-1.89-9.42-1.04-.36.08-.72-.15-.8-.51-.08-.36.15-.72.51-.8 4.14-.94 7.64-.53 10.42 1.17.31.2.41.61.21.92zm1.32-2.95c-.25.4-.77.53-1.17.27-2.87-1.77-7.25-2.3-10.74-1.26-.45.14-.92-.12-1.06-.57-.14-.45.12-.92.57-1.06 4.02-1.19 8.86-.59 12.13 1.42.4.26.53.78.27 1.18zm.11-3.1c-3.41-2.03-9.04-2.21-12.27-1.23-.54.16-1.11-.14-1.27-.68-.16-.54.14-1.11.68-1.27 3.73-1.13 10.01-.92 13.97 1.44.49.29.65.92.36 1.41-.28.49-.91.64-1.4.35z" />
                   </svg>
-                  {isEnriching ? "Enriching…" : "Enrich from Spotify"}
+                  {isEnriching ? "Enriching…" : "Enrich Metadata"}
                 </button>
 
                 <div className="h-px bg-white/8 my-1 mx-3" />
@@ -331,7 +331,7 @@ export function Sidebar() {
                   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
                     <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
                   </svg>
-                  Theme: {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                  Theme: {theme === 'spotify' ? 'Emerald' : theme.charAt(0).toUpperCase() + theme.slice(1)}
                 </button>
               </div>
             </div>
