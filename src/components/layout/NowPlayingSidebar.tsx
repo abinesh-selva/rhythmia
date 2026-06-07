@@ -99,7 +99,7 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
   if (!currentTrack) return null;
 
   return (
-    <aside className="np fixed top-1.5 right-1.5 bottom-[90px] w-full md:w-72 bg-panel border border-white/8 md:rounded-xl z-40 overflow-hidden flex flex-col shadow-2xl animate-slide-in-right">
+    <aside className="np fixed top-1.5 right-1.5 bottom-np-bottom w-full md:w-72 bg-panel border border-white/8 md:rounded-xl z-40 overflow-hidden flex flex-col shadow-2xl animate-slide-in-right">
       {/* Header */}
       <div className="flex justify-between items-center px-4 py-3.5 border-b border-white/6 flex-none">
         <h3 className="font-display font-bold text-base text-cream">Now Playing</h3>
@@ -262,7 +262,7 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
                         e.stopPropagation();
                         removeFromQueue(idx);
                       }}
-                      className="text-[10px] text-coral/70 opacity-0 group-hover:opacity-100 transition-opacity font-semibold flex-none px-2 py-1 hover:bg-coral/20 rounded cursor-pointer"
+                      className="text-label text-coral/70 opacity-0 group-hover:opacity-100 transition-opacity font-semibold flex-none px-2 py-1 hover:bg-coral/20 rounded cursor-pointer"
                     >
                       Remove
                     </button>

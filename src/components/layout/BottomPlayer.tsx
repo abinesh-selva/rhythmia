@@ -11,8 +11,6 @@ const fmt = (s: number) => {
 interface BottomPlayerProps {
   isNPOpen: boolean;
   setIsNPOpen: (val: boolean) => void;
-  npTab: "lyrics" | "queue";
-  setNpTab: (val: "lyrics" | "queue") => void;
 }
 
 function useDeviceInfo() {
@@ -48,7 +46,7 @@ function useDeviceInfo() {
   return deviceInfo;
 }
 
-export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomPlayerProps) {
+export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
   const deviceInfo = useDeviceInfo();
   const { currentTime, duration } = usePlaybackTime();
   const {
@@ -110,7 +108,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
   const isPodcastMode = currentTrack?.type === "podcast" || currentTrack?.type === "audiobook";
 
   return (
-    <footer className="w-full md:col-span-full h-[68px] md:h-[88px] bg-forest-dark border-t border-white/5 flex items-center px-2 md:px-5 select-none relative z-40 shrink-0">
+    <footer className="w-full md:col-span-full h-player-sm md:h-player bg-forest-dark border-t border-white/5 flex items-center px-2 md:px-5 select-none relative z-40 shrink-0">
       {/* Left: track info */}
       <div className="flex items-center gap-2 md:gap-3 w-[30%] min-w-0">
         {currentTrack ? (
@@ -200,7 +198,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
                 <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
               </svg>
-              <span className="absolute text-[9px] font-black text-cream top-2">15</span>
+              <span className="absolute text-tiny font-black text-cream top-2">15</span>
             </button>
           ) : (
             <button
@@ -242,7 +240,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-6 md:h-6 fill-current">
                 <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" />
               </svg>
-              <span className="absolute text-[9px] font-black text-cream top-2">15</span>
+              <span className="absolute text-tiny font-black text-cream top-2">15</span>
             </button>
           ) : (
             <button
@@ -269,7 +267,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
               <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" />
             </svg>
             {repeatMode === 2 && (
-              <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-coral text-forest-dark text-[8px] font-black rounded-full flex items-center justify-center">
+              <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-coral text-forest-dark text-micro font-black rounded-full flex items-center justify-center">
                 1
               </span>
             )}
@@ -278,7 +276,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
         {/* Progress bar */}
         <div className="hidden md:flex items-center gap-2.5 w-full">
-          <span className="text-[11px] text-muted/70 tabular-nums w-8 text-right">{fmt(currentTime)}</span>
+          <span className="text-sub text-muted/70 tabular-nums w-8 text-right">{fmt(currentTime)}</span>
           <input
             type="range"
             min="0"
@@ -287,42 +285,18 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             onChange={(e) => seek(Number(e.target.value))}
             className="flex-1 cursor-pointer accent-cream hover:accent-coral transition-colors"
           />
-          <span className="text-[11px] text-muted/70 tabular-nums w-8 text-left">{fmt(duration)}</span>
+          <span className="text-sub text-muted/70 tabular-nums w-8 text-left">{fmt(duration)}</span>
         </div>
       </div>
 
       {/* Right: extra controls */}
       <div className="hidden md:flex items-center justify-end gap-2.5 w-[30%]">
-        {/* Lyrics */}
-        <button
-          onClick={() => { setIsNPOpen(true); setNpTab("lyrics"); }}
-          className={`transition-all hover:scale-110 active:scale-90 ${isNPOpen && npTab === "lyrics" ? "text-coral" : "text-muted hover:text-cream"}`}
-          aria-label="Open Lyrics"
-          title="Lyrics"
-        >
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-            <path d="M3 5h18v2H3V5zm0 4h18v2H3V9zm0 4h12v2H3v-2zm0 4h12v2H3v-2z" />
-          </svg>
-        </button>
-
-        {/* Queue */}
-        <button
-          onClick={() => { setIsNPOpen(true); setNpTab("queue"); }}
-          className={`transition-all hover:scale-110 active:scale-90 ${isNPOpen && npTab === "queue" ? "text-coral" : "text-muted hover:text-cream"}`}
-          aria-label="Open Queue"
-          title="Queue"
-        >
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-            <path d="M3 6h13v2H3V6zm0 4h13v2H3v-2zm0 4h9v2H3v-2zm15-3l4 3-4 3v-6z" />
-          </svg>
-        </button>
-
         {/* Now Playing panel toggle */}
         <button
           onClick={() => setIsNPOpen(!isNPOpen)}
           className={`transition-all hover:scale-110 active:scale-90 ${isNPOpen ? "text-coral" : "text-muted hover:text-cream"}`}
           aria-label="Toggle Now Playing"
-          title="Now playing"
+          title="Now Playing"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
             <path d="M4 4h7v7H4V4zm0 9h7v7H4v-7zm9-9h7v7h-7V4zm0 9h7v7h-7v-7z" />
@@ -367,7 +341,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 5h-2v6l5 3 1-1.7-4-2.3V7z" />
           </svg>
           {(sleepTimer !== null || sleepTimerRemaining !== null) && (
-            <span className="absolute -top-1 -right-1 text-[8px] bg-coral text-forest-dark font-black px-1 rounded-sm leading-3 py-0.5">ON</span>
+            <span className="absolute -top-1 -right-1 text-micro bg-coral text-forest-dark font-black px-1 rounded-sm leading-3 py-0.5">ON</span>
           )}
         </button>
 
@@ -407,7 +381,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
       {/* EQ Popover */}
       {isEQOpen && (
-        <div ref={eqRef} className="absolute right-16 bottom-[96px] w-68 bg-panel border border-white/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
+        <div ref={eqRef} className="absolute right-16 bottom-above-player w-68 bg-panel border border-white/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-display font-bold text-sm">3-Band Equalizer</h4>
             <button onClick={() => setIsEQOpen(false)} className="text-muted hover:text-cream text-lg leading-none w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
@@ -457,7 +431,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
       {/* Sleep Timer Popover */}
       {isSleepOpen && (
-        <div ref={sleepRef} className="absolute right-10 bottom-[96px] w-52 bg-panel border border-white/10 rounded-2xl p-4 shadow-2xl z-50 text-cream animate-fade-in">
+        <div ref={sleepRef} className="absolute right-10 bottom-above-player w-52 bg-panel border border-white/10 rounded-2xl p-4 shadow-2xl z-50 text-cream animate-fade-in">
           <div className="flex justify-between items-center mb-3">
             <h4 className="font-display font-bold text-sm">Sleep Timer</h4>
             <button onClick={() => setIsSleepOpen(false)} className="text-muted hover:text-cream text-lg leading-none w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
@@ -506,7 +480,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
       {/* Devices Popover */}
       {isDevicesOpen && (
-        <div ref={devicesRef} className="absolute right-4 bottom-[96px] w-76 bg-panel border border-white/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
+        <div ref={devicesRef} className="absolute right-4 bottom-above-player w-76 bg-panel border border-white/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-display font-bold text-sm flex items-center gap-2">
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-green">
@@ -519,7 +493,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             </button>
           </div>
 
-          <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">Current Device</p>
+          <p className="text-label text-muted uppercase tracking-wider font-semibold mb-2">Current Device</p>
           <div className="flex items-center gap-3 p-3 bg-green/8 border border-green/15 rounded-xl mb-4">
             <svg viewBox="0 0 24 24" className="w-8 h-8 fill-green flex-none">
               <path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" />
@@ -534,7 +508,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
             </div>
           </div>
 
-          <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">Supported Formats</p>
+          <p className="text-label text-muted uppercase tracking-wider font-semibold mb-2">Supported Formats</p>
           <div className="flex flex-wrap gap-1.5 mb-4">
             {deviceInfo.formats.map((f) => (
               <span key={f} className="text-xs font-semibold px-2 py-0.5 bg-green/10 border border-green/20 text-green rounded-full">

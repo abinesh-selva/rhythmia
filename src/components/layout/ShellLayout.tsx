@@ -170,8 +170,6 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       <BottomPlayer
         isNPOpen={isNPOpen}
         setIsNPOpen={setIsNPOpen}
-        npTab={npTab}
-        setNpTab={setNpTab}
       />
 
       {/* Mobile navigation */}

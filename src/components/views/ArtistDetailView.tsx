@@ -133,7 +133,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
                 <div
                   key={album.id}
                   onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
-                  className="flex flex-col gap-2.5 min-w-[148px] md:min-w-[164px] p-3 bg-white/4 hover:bg-white/8 rounded-xl cursor-pointer group transition-all"
+                  className="flex flex-col gap-2.5 min-w-card-xs md:min-w-card-alt p-3 bg-white/4 hover:bg-white/8 rounded-xl cursor-pointer group transition-all"
                 >
                   <div
                     className="w-full aspect-square rounded-lg shadow-md flex items-center justify-center relative overflow-hidden"

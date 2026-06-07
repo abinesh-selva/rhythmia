@@ -66,7 +66,7 @@ export default function Page() {
           </button>
 
           <div className="mx-3 my-1 border-t border-white/8" />
-          <div className="px-4 py-1.5 text-[10px] font-semibold text-muted uppercase tracking-wider">
+          <div className="px-4 py-1.5 text-label font-semibold text-muted uppercase tracking-wider">
             Add to Playlist
           </div>
           <div className="max-h-36 overflow-y-auto pb-1">

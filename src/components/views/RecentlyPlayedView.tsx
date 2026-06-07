@@ -17,10 +17,10 @@ export function RecentlyPlayedView({ onContextMenu }: RecentlyPlayedViewProps) {
   return (
     <div className="flex flex-col min-h-full pb-20">
       {/* Header Hero */}
-      <div className="hero p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 relative overflow-hidden transition-all" style={{ background: 'linear-gradient(to bottom, rgba(30,158,84,0.6), var(--theme-forest-dark))' }}>
+      <div className="hero recent-hero-bg p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 relative overflow-hidden transition-all">
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark/80 to-transparent z-0" />
 
-        <div className="hero-art w-40 h-40 md:w-56 md:h-56 rounded-xl flex items-center justify-center flex-none shadow-2xl z-10 transition-transform hover:scale-105" style={{ background: 'linear-gradient(135deg, #1E9E54, #F0824E)' }}>
+        <div className="hero-art recent-art-bg w-40 h-40 md:w-56 md:h-56 rounded-xl flex items-center justify-center flex-none shadow-2xl z-10 transition-transform hover:scale-105">
           <svg viewBox="0 0 24 24" className="w-16 h-16 md:w-24 md:h-24 fill-white shadow-inner drop-shadow-md">
             <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
           </svg>

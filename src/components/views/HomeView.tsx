@@ -82,9 +82,13 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
 
   useEffect(() => {
     if (!supabase) { setCatalogLoading(false); return; }
+    if (isLoading) return;
     let cancelled = false;
+    const done = () => { if (!cancelled) setCatalogLoading(false); };
     const recentArtistIds = Array.from(new Set(historyTracks.map(t => t.artist_id).filter(Boolean))) as string[];
     const recentAlbumIds  = Array.from(new Set(historyTracks.map(t => t.album_id).filter(Boolean)))  as string[];
+
+    const timeout = setTimeout(done, 10_000);
 
     Promise.all([
       supabase.from("albums").select("id,title,slug,cover_image,cover_colors,track_count,artist_id,artists(display_name,slug)").order("track_count", { ascending: false }).limit(10),
@@ -96,6 +100,7 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
       recentAlbumIds.length  > 0 ? supabase.from("albums").select("id,title,slug,cover_image,cover_colors,track_count,artist_id,artists(display_name,slug)").in("id", recentAlbumIds) : Promise.resolve({ data: [] }),
       topArtistId ? supabase.from("albums").select("id,title,slug,cover_image,cover_colors,track_count,artist_id,artists(display_name,slug)").eq("artist_id", topArtistId).limit(8) : Promise.resolve({ data: [] }),
     ]).then((results) => {
+      clearTimeout(timeout);
       if (cancelled) return;
       setPopularAlbums((results[0].data as unknown as AlbumRow[]) ?? []);
       setNewAlbums((results[1].data as unknown as AlbumRow[]) ?? []);
@@ -119,10 +124,10 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
       setUserRecentAlbums(sortedAlbums);
       setMoreLikeAlbums((results[7].data as unknown as AlbumRow[]) ?? []);
       setCatalogLoading(false);
-    });
+    }).catch(() => { clearTimeout(timeout); done(); });
 
-    return () => { cancelled = true; };
-  }, [historyTracks, topArtistId]);
+    return () => { cancelled = true; clearTimeout(timeout); };
+  }, [historyTracks, topArtistId, isLoading]);
 
   useEffect(() => {
     if (!topGenreId && !topArtistId) { setMadeForYou([]); return; }
@@ -401,7 +406,7 @@ const Card = React.memo(function Card({ title, subtitle, image, colors, type, on
   const c2 = colors?.[1] ?? "#111";
 
   return (
-    <div onClick={onClick} className="flex flex-col gap-2.5 min-w-[160px] md:min-w-[180px] max-w-[160px] md:max-w-[180px] p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer group transition-all">
+    <div onClick={onClick} className="flex flex-col gap-2.5 min-w-card-sm md:min-w-card-lg max-w-card-sm md:max-w-card-lg p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer group transition-all">
       <div
         className={`w-full aspect-square relative overflow-hidden flex items-center justify-center shadow-md ${isRounded ? "rounded-full" : "rounded-lg"}`}
         style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
@@ -445,7 +450,7 @@ function HomeSkeleton() {
           <div className="h-5 w-40 bg-white/8 rounded mb-4" />
           <div className="flex gap-3 overflow-hidden">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="min-w-[148px] md:min-w-[168px] flex flex-col gap-2.5 p-3">
+              <div key={i} className="min-w-card-xs md:min-w-card-md flex flex-col gap-2.5 p-3">
                 <div className="w-full aspect-square rounded-lg bg-white/8" />
                 <div className="h-3.5 w-3/4 bg-white/8 rounded" />
                 <div className="h-3 w-1/2 bg-white/8 rounded" />

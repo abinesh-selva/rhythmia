@@ -814,12 +814,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    if (repeatMode === 2 && currentTrack) {
-      const el = activePlayer === "A" ? audioRefA.current! : audioRefB.current!;
-      el.currentTime = 0;
-      return;
-    }
-
     // In structured views always navigate within the live view's tracks — never escape to stale playbackContext
     const liveViewTracks = getTracksForView();
     const viewIsStructured =
@@ -834,6 +828,11 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (queue.length > 0) {
         playTrack(queue[0], liveIds, undefined, false);
+        return;
+      }
+
+      if (repeatMode === 2 && currentTrack) {
+        playTrack(currentTrack.id, liveIds, undefined, false);
         return;
       }
 
