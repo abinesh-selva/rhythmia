@@ -157,7 +157,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
           {artistResults.length > 0 && (
             <section>
               <h3 className="text-lg font-bold text-cream mb-3">Artists</h3>
-              <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+              <div className="overflow-hidden -mb-4"><div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
                 {artistResults.map((artist) => (
                   <div
                     key={artist.id}
@@ -174,7 +174,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                     <span className="text-xs text-muted">Artist</span>
                   </div>
                 ))}
-              </div>
+              </div></div>
             </section>
           )}
 
@@ -182,7 +182,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
           {albumResults.length > 0 && (
             <section>
               <h3 className="text-lg font-bold text-cream mb-3">Albums</h3>
-              <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+              <div className="overflow-hidden -mb-4"><div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
                 {albumResults.map((album) => {
                   const [c1, c2] = getAlbumColors(album);
                   const artistInfo = Array.isArray(album.artists) ? album.artists[0] : album.artists;
@@ -203,7 +203,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                     </div>
                   );
                 })}
-              </div>
+              </div></div>
             </section>
           )}
 
@@ -223,7 +223,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
           {playlistResults.length > 0 && (
             <section>
               <h3 className="text-lg font-bold text-cream mb-3">Playlists</h3>
-              <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+              <div className="overflow-hidden -mb-4"><div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
                 {playlistResults.map((pl) => {
                   const c = Array.isArray(pl.cover_colors) ? pl.cover_colors : ["#F0824E","#1E9E54"];
                   return (
@@ -239,7 +239,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                     </div>
                   );
                 })}
-              </div>
+              </div></div>
             </section>
           )}
 
@@ -247,7 +247,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
           {singerResults.length > 0 && (
             <section>
               <h3 className="text-lg font-bold text-cream mb-3">Singers</h3>
-              <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+              <div className="overflow-hidden -mb-4"><div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
                 {singerResults.map((singer) => (
                   <a key={singer.id} href={`/singer/${singer.id}/${singer.slug}`}
                     className="flex flex-col items-center gap-2 min-w-32 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
@@ -263,7 +263,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
                     <span className="text-xs text-muted">Singer · {singer.track_count} songs</span>
                   </a>
                 ))}
-              </div>
+              </div></div>
             </section>
           )}
 

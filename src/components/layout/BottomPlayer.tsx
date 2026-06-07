@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAudio } from "../../context/AudioContext";
 
 const fmt = (s: number) => {
@@ -66,7 +66,6 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
     eqMid,
     eqHigh,
     playbackSpeed,
-    view,
     setView,
     togglePlay,
     nextTrack,
@@ -86,6 +85,28 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
   const [isEQOpen, setIsEQOpen] = useState(false);
   const [isSleepOpen, setIsSleepOpen] = useState(false);
   const [isDevicesOpen, setIsDevicesOpen] = useState(false);
+
+  const eqRef = useRef<HTMLDivElement>(null);
+  const sleepRef = useRef<HTMLDivElement>(null);
+  const devicesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isEQOpen && !isSleepOpen && !isDevicesOpen) return;
+    const onMouseDown = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (
+        (isEQOpen      && eqRef.current      && !eqRef.current.contains(t))      ||
+        (isSleepOpen   && sleepRef.current   && !sleepRef.current.contains(t))   ||
+        (isDevicesOpen && devicesRef.current && !devicesRef.current.contains(t))
+      ) {
+        setIsEQOpen(false);
+        setIsSleepOpen(false);
+        setIsDevicesOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [isEQOpen, isSleepOpen, isDevicesOpen]);
 
   const isPodcastMode = currentTrack?.type === "podcast" || currentTrack?.type === "audiobook";
 
@@ -287,8 +308,8 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
         {/* Queue */}
         <button
-          onClick={() => setView("queue")}
-          className={`transition-all hover:scale-110 active:scale-90 ${view === "queue" ? "text-coral" : "text-muted hover:text-cream"}`}
+          onClick={() => { setIsNPOpen(true); setNpTab("queue"); }}
+          className={`transition-all hover:scale-110 active:scale-90 ${isNPOpen && npTab === "queue" ? "text-coral" : "text-muted hover:text-cream"}`}
           aria-label="Open Queue"
           title="Queue"
         >
@@ -387,7 +408,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
       {/* EQ Popover */}
       {isEQOpen && (
-        <div className="absolute right-16 bottom-[96px] w-68 bg-panel border border-white/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
+        <div ref={eqRef} className="absolute right-16 bottom-[96px] w-68 bg-panel border border-white/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-display font-bold text-sm">3-Band Equalizer</h4>
             <button onClick={() => setIsEQOpen(false)} className="text-muted hover:text-cream text-lg leading-none w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
@@ -437,7 +458,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
       {/* Sleep Timer Popover */}
       {isSleepOpen && (
-        <div className="absolute right-10 bottom-[96px] w-52 bg-panel border border-white/10 rounded-2xl p-4 shadow-2xl z-50 text-cream animate-fade-in">
+        <div ref={sleepRef} className="absolute right-10 bottom-[96px] w-52 bg-panel border border-white/10 rounded-2xl p-4 shadow-2xl z-50 text-cream animate-fade-in">
           <div className="flex justify-between items-center mb-3">
             <h4 className="font-display font-bold text-sm">Sleep Timer</h4>
             <button onClick={() => setIsSleepOpen(false)} className="text-muted hover:text-cream text-lg leading-none w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
@@ -486,10 +507,10 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
 
       {/* Devices Popover */}
       {isDevicesOpen && (
-        <div className="absolute right-4 bottom-[96px] w-76 bg-panel border border-white/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
+        <div ref={devicesRef} className="absolute right-4 bottom-[96px] w-76 bg-panel border border-white/10 rounded-2xl p-5 shadow-2xl z-50 text-cream animate-fade-in">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-display font-bold text-sm flex items-center gap-2">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-coral">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-green">
                 <path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" />
               </svg>
               Vibeblower Connect
@@ -500,12 +521,12 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomP
           </div>
 
           <p className="text-[10px] text-muted uppercase tracking-wider font-semibold mb-2">Current Device</p>
-          <div className="flex items-center gap-3 p-3 bg-coral/8 border border-coral/15 rounded-xl mb-4">
-            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-coral flex-none">
+          <div className="flex items-center gap-3 p-3 bg-green/8 border border-green/15 rounded-xl mb-4">
+            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-green flex-none">
               <path d="M4 5h16v10H4V5zm-2 13h20v2H2v-2z" />
             </svg>
             <div className="min-w-0 flex-1">
-              <span className="text-sm font-semibold text-coral block">{deviceInfo.browser}</span>
+              <span className="text-sm font-semibold text-green block">{deviceInfo.browser}</span>
               <span className="text-xs text-muted">{deviceInfo.os} · Web Audio API</span>
             </div>
             <div className="flex items-center gap-1 flex-none">

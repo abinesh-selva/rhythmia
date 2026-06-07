@@ -434,6 +434,17 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [tracks]);
 
+  // 4. Browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      const v = e.state?.view ?? new URLSearchParams(window.location.search).get("view") ?? "home";
+      setViewState(v);
+      setCurrentViewPlaylistId(v.startsWith("playlist:") ? v.split(":")[1] : null);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   // Audio Context & Graph Scaffolding - Lazy Initialization Guarding React StrictMode
   const initAudioGraph = () => {
     if (isGraphInitialized.current || typeof window === "undefined") return;
@@ -999,6 +1010,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       setCurrentViewPlaylistId(viewName.split(":")[1]);
     } else {
       setCurrentViewPlaylistId(null);
+    }
+    if (typeof window !== "undefined") {
+      window.history.pushState({ view: viewName }, "", "?view=" + encodeURIComponent(viewName));
     }
   };
 

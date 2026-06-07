@@ -126,7 +126,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
             <h2 className="text-lg font-bold text-cream">Albums</h2>
             <span className="text-xs text-muted">{albums.length} releases</span>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-3 no-scrollbar">
+          <div className="overflow-hidden -mb-4"><div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
             {albums.map((album) => {
               const colors = Array.isArray(album.cover_colors) ? album.cover_colors : ["#F0824E", "#1E9E54"];
               return (
@@ -146,8 +146,8 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
                         <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
                       </svg>
                     )}
-                    <div className="absolute right-2 bottom-2 w-9 h-9 bg-coral rounded-full flex items-center justify-center shadow-lg translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
-                      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-forest-dark ml-0.5">
+                    <div className="absolute right-2 bottom-2 w-10 h-10 bg-green rounded-full flex items-center justify-center shadow-xl translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-black ml-0.5">
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </div>
@@ -161,7 +161,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
                 </div>
               );
             })}
-          </div>
+          </div></div>
         </div>
       )}
 

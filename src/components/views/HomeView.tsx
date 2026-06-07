@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAudio, Track, Playlist, Collection } from "@/context/AudioContext";
 import { supabase } from "@/lib/supabase";
@@ -195,7 +195,7 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
     <div className="flex flex-col min-h-full pb-10 overflow-x-hidden">
       {/* Header */}
       <div className="pt-5 px-6 md:px-8 sticky top-0 z-20 bg-forest-dark/95 backdrop-blur-md border-b border-white/5 pb-3.5">
-        <h2 className="font-display font-bold text-2xl md:text-3xl text-cream tracking-tight mb-3">{greeting}</h2>
+        <h2 className="font-display font-bold text-3xl md:text-4xl text-cream tracking-tight mb-3">{greeting}</h2>
         <div className="relative">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
             {(["All", "Music", "Albums", "Artists", "Playlists"] as const).map((chip) => (
@@ -218,27 +218,27 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
 
       {/* Quick Picks */}
       {shouldShow("playlists") && quickPicks.length > 0 && (
-        <div className="px-6 md:px-8 pt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        <div className="px-6 md:px-8 pt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
           {quickPicks.map((qp) => (
             <div
               key={qp.id}
               onClick={qp.onClick}
-              className="group bg-white/5 hover:bg-white/10 rounded-lg flex items-center gap-0 cursor-pointer transition-all relative overflow-hidden"
+              className="group bg-white/8 hover:bg-white/14 rounded-md flex items-center gap-0 cursor-pointer transition-all relative overflow-hidden shadow-sm"
             >
               {qp.image ? (
-                <img src={qp.image} alt={qp.title} className="w-14 h-14 object-cover flex-none rounded-l-lg" />
+                <img src={qp.image} alt={qp.title} className="w-16 h-16 object-cover flex-none" />
               ) : (
                 <div
-                  className="w-14 h-14 flex-none rounded-l-lg"
+                  className="w-16 h-16 flex-none"
                   style={{ background: `linear-gradient(135deg, ${qp.color1}, ${qp.color2})` }}
                 />
               )}
-              <span className="font-semibold text-cream text-sm truncate px-3 flex-1">{qp.title}</span>
+              <span className="font-bold text-cream text-sm truncate px-4 flex-1">{qp.title}</span>
               <button
                 onClick={qp.onPlay}
-                className="w-9 h-9 bg-coral rounded-full flex items-center justify-center shadow-lg opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all absolute right-3"
+                className="w-10 h-10 bg-green rounded-full flex items-center justify-center shadow-xl opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all absolute right-4 hover:scale-110 active:scale-95"
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-forest-dark ml-0.5">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-black ml-0.5">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </button>
@@ -266,7 +266,7 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
 
       {/* 3. Recently played (Albums) */}
       {shouldShow("albums") && userRecentAlbums.length > 0 && (
-        <Shelf title="Recently played">
+        <Shelf title="Recently played" onShowAll={() => setView("recent")}>
           {userRecentAlbums.map(alb => {
             const [c1, c2] = getAlbumColors(alb);
             const artistName = Array.isArray(alb.artists) ? alb.artists[0]?.display_name : alb.artists?.display_name;
@@ -296,7 +296,7 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
 
       {/* 5. Your top artists */}
       {shouldShow("artists") && userTopArtists.length > 0 && (
-        <Shelf title="Your top artists">
+        <Shelf title="Your top artists" onShowAll={() => setView("search")}>
           {userTopArtists.map(art => (
             <Card 
               key={art.id} title={art.display_name} subtitle="Artist" image={art.image} type="artist"
@@ -325,7 +325,7 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
 
       {/* 7. Popular albums */}
       {shouldShow("albums") && popularAlbums.length > 0 && (
-        <Shelf title="Popular albums">
+        <Shelf title="Popular albums" onShowAll={() => setView("search")}>
           {popularAlbums.map(alb => {
             const [c1, c2] = getAlbumColors(alb);
             const artistName = Array.isArray(alb.artists) ? alb.artists[0]?.display_name : alb.artists?.display_name;
@@ -378,7 +378,7 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
 
       {/* 11. Recently added */}
       {shouldShow("albums") && newAlbums.length > 0 && (
-        <Shelf title="Recently added">
+        <Shelf title="Recently added" onShowAll={() => setView("search")}>
           {newAlbums.map(alb => {
             const [c1, c2] = getAlbumColors(alb);
             const artistName = Array.isArray(alb.artists) ? alb.artists[0]?.display_name : alb.artists?.display_name;
@@ -401,15 +401,67 @@ export function HomeView({ onContextMenu }: HomeViewProps) {
 // UI Subcomponents
 // ----------------------------------------------------
 
-function Shelf({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function useDragScroll() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isDown = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+  const moved = useRef(false);
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    isDown.current = true;
+    moved.current = false;
+    startX.current = e.pageX - (ref.current?.offsetLeft ?? 0);
+    scrollLeft.current = ref.current?.scrollLeft ?? 0;
+  };
+  const onMouseUp = () => { isDown.current = false; };
+  const onMouseLeave = () => { isDown.current = false; };
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDown.current) return;
+    e.preventDefault();
+    moved.current = true;
+    const x = e.pageX - (ref.current?.offsetLeft ?? 0);
+    if (ref.current) ref.current.scrollLeft = scrollLeft.current - (x - startX.current) * 1.4;
+  };
+  // Suppress child clicks when the gesture was a drag, not a tap
+  const onClickCapture = (e: React.MouseEvent) => {
+    if (moved.current) { e.stopPropagation(); moved.current = false; }
+  };
+
+  return { ref, onMouseDown, onMouseUp, onMouseLeave, onMouseMove, onClickCapture };
+}
+
+function Shelf({ title, subtitle, onShowAll, children }: { title: string; subtitle?: string; onShowAll?: () => void; children: React.ReactNode }) {
+  const drag = useDragScroll();
   return (
     <div className="px-6 md:px-8 pt-8">
-      <div className="mb-4 flex items-baseline gap-3">
-        <h3 className="text-xl font-bold tracking-tight text-cream">{title}</h3>
-        {subtitle && <p className="text-xs text-muted">{subtitle}</p>}
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-xl font-bold tracking-tight text-cream">{title}</h3>
+          {subtitle && <p className="text-xs text-muted mt-0.5">{subtitle}</p>}
+        </div>
+        {onShowAll && (
+          <button
+            onClick={onShowAll}
+            className="text-xs font-bold text-muted hover:text-cream uppercase tracking-wider transition-colors flex-none"
+          >
+            Show all
+          </button>
+        )}
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-3 no-scrollbar">
-        {children}
+      {/* overflow-hidden clips the scrollbar track that webkit reserves below cards */}
+      <div className="overflow-hidden -mb-4">
+        <div
+          ref={drag.ref}
+          onMouseDown={drag.onMouseDown}
+          onMouseUp={drag.onMouseUp}
+          onMouseLeave={drag.onMouseLeave}
+          onMouseMove={drag.onMouseMove}
+          onClickCapture={drag.onClickCapture}
+          className="flex gap-3 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none pb-4"
+        >
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -433,7 +485,7 @@ function Card({ title, subtitle, image, colors, type, onClick, onPlay }: CardPro
   return (
     <div
       onClick={onClick}
-      className="flex flex-col gap-2.5 min-w-[148px] md:min-w-[168px] max-w-[148px] md:max-w-[168px] p-3 bg-white/4 hover:bg-white/8 rounded-xl cursor-pointer group transition-all"
+      className="flex flex-col gap-2.5 min-w-[160px] md:min-w-[180px] max-w-[160px] md:max-w-[180px] p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer group transition-all"
     >
       <div
         className={`w-full aspect-square relative overflow-hidden flex items-center justify-center shadow-md ${isRounded ? "rounded-full" : "rounded-lg"}`}
@@ -451,9 +503,9 @@ function Card({ title, subtitle, image, colors, type, onClick, onPlay }: CardPro
         {onPlay && (
           <button
             onClick={onPlay}
-            className="absolute right-2 bottom-2 w-10 h-10 bg-coral rounded-full flex items-center justify-center shadow-lg translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10"
+            className="absolute right-3 bottom-3 w-12 h-12 bg-green rounded-full flex items-center justify-center shadow-xl translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 z-10 hover:scale-105 active:scale-95"
           >
-            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-forest-dark ml-0.5">
+            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-black ml-0.5">
               <path d="M8 5v14l11-7z" />
             </svg>
           </button>

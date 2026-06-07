@@ -43,7 +43,7 @@ export function TrackRow({
 
   if (track.is_active === false) {
     return (
-      <div className="grid track-row-grid gap-4 items-center px-4 py-2.5 rounded-lg opacity-30 cursor-not-allowed select-none">
+      <div className="grid grid-cols-[40px_1fr_52px_72px] md:grid-cols-[40px_1fr_1fr_52px_72px] gap-4 items-center px-4 py-2.5 rounded-lg opacity-30 cursor-not-allowed select-none">
         <span className="text-xs text-muted text-center">{index + 1}</span>
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 rounded-md bg-white/5 flex-none" />
@@ -65,7 +65,7 @@ export function TrackRow({
       onDragOver={(e) => isReorderable && onDragOver && onDragOver(e, index)}
       onDrop={(e) => isReorderable && playlistId && playlistTrackIds && onDrop && onDrop(e, index, playlistId, playlistTrackIds)}
       onDragEnd={isReorderable && onDragEnd ? onDragEnd : undefined}
-      className={`group grid track-row-grid gap-4 items-center px-4 py-2.5 rounded-lg transition-colors cursor-pointer select-none border border-transparent ${
+      className={`group grid grid-cols-[40px_1fr_52px_72px] md:grid-cols-[40px_1fr_1fr_52px_72px] gap-4 items-center px-4 py-2.5 rounded-lg transition-colors cursor-pointer select-none border border-transparent ${
         isCurrent ? "bg-white/8" : "hover:bg-white/5"
       } ${dragOverIndex === index && draggedIndex !== index ? "border-dashed border-coral/40 bg-coral/5" : ""} ${
         draggedIndex === index ? "opacity-40" : ""
@@ -77,9 +77,9 @@ export function TrackRow({
         {isCurrent && isPlaying ? (
           /* Animated equalizer bars */
           <div className="flex items-end gap-[2px] h-4 w-4">
-            <div className="w-[3px] bg-coral rounded-sm eq-bar-1" style={{ height: "40%" }} />
-            <div className="w-[3px] bg-coral rounded-sm eq-bar-2" style={{ height: "70%" }} />
-            <div className="w-[3px] bg-coral rounded-sm eq-bar-3" style={{ height: "55%" }} />
+            <div className="w-[3px] bg-coral rounded-sm animate-eq-bar-1" style={{ height: "40%" }} />
+            <div className="w-[3px] bg-coral rounded-sm animate-eq-bar-2" style={{ height: "70%" }} />
+            <div className="w-[3px] bg-coral rounded-sm animate-eq-bar-3" style={{ height: "55%" }} />
           </div>
         ) : isCurrent ? (
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-coral">
