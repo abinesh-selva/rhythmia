@@ -27,7 +27,7 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
   const lyricsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!canvasRef.current || !analyserNode || !isPlaying) {
+    if (!canvasRef.current || !analyserNode || !isPlaying || !currentTrack) {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
       return;
     }
@@ -42,19 +42,38 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
       animationRef.current = requestAnimationFrame(draw);
       analyserNode.getByteFrequencyData(dataArray);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const barWidth = canvas.width / dataArray.length;
+      
+      // Dynamic gradient using the active track's cover colors
+      const gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+      gradient.addColorStop(0, currentTrack.cover_colors?.[0] || "#1E9E54");
+      gradient.addColorStop(1, currentTrack.cover_colors?.[1] || "#F0824E");
+      ctx.fillStyle = gradient;
 
-      for (let i = 0; i < dataArray.length; i++) {
-        const percent = dataArray[i] / 255;
-        const barHeight = percent * canvas.height;
-        ctx.fillStyle = i % 2 === 0 ? "#F0824E" : "#1E9E54";
-        ctx.fillRect(i * barWidth, canvas.height - barHeight, barWidth - 1, barHeight);
+      const totalBars = Math.min(dataArray.length, 32); // Limit number of bars for a cleaner, modern look
+      const gap = 3;
+      const barWidth = (canvas.width - (totalBars - 1) * gap) / totalBars;
+
+      for (let i = 0; i < totalBars; i++) {
+        // Apply an exponential curve to frequency data for better low-mid visual representation
+        const rawValue = dataArray[i];
+        const percent = Math.pow(rawValue / 255, 1.2);
+        const barHeight = Math.max(3, percent * (canvas.height - 4));
+        const x = i * (barWidth + gap);
+        const y = canvas.height - barHeight;
+
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(x, y, barWidth, barHeight, [4, 4, 0, 0]);
+        } else {
+          ctx.rect(x, y, barWidth, barHeight);
+        }
+        ctx.fill();
       }
     };
 
     draw();
     return () => { if (animationRef.current) cancelAnimationFrame(animationRef.current); };
-  }, [analyserNode, isPlaying]);
+  }, [analyserNode, isPlaying, currentTrack]);
 
   const parsedLyrics = useMemo(() => {
     const lines = lyrics.split('\n');
