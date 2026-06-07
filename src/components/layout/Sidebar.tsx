@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAudio } from "../../context/AudioContext";
 import { supabase } from "../../lib/supabase";
@@ -181,25 +182,25 @@ export function Sidebar() {
         {/* Nav links */}
         <ul className="flex flex-col gap-0.5">
           <li>
-            <button
-              onClick={() => setView("home")}
+            <Link
+              href="/"
               className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
-                view === "home" && pathname === "/"
+                view === "home"
                   ? "bg-white/10 text-cream"
                   : "text-muted hover:text-cream hover:bg-white/5"
               }`}
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current flex-none">
-                {view === "home" && pathname === "/"
+                {view === "home"
                   ? <path d="M12 3L4 9v12h5v-7h6v7h5V9z" />
                   : <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />}
               </svg>
               Home
-            </button>
+            </Link>
           </li>
           <li>
-            <button
-              onClick={() => setView("search")}
+            <Link
+              href="/search"
               className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
                 view === "search"
                   ? "bg-white/10 text-cream"
@@ -210,11 +211,11 @@ export function Sidebar() {
                 <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
               </svg>
               Search
-            </button>
+            </Link>
           </li>
           <li>
-            <button
-              onClick={() => setView("recent")}
+            <Link
+              href="/recent"
               className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
                 view === "recent"
                   ? "bg-white/10 text-cream"
@@ -225,7 +226,7 @@ export function Sidebar() {
                 <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
               </svg>
               Recently Played
-            </button>
+            </Link>
           </li>
         </ul>
       </nav>

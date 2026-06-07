@@ -2,11 +2,7 @@ import React from "react";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
 
-interface LikedSongsViewProps {
-  onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-}
-
-export function LikedSongsView({ onContextMenu }: LikedSongsViewProps) {
+export function LikedSongsView() {
   const { tracks, likedSongs, playTrack } = useAudio();
   const likedTracks = tracks.filter((t) => likedSongs.has(t.id));
 
@@ -69,7 +65,6 @@ export function LikedSongsView({ onContextMenu }: LikedSongsViewProps) {
                 track={t} 
                 index={idx} 
                 playQueue={likedTracks.map(x => x.id)}
-                onContextMenu={onContextMenu} 
               />
             ))}
           </div>

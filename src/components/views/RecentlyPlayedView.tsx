@@ -2,11 +2,7 @@ import React from "react";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
 
-interface RecentlyPlayedViewProps {
-  onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-}
-
-export function RecentlyPlayedView({ onContextMenu }: RecentlyPlayedViewProps) {
+export function RecentlyPlayedView() {
   const { tracks, recentlyPlayed, playTrack } = useAudio();
   
   // recentlyPlayed is an array of track IDs ordered from most recent to least recent
@@ -68,8 +64,7 @@ export function RecentlyPlayedView({ onContextMenu }: RecentlyPlayedViewProps) {
               <TrackRow 
                 key={`${t.id}-${idx}`} 
                 track={t} 
-                index={idx} 
-                onContextMenu={onContextMenu} 
+                index={idx}
               />
             ))}
           </div>

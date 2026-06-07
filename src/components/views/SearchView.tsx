@@ -6,10 +6,6 @@ import { useAudio, Track } from "@/context/AudioContext";
 import { supabase } from "@/lib/supabase";
 import { TrackRow } from "@/components/ui/TrackRow";
 
-interface SearchViewProps {
-  onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-}
-
 interface ArtistResult   { id: string; display_name: string; slug: string; image: string | null; track_count: number }
 interface AlbumResult    { id: string; title: string; slug: string; cover_image: string | null; cover_colors: string[]; artists: { display_name: string; slug: string } | null }
 interface PlaylistResult { id: string; name: string; cover_colors: string[] }
@@ -43,7 +39,7 @@ function getAlbumColors(album: AlbumResult): [string, string] {
   return ["#F0824E", "#1E9E54"];
 }
 
-export function SearchView({ onContextMenu }: SearchViewProps) {
+export function SearchView() {
   const router = useRouter();
   const { tracks, libraryTracks, searchQuery, isLoading } = useAudio();
   const [activeGenre, setActiveGenre] = useState<(typeof GENRES)[number] | null>(null);
@@ -116,6 +112,11 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, tracks]);
 
+  const genreFilteredTracks = useMemo(() =>
+    activeGenre ? libraryTracks.filter((t) => t.is_active !== false && matchesGenre(t, activeGenre)) : [],
+    [activeGenre, libraryTracks]
+  );
+
   if (isLoading) {
     return (
       <div className="flex flex-col p-6 md:p-8 min-h-full pb-20 animate-pulse">
@@ -129,11 +130,6 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
   const hasQuery   = searchQuery.length >= 2;
   const hasResults = artistResults.length + albumResults.length + trackResults.length +
                      playlistResults.length + singerResults.length + genreResults.length + languageResults.length > 0;
-
-  const genreFilteredTracks = useMemo(() =>
-    activeGenre ? libraryTracks.filter((t) => t.is_active !== false && matchesGenre(t, activeGenre)) : [],
-    [activeGenre, libraryTracks]
-  );
 
   return (
     <div className="flex flex-col p-6 md:p-8 min-h-full pb-20">
@@ -207,7 +203,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
               <h3 className="text-lg font-bold text-cream mb-3">Tracks</h3>
               <div className="rounded-xl border border-white/5 overflow-hidden">
                 {trackResults.map((t, idx) => (
-                  <TrackRow key={t.id} track={t} index={idx} onContextMenu={onContextMenu} />
+                  <TrackRow key={t.id} track={t} index={idx} />
                 ))}
               </div>
             </section>
@@ -315,7 +311,7 @@ export function SearchView({ onContextMenu }: SearchViewProps) {
               {genreFilteredTracks.length > 0 ? (
                 <div className="rounded-xl overflow-hidden border border-white/5 mb-6">
                   {genreFilteredTracks.map((t, idx) => (
-                    <TrackRow key={t.id} track={t} index={idx} onContextMenu={onContextMenu} />
+                    <TrackRow key={t.id} track={t} index={idx} />
                   ))}
                 </div>
               ) : (

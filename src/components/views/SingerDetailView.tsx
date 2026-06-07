@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
 
@@ -14,20 +13,12 @@ interface SingerDetailViewProps {
 }
 
 export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDetailViewProps) {
-  const { playTrack, addToQueue } = useAudio();
-  const [activeMenuTrackId, setActiveMenuTrackId] = React.useState<string | null>(null);
-  const [menuPosition, setMenuPosition] = React.useState({ x: 0, y: 0 });
-
-  const handleContextMenu = (e: React.MouseEvent, trackId: string) => {
-    e.preventDefault();
-    setActiveMenuTrackId(trackId);
-    setMenuPosition({ x: e.clientX, y: e.clientY });
-  };
+  const { playTrack } = useAudio();
 
   const activeTracks = tracks.filter((t) => t.is_active !== false);
 
   return (
-    <div className="flex flex-col min-h-full pb-20" onClick={() => setActiveMenuTrackId(null)}>
+    <div className="flex flex-col min-h-full pb-20">
       {/* Hero */}
       <div className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 overflow-hidden bg-gradient-to-b from-blue/40 to-forest-dark">
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark to-transparent z-0" />
@@ -70,7 +61,7 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
           <h2 className="text-xl font-bold text-cream mb-4">Songs</h2>
           <div className="flex flex-col rounded-xl overflow-hidden border border-white/5">
             {activeTracks.map((t, idx) => (
-              <TrackRow key={t.id} track={t as any} index={idx} onContextMenu={handleContextMenu} />
+              <TrackRow key={t.id} track={t as any} index={idx} />
             ))}
           </div>
         </div>
@@ -95,19 +86,6 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
         </div>
       )}
 
-      {/* Context menu */}
-      {activeMenuTrackId && (
-        <div
-          className="fixed z-50 w-44 bg-panel border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
-          style={{ top: Math.min(menuPosition.y, window.innerHeight - 100), left: Math.min(menuPosition.x, window.innerWidth - 184) }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button onClick={() => { addToQueue(activeMenuTrackId); setActiveMenuTrackId(null); }}
-            className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-white/8 transition-colors font-medium">
-            Add to Queue
-          </button>
-        </div>
-      )}
     </div>
   );
 }

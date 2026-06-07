@@ -16,16 +16,8 @@ interface CollectionDetailProps {
 }
 
 export function CollectionDetailView({ collection, tracks }: CollectionDetailProps) {
-  const { playTrack, addToQueue } = useAudio();
+  const { playTrack } = useAudio();
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeMenuTrackId, setActiveMenuTrackId] = useState<string | null>(null);
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-
-  const handleContextMenu = (e: React.MouseEvent, trackId: string) => {
-    e.preventDefault();
-    setActiveMenuTrackId(trackId);
-    setMenuPosition({ x: e.clientX, y: e.clientY });
-  };
 
   const activeTracks = tracks.filter((t) => t.is_active !== false);
   const filteredTracks = activeTracks.filter(
@@ -39,7 +31,7 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
   const colors = Array.isArray(collection.cover_colors) ? collection.cover_colors : ["#F0824E", "#1E9E54"];
 
   return (
-    <div className="flex flex-col min-h-full pb-20" onClick={() => setActiveMenuTrackId(null)}>
+    <div className="flex flex-col min-h-full pb-20">
       {/* Hero */}
       <div
         className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 overflow-hidden"
@@ -121,28 +113,12 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
                 track={t as any}
                 index={idx}
                 playQueue={activeTracks.map(x => x.id)}
-                onContextMenu={handleContextMenu}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Context menu */}
-      {activeMenuTrackId && (
-        <div
-          className="fixed z-50 w-44 bg-panel border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in"
-          style={{ top: Math.min(menuPosition.y, window.innerHeight - 100), left: Math.min(menuPosition.x, window.innerWidth - 184) }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={() => { addToQueue(activeMenuTrackId); setActiveMenuTrackId(null); }}
-            className="w-full text-left px-4 py-3 text-sm text-cream hover:bg-white/8 transition-colors font-medium"
-          >
-            Add to Queue
-          </button>
-        </div>
-      )}
     </div>
   );
 }

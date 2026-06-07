@@ -2,11 +2,7 @@ import React from "react";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
 
-interface QueueViewProps {
-  onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-}
-
-export function QueueView({ onContextMenu }: QueueViewProps) {
+export function QueueView() {
   const { tracks, queue, clearQueue } = useAudio();
   
   const qTracks = queue.map((id) => tracks.find((t) => t.id === id)!).filter(Boolean);
@@ -44,8 +40,7 @@ export function QueueView({ onContextMenu }: QueueViewProps) {
               <TrackRow 
                 key={`${t.id}-${idx}`} // using idx in case of duplicate tracks in queue
                 track={t} 
-                index={idx} 
-                onContextMenu={onContextMenu} 
+                index={idx}
               />
             ))}
           </div>

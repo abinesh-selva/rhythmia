@@ -1,5 +1,6 @@
 import React from "react";
 import { Track, useAudio } from "../../context/AudioContext";
+import { useTrackMenu } from "../../context/TrackMenuContext";
 
 const fmt = (s: number) => {
   if (isNaN(s) || !isFinite(s)) return "0:00";
@@ -19,7 +20,6 @@ interface TrackRowProps {
   onDragOver?: (e: React.DragEvent, index: number) => void;
   onDrop?: (e: React.DragEvent, targetIndex: number, playlistId: string, currentPlaylistTrackIds: string[]) => void;
   onDragEnd?: () => void;
-  onContextMenu?: (e: React.MouseEvent, trackId: string) => void;
 }
 
 export const TrackRow = React.memo(function TrackRow({
@@ -35,9 +35,9 @@ export const TrackRow = React.memo(function TrackRow({
   onDragOver,
   onDrop,
   onDragEnd,
-  onContextMenu,
 }: TrackRowProps) {
   const { currentTrack, isPlaying, likedSongs, playTrack, toggleLike } = useAudio();
+  const { openTrackMenu } = useTrackMenu();
   const isCurrent = currentTrack?.id === track.id;
   const isLiked = likedSongs.has(track.id);
 
@@ -70,7 +70,7 @@ export const TrackRow = React.memo(function TrackRow({
       } ${dragOverIndex === index && draggedIndex !== index ? "border-dashed border-coral/40 bg-coral/5" : ""} ${
         draggedIndex === index ? "opacity-40" : ""
       }`}
-      onContextMenu={(e) => onContextMenu && onContextMenu(e, track.id)}
+      onContextMenu={(e) => openTrackMenu(e, track.id)}
     >
       {/* Index / play indicator */}
       <div className="relative w-8 h-8 flex items-center justify-center flex-none">
@@ -155,7 +155,7 @@ export const TrackRow = React.memo(function TrackRow({
       <div className="flex items-center justify-end gap-2 justify-self-end">
         <span className="text-xs text-muted/70 tabular-nums">{fmt(track.duration_sec)}</span>
         <button
-          onClick={(e) => { e.stopPropagation(); onContextMenu && onContextMenu(e, track.id); }}
+          onClick={(e) => { e.stopPropagation(); openTrackMenu(e, track.id); }}
           className="text-muted/40 hover:text-muted opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded"
           title="Options"
         >

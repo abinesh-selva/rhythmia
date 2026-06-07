@@ -16,23 +16,27 @@ There are no tests. `npm run build` + `npx tsc --noEmit` are the verification ga
 
 ## Architecture
 
-### Routing — client-side view dispatch, not file-based
+### Routing — file-based App Router, URL is the single source of truth
 
-There is **only one Next.js page** (`src/app/page.tsx`). All "navigation" is a string stored in `AudioContext.view` state. `page.tsx` is a switch statement that renders a view component based on that string:
+Every view is a real Next.js route under `src/app/`. The shell (`Providers → ShellLayout`) lives in the root `layout.tsx`, so it — and the `AudioProvider` that owns playback — stays mounted across navigations; audio never stops when you move between routes.
 
 ```
-"home"              → HomeView
-"search"            → SearchView
-"liked"             → LikedSongsView
-"queue"             → QueueView
-"sync"              → CloudinarySyncView
-"live"              → LiveEventsView
-"playlist:<id>"     → PlaylistView
-"album:<name>"      → AlbumView
-"artist:<name>"     → ArtistView
+/                      → HomeView          (app/page.tsx)
+/search                → SearchView
+/liked                 → LikedSongsView
+/queue                 → QueueView
+/recent                → RecentlyPlayedView
+/live                  → LiveEventsView
+/settings              → SettingsView
+/playlist/[id]         → PlaylistView
+/u/[id]                → UserProfileView
+/album/[id]/[slug]     → AlbumDetailView     (server component fetches data)
+/artist/[id]/[slug]    → ArtistDetailView
+/collection/[id]/[slug]→ CollectionDetailView
+/genre|language|singer/[id]/[slug] → *DetailView
 ```
 
-`setView(string)` from `useAudio()` is the only navigation mechanism. URL query param `?view=...` is parsed on mount for shareable deep links.
+`AudioContext.view` is **derived** from `usePathname()` (see `pathToView`/`viewToPath` in `AudioContext.tsx`) — it is *not* separate state. The playback engine (`getTracksForView`, `getNextTrackId`) still reads `view` to know the active list, including the `playlist:`/`liked:`/`collection:`/`artist:`/`album:` prefixes, which now map to the corresponding routes. Navigate with `<Link href="…">` (preferred, prefetches) or the `setView("home"|"search"|…)` convenience, which just calls `router.push(viewToPath(view))`. There is no `?view=` query param or custom `popstate` handling — the router owns history.
 
 ### Context layer — two providers, stacked
 
@@ -119,7 +123,8 @@ Fonts: `font-display` = Quicksand (headings/brand), `font-sans` = Figtree (body/
 
 ## Key constraints
 
-- **No file-based routing** for views — always go through `setView()`.
+- **File-based routing — the URL is the source of truth for the active view.** Add a new view as a route under `src/app/`; never reintroduce a `?view=`-style parallel nav state. `view` is derived from the pathname.
+- **Track context menu is a provider** — `TrackMenuContext` (`useTrackMenu().openTrackMenu`) renders one shared menu for the whole app; `TrackRow` consumes it. Do not thread an `onContextMenu` prop through views or build per-view menus.
 - **`AudioContext` is the single source of truth** — do not add secondary state that duplicates tracks, playlists, or queue.
 - **`isLoading` guard** — any view that renders tracks must return a skeleton if `isLoading` is true (`HomeView` and `SearchView` already do this).
 - **HMR singleton** — `src/lib/supabase.ts` stores the client on `globalThis` to prevent multiple `GoTrueClient` instances during hot reload; do not instantiate a new client elsewhere.

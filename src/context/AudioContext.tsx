@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
 
@@ -161,8 +162,44 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 
+// ── URL is the single source of truth for the active view ──────────────
+// `view` is derived from the current pathname (see pathToView); navigation
+// happens through the router (see viewToPath). There is no separate view state.
+function pathToView(pathname: string): string {
+  if (pathname === "/") return "home";
+  const seg = pathname.split("/").filter(Boolean);
+  switch (seg[0]) {
+    case "search":
+    case "liked":
+    case "queue":
+    case "recent":
+    case "live":
+    case "settings":
+      return seg[0];
+    case "playlist":   return seg[1] ? `playlist:${seg[1]}` : "home";
+    case "u":          return seg[1] ? `user:${seg[1]}` : "home";
+    case "collection": return seg[1] ? `collection:${seg[1]}` : "home";
+    case "album":      return seg[1] ? `album:${seg[1]}` : "home";
+    case "artist":     return seg[1] ? `artist:${seg[1]}` : "home";
+    case "genre":      return seg[1] ? `genre:${seg[1]}` : "home";
+    case "language":   return seg[1] ? `language:${seg[1]}` : "home";
+    case "singer":     return seg[1] ? `singer:${seg[1]}` : "home";
+    default:           return "home";
+  }
+}
+
+function viewToPath(view: string): string {
+  if (view === "home") return "/";
+  if (view.startsWith("playlist:")) return `/playlist/${view.slice("playlist:".length)}`;
+  if (view.startsWith("user:")) return `/u/${view.slice("user:".length)}`;
+  // search, liked, queue, recent, live, settings
+  return `/${view}`;
+}
+
 export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [tracks, setTracks] = useState<Track[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -186,8 +223,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const [lyrics, setLyrics] = useState("");
   const [queue, setQueue] = useState<string[]>([]);
   const [recentlyPlayed, setRecentlyPlayed] = useState<string[]>([]);
-  const [view, setViewState] = useState("home");
-  const [currentViewPlaylistId, setCurrentViewPlaylistId] = useState<string | null>(null);
+  const view = pathToView(pathname);
+  const currentViewPlaylistId = view.startsWith("playlist:") ? view.split(":")[1] : null;
   const [searchQuery, setSearchQuery] = useState("");
   const [playbackContext, setPlaybackContext] = useState<string[]>([]);
   const [playbackHistory, setPlaybackHistory] = useState<string[]>([]);
@@ -400,29 +437,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       masterGainRef.current.gain.value = scale;
     }
   }, [audioNormalization]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const queryView = params.get("view");
-      if (queryView) {
-        setViewState(queryView);
-        if (queryView.startsWith("playlist:")) {
-          setCurrentViewPlaylistId(queryView.split(":")[1]);
-        }
-      }
-    }
-  }, [tracks]);
-
-  useEffect(() => {
-    const handlePopState = (e: PopStateEvent) => {
-      const v = e.state?.view ?? new URLSearchParams(window.location.search).get("view") ?? "home";
-      setViewState(v);
-      setCurrentViewPlaylistId(v.startsWith("playlist:") ? v.split(":")[1] : null);
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
   const initAudioGraph = () => {
     if (isGraphInitialized.current || typeof window === "undefined") return;
@@ -1028,17 +1042,10 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     return tracks.filter(t => t.folder_type !== "collection");
   };
 
+  // `view` is derived from the URL, so navigating *is* setting the view.
   const setView = useCallback((viewName: string) => {
-    setViewState(viewName);
-    if (viewName.startsWith("playlist:")) {
-      setCurrentViewPlaylistId(viewName.split(":")[1]);
-    } else {
-      setCurrentViewPlaylistId(null);
-    }
-    if (typeof window !== "undefined") {
-      window.history.pushState({ view: viewName }, "", "?view=" + encodeURIComponent(viewName));
-    }
-  }, []);
+    router.push(viewToPath(viewName));
+  }, [router]);
 
   const logPlayHistory = async (trackId: string) => {
     if (isPrivateSession) return;

@@ -5,10 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAudio, Track } from "@/context/AudioContext";
 import { supabase } from "@/lib/supabase";
 
-interface HomeViewProps {
-  onContextMenu: (e: React.MouseEvent, trackId: string) => void;
-}
-
 interface ArtistRow { id: string; display_name: string; slug: string; image: string | null; track_count: number; album_count: number }
 interface AlbumRow { id: string; title: string; slug: string; cover_image: string | null; cover_colors: string[]; track_count: number; artist_id: string; artists: { display_name: string; slug: string } | null }
 interface GenreRow { id: string; name: string; slug: string }
@@ -34,7 +30,7 @@ function getAlbumColors(album: AlbumRow): [string, string] {
   return ["#F0824E", "#1E9E54"];
 }
 
-export function HomeView({ onContextMenu }: HomeViewProps) {
+export function HomeView() {
   const router = useRouter();
   const { tracks, libraryTracks, recentlyPlayed, playTrack, isLoading, setView, isPrivateSession, likedSongs, playlists } = useAudio();
 

@@ -11,10 +11,9 @@ interface ProfileRow {
 
 interface UserProfileViewProps {
   userId: string;
-  onContextMenu: (e: React.MouseEvent, trackId: string) => void;
 }
 
-export function UserProfileView({ userId, onContextMenu }: UserProfileViewProps) {
+export function UserProfileView({ userId }: UserProfileViewProps) {
   const { setView } = useAudio();
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [publicPlaylists, setPublicPlaylists] = useState<PlaylistRow[]>([]);

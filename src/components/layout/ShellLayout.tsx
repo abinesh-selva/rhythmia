@@ -134,10 +134,30 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       {/* Sidebar Area */}
       <div className="relative hidden md:flex min-h-0">
         <Sidebar />
-        <div 
-          className="w-1.5 hover:bg-white/10 active:bg-white/20 cursor-col-resize absolute right-0 top-0 bottom-0 z-50 transition-colors"
+        {/* Resize bar — mouse drag + keyboard-accessible range input */}
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          className="LayoutResizer__resize-bar w-1.5 hover:bg-white/10 active:bg-white/20 cursor-col-resize absolute right-0 top-0 bottom-0 z-50 transition-colors"
           onMouseDown={startSidebarResize}
-        />
+        >
+          <label className="sr-only">
+            Resize main navigation
+            <input
+              className="LayoutResizer__input"
+              type="range"
+              min={200}
+              max={450}
+              step={10}
+              value={sidebarWidth}
+              onChange={(e) => {
+                const w = Number(e.target.value);
+                setSidebarWidth(w);
+                localStorage.setItem("vibeblower_sidebar_width", String(w));
+              }}
+            />
+          </label>
+        </div>
       </div>
 
       {/* Main content area */}

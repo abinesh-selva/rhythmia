@@ -105,10 +105,13 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
         <h3 className="font-display font-bold text-base text-cream">Now Playing</h3>
         <button
           onClick={() => setIsNPOpen(false)}
+          aria-label="Hide Now Playing view"
+          title="Hide Now Playing view"
           className="w-7 h-7 rounded-full hover:bg-white/10 flex items-center justify-center text-muted hover:text-cream transition-colors"
         >
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+          <svg viewBox="0 0 16 16" className="w-4 h-4 fill-current">
+            <path d="M5.03 10.53a.75.75 0 1 1-1.06-1.06L5.44 8 3.97 6.53a.75.75 0 0 1 1.06-1.06l2 2a.75.75 0 0 1 0 1.06z" />
+            <path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm.5 1.5h8v13h-8zm13 13H11v-13h3.5z" />
           </svg>
         </button>
       </div>

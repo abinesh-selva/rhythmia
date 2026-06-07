@@ -8,6 +8,7 @@ import { ToastProvider } from "../../context/ToastContext";
 import { ShellLayout } from "../layout/ShellLayout";
 import { ThemeProvider } from "../../context/ThemeContext";
 import { DialogProvider } from "../../context/DialogContext";
+import { TrackMenuProvider } from "../../context/TrackMenuContext";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -17,7 +18,9 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
           <AuthProvider>
             <AudioProvider>
               <RealtimeProvider>
-                <ShellLayout>{children}</ShellLayout>
+                <TrackMenuProvider>
+                  <ShellLayout>{children}</ShellLayout>
+                </TrackMenuProvider>
               </RealtimeProvider>
             </AudioProvider>
           </AuthProvider>

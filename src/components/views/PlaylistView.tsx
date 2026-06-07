@@ -6,10 +6,9 @@ import { TrackRow } from "../ui/TrackRow";
 
 interface PlaylistViewProps {
   playlistId: string;
-  onContextMenu: (e: React.MouseEvent, trackId: string) => void;
 }
 
-export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
+export function PlaylistView({ playlistId }: PlaylistViewProps) {
   const { addToast } = useToast();
   const { showPrompt, showConfirm } = useDialog();
   const { 
@@ -63,7 +62,7 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
   };
 
   const handleSharePlaylist = () => {
-    const shareUrl = `${window.location.origin}/?view=playlist:${pl.id}`;
+    const shareUrl = `${window.location.origin}/playlist/${pl.id}`;
     navigator.clipboard.writeText(shareUrl);
     addToast("Share link copied to clipboard!", "success");
   };
@@ -268,7 +267,6 @@ export function PlaylistView({ playlistId, onContextMenu }: PlaylistViewProps) {
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onDragEnd={handleDragEnd}
-                onContextMenu={onContextMenu}
               />
             )}
           </div>
