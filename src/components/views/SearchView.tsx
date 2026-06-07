@@ -41,7 +41,7 @@ function getAlbumColors(album: AlbumResult): [string, string] {
 
 export function SearchView() {
   const router = useRouter();
-  const { tracks, libraryTracks, searchQuery, isLoading } = useAudio();
+  const { tracks, libraryTracks, searchQuery, setSearchQuery, isLoading } = useAudio();
   const [activeGenre, setActiveGenre] = useState<(typeof GENRES)[number] | null>(null);
 
   // Grouped search results (DB-driven)
@@ -133,6 +133,19 @@ export function SearchView() {
 
   return (
     <div className="flex flex-col p-6 md:p-8 min-h-full pb-20">
+      {/* Mobile Search input pill */}
+      <div className="md:hidden relative w-full flex items-center bg-white/8 hover:bg-white/12 border border-white/10 rounded-full px-4 py-2.5 mb-6 transition-all">
+        <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 fill-muted mr-2.5 flex-none">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+        </svg>
+        <input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="What do you want to play?"
+          className="flex-1 bg-transparent border-none outline-none text-cream text-sm placeholder-muted/60 focus:ring-0 p-0"
+        />
+      </div>
+
       <div className="mb-6">
         <h2 className="text-2xl md:text-3xl font-bold font-display text-cream tracking-tight">
           {searchQuery ? `Results for "${searchQuery}"` : activeGenre ? activeGenre.label : "Search Catalogue"}

@@ -110,7 +110,14 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
   return (
     <footer className="w-full md:col-span-full h-player-sm md:h-player bg-forest-dark border-t border-white/5 flex items-center px-2 md:px-5 select-none relative z-40 shrink-0">
       {/* Left: track info */}
-      <div className="flex items-center gap-2 md:gap-3 w-[30%] min-w-0">
+      <div 
+        onClick={() => {
+          if (typeof window !== "undefined" && window.innerWidth < 768) {
+            setIsNPOpen(true);
+          }
+        }}
+        className="flex items-center gap-2 md:gap-3 w-[30%] min-w-0 cursor-pointer md:cursor-default"
+      >
         {currentTrack ? (
           <>
             <div

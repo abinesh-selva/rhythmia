@@ -45,8 +45,8 @@ export function TopNavigation({
         <span className="font-display font-bold text-lg tracking-tight text-cream hidden sm:inline">Vibeblower</span>
       </div>
 
-      {/* Center navigation: Home Button + Search input pill */}
-      <div className="flex-1 max-w-xl flex items-center gap-3 justify-center mx-auto">
+      {/* Center navigation: Home Button + Search input pill (hidden on mobile, search page has its own input) */}
+      <div className="hidden md:flex flex-1 max-w-xl items-center gap-3 justify-center mx-auto">
         {/* Home Button (Circle) */}
         <button
           onClick={handleHomeClick}
@@ -94,7 +94,7 @@ export function TopNavigation({
         {/* Private session toggle */}
         <button
           onClick={togglePrivateSession}
-          className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${
+          className={`hidden md:flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-all ${
             isPrivateSession
               ? "bg-coral text-forest-dark shadow-sm"
               : "bg-white/6 text-muted hover:text-cream hover:bg-white/10"
@@ -108,7 +108,7 @@ export function TopNavigation({
         </button>
 
         {/* Bell Notifications */}
-        <button className="w-8 h-8 rounded-full bg-white/6 text-muted hover:text-cream hover:bg-white/12 transition-all flex items-center justify-center flex-none">
+        <button className="hidden sm:flex w-8 h-8 rounded-full bg-white/6 text-muted hover:text-cream hover:bg-white/12 transition-all items-center justify-center flex-none">
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
             <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
           </svg>

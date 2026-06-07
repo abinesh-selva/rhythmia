@@ -11,6 +11,7 @@ import { NowPlayingSidebar } from "./NowPlayingSidebar";
 import { FriendActivitySidebar } from "./FriendActivitySidebar";
 import { ChatDrawer } from "../chat/ChatDrawer";
 import { MobileNav } from "./MobileNav";
+import { MobileNowPlaying } from "./MobileNowPlaying";
 
 export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentTime, duration } = usePlaybackTime();
@@ -192,11 +193,16 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
       {/* Now Playing panel */}
       {isNPOpen && (
-        <NowPlayingSidebar
-          setIsNPOpen={setIsNPOpen}
-          npTab={npTab}
-          setNpTab={setNpTab}
-        />
+        <>
+          <div className="hidden md:block">
+            <NowPlayingSidebar
+              setIsNPOpen={setIsNPOpen}
+              npTab={npTab}
+              setNpTab={setNpTab}
+            />
+          </div>
+          <MobileNowPlaying isOpen={isNPOpen} onClose={() => setIsNPOpen(false)} />
+        </>
       )}
 
       {/* Bottom player bar */}
