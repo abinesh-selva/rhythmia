@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
 
@@ -71,6 +71,13 @@ interface DbPlaylist {
 }
 interface DbHistory { track_id: string }
 
+export interface PlaybackTimeType {
+  currentTime: number;
+  duration: number;
+}
+const PlaybackTimeContext = createContext<PlaybackTimeType>({ currentTime: 0, duration: 0 });
+export const usePlaybackTime = () => useContext(PlaybackTimeContext);
+
 interface AudioContextType {
   tracks: Track[];
   libraryTracks: Track[]; // tracks excluding folder_type='collection' — for search/home display
@@ -80,8 +87,6 @@ interface AudioContextType {
   currentTrack: Track | null;
   isPlaying: boolean;
   activePlayer: "A" | "B";
-  currentTime: number;
-  duration: number;
   volume: number;
   isMuted: boolean;
   isShuffle: boolean;
@@ -102,7 +107,6 @@ interface AudioContextType {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   
-  // App Settings
   playbackSpeed: number;
   setPlaybackSpeed: (speed: number) => void;
   isAutoplay: boolean;
@@ -160,7 +164,6 @@ const AudioContext = createContext<AudioContextType | undefined>(undefined);
 export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
 
-  // Core application state
   const [tracks, setTracks] = useState<Track[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -188,22 +191,17 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [playbackContext, setPlaybackContext] = useState<string[]>([]);
   const [playbackHistory, setPlaybackHistory] = useState<string[]>([]);
-
-  // App Settings States
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const [isAutoplay, setIsAutoplay] = useState(true);
   const [audioNormalization, setAudioNormalization] = useState<"quiet" | "normal" | "loud">("normal");
-
-  // Equalizer states
   const [eqLow, setEqLow] = useState(0);
   const [eqMid, setEqMid] = useState(0);
   const [eqHigh, setEqHigh] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [graphInitialized, setGraphInitialized] = useState(false);
 
-  // Dual Player Refs
   const audioRefA = useRef<HTMLAudioElement | null>(null);
   const audioRefB = useRef<HTMLAudioElement | null>(null);
-
-  // Web Audio Graph Refs
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRefA = useRef<MediaElementAudioSourceNode | null>(null);
@@ -214,25 +212,13 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const filterMidRef = useRef<BiquadFilterNode | null>(null);
   const filterHighRef = useRef<BiquadFilterNode | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
-
-  // Loading state for initial library fetch
-  const [isLoading, setIsLoading] = useState(true);
-  // Becomes true once the Web Audio graph is wired up — triggers useMemo to re-expose analyserNode
-  const [graphInitialized, setGraphInitialized] = useState(false);
-
-  // Auto-Sync Concurrency Lock
   const isSyncingRef = useRef(false);
-
-  // StrictMode connections safety lock
   const isGraphInitialized = useRef(false);
 
   const loadTracksAndLibrary = async () => {
     setIsLoading(true);
     try {
       if (isSupabaseConfigured && supabase) {
-        // Try full query with metadata joins first; fall back to plain query if
-        // the new migrations (languages / track_singers / track_genres) haven't
-        // been applied to this Supabase project yet.
         let { data: dbTracks, error: dbError } = await supabase
           .from("tracks")
           .select(`
@@ -247,7 +233,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (dbError) {
           console.warn("Track metadata query failed (migrations pending?), falling back to basic query.", dbError.message);
-          // Fallback 1: catalog columns (no language/genre/singer joins, no type)
           const fallback1 = await supabase
             .from("tracks")
             .select("id, title, artist, album, audio_url, cover_colors, duration_sec, artist_id, album_id, track_number, is_active, asset_id, folder_type")
@@ -255,7 +240,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
           if (!fallback1.error) {
             dbTracks = fallback1.data as any;
           } else {
-            // Fallback 2: minimum base columns guaranteed since initial migration
             console.warn("Catalog query also failed, using base columns.", fallback1.error.message);
             const fallback2 = await supabase
               .from("tracks")
@@ -368,7 +352,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Load tracks and user library on mount / user switch
   useEffect(() => {
     loadTracksAndLibrary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -406,13 +389,11 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // 1. Sync Playback Rate (Speed)
   useEffect(() => {
     if (audioRefA.current) audioRefA.current.playbackRate = playbackSpeed;
     if (audioRefB.current) audioRefB.current.playbackRate = playbackSpeed;
   }, [playbackSpeed, activePlayer]);
 
-  // 2. Sync Audio Normalization scale to Web Audio Master Gain
   useEffect(() => {
     if (isGraphInitialized.current && masterGainRef.current) {
       const scale = audioNormalization === "quiet" ? 0.5 : audioNormalization === "loud" ? 1.5 : 1.0;
@@ -420,7 +401,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [audioNormalization]);
 
-  // 3. Client Query Router for Shareable Links
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -434,7 +414,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [tracks]);
 
-  // 4. Browser back/forward navigation
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       const v = e.state?.view ?? new URLSearchParams(window.location.search).get("view") ?? "home";
@@ -445,7 +424,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // Audio Context & Graph Scaffolding - Lazy Initialization Guarding React StrictMode
   const initAudioGraph = () => {
     if (isGraphInitialized.current || typeof window === "undefined") return;
 
@@ -514,7 +492,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Synchronize EQ gain changes at runtime
   const setEQ = (low: number, mid: number, high: number) => {
     setEqLow(low);
     setEqMid(mid);
@@ -525,7 +502,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (filterHighRef.current) filterHighRef.current.gain.value = high;
   };
 
-  // Sync volume & mute changes at runtime
   useEffect(() => {
     const targetVolume = isMuted ? 0 : volume;
 
@@ -545,7 +521,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [volume, isMuted, activePlayer]);
 
-  // Sleep Timer Counter Effect
   useEffect(() => {
     if (sleepTimer === null) {
       setSleepTimerRemaining(null);
@@ -575,7 +550,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sleepTimer]);
 
-  // Handle current time updates at runtime
   const handleTimeUpdate = (el: HTMLAudioElement) => {
     if (activePlayer === "A" && el === audioRefA.current) {
       setCurrentTime(el.currentTime);
@@ -586,7 +560,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Dual Player Crossfade transition trigger
   const checkCrossfadeTrigger = (activeEl: HTMLAudioElement) => {
     if (crossfadeSec <= 0 || !activeEl.duration) return;
 
@@ -609,7 +582,16 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (queue.length > 0) return queue[0];
     if (repeatMode === 2 && currentTrack) return currentTrack.id;
 
-    const contextIds = playbackContext.length > 0 ? playbackContext : getTracksForView().map(t => t.id);
+    const viewIsStructured =
+      view.startsWith("playlist:") ||
+      view === "liked" ||
+      view.startsWith("collection:") ||
+      view.startsWith("artist:") ||
+      view.startsWith("album:");
+    const liveViewIds = viewIsStructured ? getTracksForView().map(t => t.id) : null;
+    const contextIds = (liveViewIds && liveViewIds.length > 0)
+      ? liveViewIds
+      : playbackContext.length > 0 ? playbackContext : getTracksForView().map(t => t.id);
     if (contextIds.length === 0) return null;
 
     const currentIndex = contextIds.indexOf(currentTrack?.id || "");
@@ -640,7 +622,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     return null;
   };
 
-  // Perform smooth overlapping crossfade using dual player nodes
   const triggerCrossfade = (nextTrack: Track) => {
     initAudioGraph();
     if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
@@ -824,17 +805,63 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const nextTrack = () => {
-    const nextId = getNextTrackId();
-    if (nextId) {
-      if (stopOnTrackEnd) {
-        setSleepTimerState(null);
-        setStopOnTrackEnd(false);
-        const el = activePlayer === "A" ? audioRefA.current! : audioRefB.current!;
-        el.pause();
-        setIsPlaying(false);
+    if (stopOnTrackEnd) {
+      setSleepTimerState(null);
+      setStopOnTrackEnd(false);
+      const el = activePlayer === "A" ? audioRefA.current! : audioRefB.current!;
+      el.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    if (repeatMode === 2 && currentTrack) {
+      const el = activePlayer === "A" ? audioRefA.current! : audioRefB.current!;
+      el.currentTime = 0;
+      return;
+    }
+
+    // In structured views always navigate within the live view's tracks — never escape to stale playbackContext
+    const liveViewTracks = getTracksForView();
+    const viewIsStructured =
+      view.startsWith("playlist:") ||
+      view === "liked" ||
+      view.startsWith("collection:") ||
+      view.startsWith("artist:") ||
+      view.startsWith("album:");
+
+    if (viewIsStructured && liveViewTracks.length > 0) {
+      const liveIds = liveViewTracks.map(t => t.id);
+
+      if (queue.length > 0) {
+        playTrack(queue[0], liveIds, undefined, false);
         return;
       }
-      playTrack(nextId, undefined, undefined, false);
+
+      if (isShuffle || isSmartShuffle) {
+        const randomIndex = Math.floor(Math.random() * liveIds.length);
+        playTrack(liveIds[randomIndex], liveIds, undefined, false);
+        return;
+      }
+
+      const currentIndex = liveIds.indexOf(currentTrack?.id || "");
+      if (currentIndex !== -1 && currentIndex + 1 < liveIds.length) {
+        playTrack(liveIds[currentIndex + 1], liveIds, undefined, false);
+        return;
+      }
+
+      if (repeatMode === 1) {
+        playTrack(liveIds[0], liveIds, undefined, false);
+        return;
+      }
+
+      setIsPlaying(false);
+      return;
+    }
+
+    // Non-structured view: use queue / playbackContext
+    const nextId = getNextTrackId();
+    if (nextId) {
+      playTrack(nextId, playbackContext.length > 0 ? playbackContext : undefined, undefined, false);
     } else {
       setIsPlaying(false);
     }
@@ -960,33 +987,31 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem(`vibeblower_lyrics_${currentTrack.id}`, text);
   };
 
-  // Queue Operations
-  const addToQueue = (trackId: string) => {
+  const addToQueue = useCallback((trackId: string) => {
     setQueue((prev) => [...prev, trackId]);
-  };
+  }, []);
 
-  const playNext = (trackId: string) => {
+  const playNext = useCallback((trackId: string) => {
     setQueue((prev) => [trackId, ...prev.filter((id) => id !== trackId)]);
-  };
+  }, []);
 
-  const removeFromQueue = (index: number) => {
+  const removeFromQueue = useCallback((index: number) => {
     setQueue((prev) => prev.filter((_, i) => i !== index));
-  };
+  }, []);
 
-  const clearQueue = () => {
+  const clearQueue = useCallback(() => {
     setQueue([]);
-  };
+  }, []);
 
-  const reorderQueue = (sourceIndex: number, destinationIndex: number) => {
+  const reorderQueue = useCallback((sourceIndex: number, destinationIndex: number) => {
     setQueue((prev) => {
       const newQueue = [...prev];
       const [moved] = newQueue.splice(sourceIndex, 1);
       newQueue.splice(destinationIndex, 0, moved);
       return newQueue;
     });
-  };
+  }, []);
 
-  // Helper mapping view routes to songs lists
   const getTracksForView = (): Track[] => {
     if (view === "liked") {
       return tracks.filter((t) => likedSongs.has(t.id));
@@ -1004,7 +1029,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     return tracks.filter(t => t.folder_type !== "collection");
   };
 
-  const setView = (viewName: string) => {
+  const setView = useCallback((viewName: string) => {
     setViewState(viewName);
     if (viewName.startsWith("playlist:")) {
       setCurrentViewPlaylistId(viewName.split(":")[1]);
@@ -1014,9 +1039,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (typeof window !== "undefined") {
       window.history.pushState({ view: viewName }, "", "?view=" + encodeURIComponent(viewName));
     }
-  };
+  }, []);
 
-  // History Logger Database Sync
   const logPlayHistory = async (trackId: string) => {
     if (isPrivateSession) return;
 
@@ -1035,7 +1059,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Database Likes persistence Sync
   const toggleLike = async (trackId: string) => {
     const updated = new Set(likedSongs);
     if (updated.has(trackId)) {
@@ -1059,7 +1082,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Database Playlists persistence Sync
   const createPlaylist = async (name: string): Promise<string | null> => {
     const colors = [
       ["#1E9E54", "#0E3B35"],
@@ -1240,6 +1262,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const playbackTimeValue = React.useMemo(() => ({ currentTime, duration }), [currentTime, duration]);
+
   const contextValue = React.useMemo(() => ({
     tracks,
     libraryTracks: tracks.filter(t => t.folder_type !== "collection"),
@@ -1249,8 +1273,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     currentTrack,
     isPlaying,
     activePlayer,
-    currentTime,
-    duration,
     volume,
     isMuted,
     isShuffle,
@@ -1322,8 +1344,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     currentTrack,
     isPlaying,
     activePlayer,
-    currentTime,
-    duration,
     volume,
     isMuted,
     isShuffle,
@@ -1352,7 +1372,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   ]);
 
   return (
-     
+    <PlaybackTimeContext.Provider value={playbackTimeValue}>
     <AudioContext.Provider value={contextValue}>
       {children}
 
@@ -1372,6 +1392,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         onLoadedMetadata={(e) => activePlayer === "B" && setDuration(e.currentTarget.duration)}
       />
     </AudioContext.Provider>
+    </PlaybackTimeContext.Provider>
   );
 };
 

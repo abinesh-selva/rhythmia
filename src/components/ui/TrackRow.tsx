@@ -22,7 +22,7 @@ interface TrackRowProps {
   onContextMenu?: (e: React.MouseEvent, trackId: string) => void;
 }
 
-export function TrackRow({
+export const TrackRow = React.memo(function TrackRow({
   track,
   index,
   isReorderable = false,
@@ -166,4 +166,4 @@ export function TrackRow({
       </div>
     </div>
   );
-}
+});

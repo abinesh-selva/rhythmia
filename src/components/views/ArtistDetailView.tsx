@@ -126,7 +126,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
             <h2 className="text-lg font-bold text-cream">Albums</h2>
             <span className="text-xs text-muted">{albums.length} releases</span>
           </div>
-          <div className="overflow-hidden -mb-4"><div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+          <div className="overflow-hidden"><div className="flex gap-3 overflow-x-auto pb-4 -mb-4 no-scrollbar">
             {albums.map((album) => {
               const colors = Array.isArray(album.cover_colors) ? album.cover_colors : ["#F0824E", "#1E9E54"];
               return (

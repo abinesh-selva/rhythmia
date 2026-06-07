@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAudio } from "../../context/AudioContext";
+import { useAudio, usePlaybackTime } from "../../context/AudioContext";
 import { AuthModal } from "../auth/AuthModal";
 
 import { Sidebar } from "./Sidebar";
@@ -13,10 +13,9 @@ import { ChatDrawer } from "../chat/ChatDrawer";
 import { MobileNav } from "./MobileNav";
 
 export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { currentTime, duration } = usePlaybackTime();
   const {
     currentTrack,
-    duration,
-    currentTime,
     isMuted,
     isShuffle,
     togglePlay,

@@ -80,7 +80,7 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
       {appearsOnAlbums.length > 0 && (
         <div className="px-6 md:px-8">
           <h2 className="text-xl font-bold text-cream mb-4">Appears On</h2>
-          <div className="overflow-hidden -mb-4"><div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+          <div className="overflow-hidden"><div className="flex gap-4 overflow-x-auto pb-4 -mb-4 no-scrollbar">
             {appearsOnAlbums.map((album) => {
               const c = Array.isArray(album.cover_colors) ? album.cover_colors : ["#F0824E", "#1E9E54"];
               return (

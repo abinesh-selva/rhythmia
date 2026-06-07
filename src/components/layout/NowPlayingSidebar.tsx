@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { useAudio } from "../../context/AudioContext";
+import { useAudio, usePlaybackTime } from "../../context/AudioContext";
 
 interface NowPlayingSidebarProps {
   setIsNPOpen: (val: boolean) => void;
@@ -8,6 +8,7 @@ interface NowPlayingSidebarProps {
 }
 
 export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSidebarProps) {
+  const { currentTime } = usePlaybackTime();
   const {
     currentTrack,
     isPlaying,
@@ -18,7 +19,6 @@ export function NowPlayingSidebar({ setIsNPOpen, npTab, setNpTab }: NowPlayingSi
     tracks,
     removeFromQueue,
     reorderQueue,
-    currentTime,
   } = useAudio();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

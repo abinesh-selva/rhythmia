@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useAudio } from "../../context/AudioContext";
+import { useAudio, usePlaybackTime } from "../../context/AudioContext";
 
 const fmt = (s: number) => {
   if (isNaN(s) || !isFinite(s)) return "0:00";
@@ -50,11 +50,10 @@ function useDeviceInfo() {
 
 export function BottomPlayer({ isNPOpen, setIsNPOpen, npTab, setNpTab }: BottomPlayerProps) {
   const deviceInfo = useDeviceInfo();
+  const { currentTime, duration } = usePlaybackTime();
   const {
     currentTrack,
     isPlaying,
-    currentTime,
-    duration,
     volume,
     isMuted,
     isShuffle,
