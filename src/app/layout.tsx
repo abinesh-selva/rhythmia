@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 import { Providers } from "@/components/providers/Providers";
+import { Analytics } from "@vercel/analytics/next";
 
 export default function RootLayout({
   children,
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased">
       <body className="h-full bg-forest-dark text-cream font-sans overflow-hidden select-none max-md:fixed max-md:w-full">
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
