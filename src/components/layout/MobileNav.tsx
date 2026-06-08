@@ -1,13 +1,11 @@
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useAudio } from "../../context/AudioContext";
 import { useDialog } from "../../context/DialogContext";
 
 export function MobileNav() {
   const { view, setView, createPlaylist } = useAudio();
   const { showPrompt } = useDialog();
-  const pathname = usePathname();
 
   const handleCreatePlaylist = async () => {
     const pName = await showPrompt({
@@ -21,9 +19,15 @@ export function MobileNav() {
     if (plId) setView(`playlist:${plId}`);
   };
 
-  const isLibraryActive = view.startsWith("playlist:") || view === "liked" || view === "library" ||
-    pathname.startsWith("/library") || pathname.startsWith("/collection") ||
-    pathname.startsWith("/artist") || pathname.startsWith("/album");
+  const isLibraryActive =
+    view === "library" ||
+    view === "liked" ||
+    view === "artists" ||
+    view === "albums" ||
+    view.startsWith("playlist:") ||
+    view.startsWith("collection:") ||
+    view.startsWith("artist:") ||
+    view.startsWith("album:");
 
   return (
     <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-white/5 py-3 px-4 z-40 select-none text-muted shrink-0">

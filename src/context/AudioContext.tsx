@@ -177,6 +177,9 @@ function pathToView(pathname: string): string {
     case "recent":
     case "live":
     case "settings":
+    case "library":
+    case "artists":
+    case "albums":
       return seg[0];
     case "playlist":   return seg[1] ? `playlist:${seg[1]}` : "home";
     case "u":          return seg[1] ? `user:${seg[1]}` : "home";

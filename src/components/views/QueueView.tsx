@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
@@ -37,10 +39,11 @@ export function QueueView() {
           <div className="rounded-xl overflow-hidden border border-white/5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted mb-3 px-2">Next in Queue</h3>
             {qTracks.map((t, idx) => (
-              <TrackRow 
-                key={`${t.id}-${idx}`} // using idx in case of duplicate tracks in queue
-                track={t} 
+              <TrackRow
+                key={`${t.id}-${idx}`}
+                track={t}
                 index={idx}
+                playQueue={queue}
               />
             ))}
           </div>

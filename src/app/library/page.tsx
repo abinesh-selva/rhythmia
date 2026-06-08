@@ -8,7 +8,7 @@ import { useDialog } from "../../context/DialogContext";
 import { supabase } from "../../lib/supabase";
 
 interface ArtistRow { id: string; display_name: string; slug: string; image: string | null; track_count: number }
-interface AlbumRow  { id: string; title: string; slug: string; cover_colors: string[]; artist_id: string; artists: { display_name: string } | null }
+interface AlbumRow  { id: string; title: string; slug: string; cover_image: string | null; cover_colors: string[]; artist_id: string; artists: { display_name: string } | null }
 
 type Filter = "all" | "playlists" | "collections" | "artists" | "albums";
 
@@ -33,7 +33,7 @@ export default function LibraryPage() {
     if (!supabase) return;
     Promise.all([
       supabase.from("artists").select("id,display_name,slug,image,track_count").order("track_count", { ascending: false }).limit(50),
-      supabase.from("albums").select("id,title,slug,cover_colors,artist_id,artists(display_name)").order("created_at", { ascending: false }).limit(50),
+      supabase.from("albums").select("id,title,slug,cover_image,cover_colors,artist_id,artists(display_name)").order("created_at", { ascending: false }).limit(50),
     ]).then(([ar, al]) => {
       if (ar.data) setArtists(ar.data as ArtistRow[]);
       if (al.data) setAlbums(al.data as unknown as AlbumRow[]);
@@ -185,9 +185,13 @@ export default function LibraryPage() {
               onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
               art={
                 <div
-                  className="w-12 h-12 rounded-xl flex-none shadow-sm"
+                  className="w-12 h-12 rounded-xl flex-none shadow-sm overflow-hidden"
                   style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
-                />
+                >
+                  {album.cover_image && (
+                    <img src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />
+                  )}
+                </div>
               }
               title={album.title}
               subtitle={`Album${artistInfo ? ` · ${artistInfo.display_name}` : ""}`}

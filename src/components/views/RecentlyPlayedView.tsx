@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
@@ -39,7 +41,7 @@ export function RecentlyPlayedView() {
       {recentTracks.length > 0 && (
         <div className="px-6 md:px-8 py-6 flex items-center gap-6 relative z-10">
           <button
-            onClick={() => playTrack(recentTracks[0].id)}
+            onClick={() => playTrack(recentTracks[0].id, recentTracks.map(t => t.id))}
             className="w-14 h-14 rounded-full bg-coral hover:bg-coral-bright flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all"
           >
             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-forest-dark ml-1">
@@ -61,10 +63,11 @@ export function RecentlyPlayedView() {
         ) : (
           <div className="rounded-xl overflow-hidden border border-white/5">
             {recentTracks.map((t, idx) => (
-              <TrackRow 
-                key={`${t.id}-${idx}`} 
-                track={t} 
+              <TrackRow
+                key={`${t.id}-${idx}`}
+                track={t}
                 index={idx}
+                playQueue={recentTracks.map(x => x.id)}
               />
             ))}
           </div>

@@ -1,5 +1,4 @@
 import React from "react";
-import { useRouter } from "next/navigation";
 import { useAudio } from "../../context/AudioContext";
 import { useAuth } from "../../context/AuthContext";
 
@@ -14,19 +13,16 @@ export function TopNavigation({
   setIsFriendOpen,
   setIsAuthOpen,
 }: TopNavigationProps) {
-  const router = useRouter();
   const { view, setView, searchQuery, setSearchQuery, isPrivateSession, togglePrivateSession } = useAudio();
   const { user, profile, signOut, isOffline } = useAuth();
 
   const handleHomeClick = () => {
     setView("home");
-    router.push("/");
   };
 
   const handleSearchFocus = () => {
     if (view !== "search") {
       setView("search");
-      router.push("/search");
     }
   };
 
@@ -150,10 +146,7 @@ export function TopNavigation({
               <div className="p-1 flex flex-col">
                 <span className="px-3 py-2 text-xs text-muted truncate border-b border-white/5 mb-1">{user?.email}</span>
                 <button
-                  onClick={() => {
-                    setView("settings");
-                    router.push("/settings");
-                  }}
+                  onClick={() => setView("settings")}
                   className="text-left px-3 py-2 text-sm text-cream hover:bg-white/8 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted">
@@ -176,10 +169,7 @@ export function TopNavigation({
         ) : (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                setView("settings");
-                router.push("/settings");
-              }}
+              onClick={() => setView("settings")}
               className="w-8 h-8 flex items-center justify-center rounded-full bg-white/6 text-muted hover:text-cream hover:bg-white/12 transition-all animate-fade-in"
               aria-label="Settings"
               title="Settings"

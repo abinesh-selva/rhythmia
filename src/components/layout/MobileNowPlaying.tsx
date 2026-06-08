@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef, useEffect, useState } from "react";
-import { useAudio, usePlaybackTime } from "../../context/AudioContext";
+import { useAudio, usePlaybackTime, Track } from "../../context/AudioContext";
 
 interface MobileNowPlayingProps {
   isOpen: boolean;
@@ -26,6 +26,7 @@ export function MobileNowPlaying({ isOpen, onClose }: MobileNowPlayingProps) {
     lyrics,
     updateLyrics,
     queue,
+    playbackContext,
     tracks,
     removeFromQueue,
     togglePlay,
@@ -94,17 +95,17 @@ export function MobileNowPlaying({ isOpen, onClose }: MobileNowPlayingProps) {
   const coverColors = currentTrack.cover_colors || ["#0E3B35", "#0c332c"];
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex flex-col bg-forest-dark text-cream overflow-hidden md:hidden animate-slide-up"
-      style={{
-        background: `linear-gradient(to bottom, ${coverColors[0]}dd, var(--theme-forest-dark) 90%)`,
-      }}
-    >
-      {/* Background radial glow */}
-      <div 
-        className="absolute inset-0 opacity-30 blur-[120px] pointer-events-none" 
+    <div className="fixed inset-0 z-50 flex flex-col bg-forest-dark text-cream overflow-hidden md:hidden animate-slide-up">
+      {/* Solid colour tint — always fully opaque so no content bleeds through */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: `linear-gradient(to bottom, ${coverColors[0]}, var(--theme-forest-dark) 80%)` }}
+      />
+      {/* Soft radial glow accent */}
+      <div
+        className="absolute inset-0 opacity-25 blur-[100px] pointer-events-none"
         style={{
-          background: `radial-gradient(circle at 50% 30%, ${coverColors[0]}, transparent 60%), radial-gradient(circle at 50% 100%, ${coverColors[1] || coverColors[0]}, transparent 50%)`,
+          background: `radial-gradient(circle at 50% 20%, ${coverColors[0]}, transparent 55%), radial-gradient(circle at 50% 100%, ${coverColors[1] || coverColors[0]}, transparent 50%)`,
         }}
       />
 
@@ -394,46 +395,49 @@ export function MobileNowPlaying({ isOpen, onClose }: MobileNowPlayingProps) {
             </div>
             
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2 no-scrollbar">
-              {queue.length === 0 ? (
-                <div className="text-center py-12 text-muted">
-                  <p className="text-sm">Queue is empty</p>
-                  <p className="text-xs text-muted/60 mt-1">Tap & hold songs to add them here.</p>
-                </div>
-              ) : (
-                queue.map((trackId, idx) => {
-                  const qTrack = tracks.find((t) => t.id === trackId);
-                  if (!qTrack) return null;
+              {/* Explicit queue — priority tracks added by the user */}
+              {queue.length > 0 && (
+                <>
+                  <p className="text-[10px] font-bold text-muted uppercase tracking-widest pb-1">Next in queue</p>
+                  {queue.map((trackId, idx) => {
+                    const qTrack = tracks.find((t) => t.id === trackId);
+                    if (!qTrack) return null;
+                    return (
+                      <QueueTrackRow
+                        key={`q-${trackId}-${idx}`}
+                        track={qTrack}
+                        onRemove={() => removeFromQueue(idx)}
+                      />
+                    );
+                  })}
+                </>
+              )}
+
+              {/* Playback context — upcoming tracks from the active playlist/view */}
+              {(() => {
+                const currentIdx = currentTrack ? playbackContext.indexOf(currentTrack.id) : -1;
+                const upcoming = currentIdx >= 0 ? playbackContext.slice(currentIdx + 1) : playbackContext;
+                if (upcoming.length === 0 && queue.length === 0) {
                   return (
-                    <div 
-                      key={`${trackId}-${idx}`}
-                      className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl group"
-                    >
-                      <div
-                        className="w-10 h-10 rounded-lg flex items-center justify-center flex-none"
-                        style={{ background: `linear-gradient(135deg, ${qTrack.cover_colors[0]}, ${qTrack.cover_colors[1]})` }}
-                      >
-                        {qTrack.cover_image ? (
-                          <img src={qTrack.cover_image} alt={qTrack.title} className="w-full h-full object-cover rounded-lg" />
-                        ) : (
-                          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-cream/70">
-                            <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
-                          </svg>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold truncate">{qTrack.title}</p>
-                        <p className="text-[10px] text-muted truncate mt-0.5">{qTrack.artist}</p>
-                      </div>
-                      <button 
-                        onClick={() => removeFromQueue(idx)}
-                        className="text-xs font-bold text-pink hover:bg-pink/10 px-3 py-1.5 rounded-lg"
-                      >
-                        Remove
-                      </button>
+                    <div className="text-center py-12 text-muted">
+                      <p className="text-sm">Queue is empty</p>
+                      <p className="text-xs text-muted/60 mt-1">Play from a playlist to see upcoming tracks.</p>
                     </div>
                   );
-                })
-              )}
+                }
+                if (upcoming.length === 0) return null;
+                return (
+                  <>
+                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest pb-1 pt-2">Next up</p>
+                    {upcoming.slice(0, 50).map((trackId, idx) => {
+                      const qTrack = tracks.find((t) => t.id === trackId);
+                      if (!qTrack) return null;
+                      return <QueueTrackRow key={`ctx-${trackId}-${idx}`} track={qTrack} />;
+                    })}
+                  </>
+                );
+              })()}
+
             </div>
           </div>
         </div>
@@ -494,6 +498,39 @@ export function MobileNowPlaying({ isOpen, onClose }: MobileNowPlayingProps) {
             </div>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function QueueTrackRow({ track, onRemove }: { track: Track; onRemove?: () => void }) {
+  return (
+    <div className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl">
+      <div
+        className="w-10 h-10 rounded-lg flex-none overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${track.cover_colors[0]}, ${track.cover_colors[1]})` }}
+      >
+        {track.cover_image ? (
+          <img src={track.cover_image} alt={track.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-cream/70">
+              <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
+            </svg>
+          </div>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-bold truncate">{track.title}</p>
+        <p className="text-[10px] text-muted truncate mt-0.5">{track.artist}</p>
+      </div>
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          className="text-xs font-bold text-pink hover:bg-pink/10 px-3 py-1.5 rounded-lg"
+        >
+          Remove
+        </button>
       )}
     </div>
   );

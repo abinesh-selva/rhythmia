@@ -63,7 +63,7 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
           <h2 className="text-xl font-bold text-cream mb-4">Songs</h2>
           <div className="flex flex-col rounded-xl overflow-hidden border border-white/5">
             {activeTracks.map((t, idx) => (
-              <TrackRow key={t.id} track={t as any} index={idx} />
+              <TrackRow key={t.id} track={t as any} index={idx} playQueue={activeTracks.map(x => x.id as any)} />
             ))}
           </div>
         </div>

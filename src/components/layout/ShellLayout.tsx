@@ -49,7 +49,17 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     checkCollapse();
     window.addEventListener("sidebar-collapse-toggle", checkCollapse);
-    return () => window.removeEventListener("sidebar-collapse-toggle", checkCollapse);
+
+    const checkFriendOpen = (e: StorageEvent) => {
+      if (e.key === "vibeblower_friend_open") {
+        setIsFriendOpen(e.newValue !== "false");
+      }
+    };
+    window.addEventListener("storage", checkFriendOpen);
+    return () => {
+      window.removeEventListener("sidebar-collapse-toggle", checkCollapse);
+      window.removeEventListener("storage", checkFriendOpen);
+    };
   }, []);
 
   const handleSidebarResize = (e: MouseEvent) => {

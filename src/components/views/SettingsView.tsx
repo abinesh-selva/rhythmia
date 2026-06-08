@@ -85,7 +85,20 @@ export function SettingsView() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile?.display_name || "");
   const [savingName, setSavingName] = useState(false);
+  const [friendActivityOn, setFriendActivityOn] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem("vibeblower_friend_open");
+    setFriendActivityOn(saved !== "false");
+  }, []);
+
+  const toggleFriendActivity = () => {
+    const next = !friendActivityOn;
+    setFriendActivityOn(next);
+    localStorage.setItem("vibeblower_friend_open", String(next));
+    window.dispatchEvent(new StorageEvent("storage", { key: "vibeblower_friend_open", newValue: String(next) }));
+  };
 
   React.useEffect(() => {
     if (!loading) {
@@ -291,7 +304,7 @@ export function SettingsView() {
                   </div>
                 </SettingRow>
                 <SettingRow label="Show friend activity" description="See what your friends are playing in the Friend Activity sidebar." htmlFor="friend-activity-toggle">
-                  <Toggle id="friend-activity-toggle" on={true} onToggle={() => {}} />
+                  <Toggle id="friend-activity-toggle" on={friendActivityOn} onToggle={toggleFriendActivity} />
                 </SettingRow>
               </div>
             </div>

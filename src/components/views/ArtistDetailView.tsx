@@ -137,7 +137,15 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
                         <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
                       </svg>
                     )}
-                    <div className="absolute right-2 bottom-2 w-10 h-10 bg-green rounded-full flex items-center justify-center shadow-xl translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const albumTracks = tracks.filter((t) => t.album_id === album.id);
+                        if (albumTracks.length > 0) playTrack(albumTracks[0].id, albumTracks.map((t) => t.id), albumTracks[0]);
+                        else router.push(`/album/${album.id}/${album.slug}`);
+                      }}
+                      className="absolute right-2 bottom-2 w-10 h-10 bg-green rounded-full flex items-center justify-center shadow-xl translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10"
+                    >
                       <svg viewBox="0 0 24 24" className="w-5 h-5 fill-black ml-0.5">
                         <path d="M8 5v14l11-7z" />
                       </svg>

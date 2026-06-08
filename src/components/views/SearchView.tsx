@@ -250,7 +250,7 @@ export function SearchView() {
               <h3 className="text-lg font-bold text-cream mb-3">Singers</h3>
               <div className="overflow-hidden"><div className="flex gap-4 overflow-x-auto pb-4 -mb-4 no-scrollbar">
                 {singerResults.map((singer) => (
-                  <a key={singer.id} href={`/singer/${singer.id}/${singer.slug}`}
+                  <div key={singer.id} onClick={() => router.push(`/singer/${singer.id}/${singer.slug}`)}
                     className="flex flex-col items-center gap-2 min-w-32 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
                     <div className="w-20 h-20 rounded-full bg-white/6 border border-white/8 overflow-hidden flex items-center justify-center">
                       {singer.image
@@ -262,7 +262,7 @@ export function SearchView() {
                     </div>
                     <span className="text-sm font-bold text-cream text-center truncate w-full">{singer.name}</span>
                     <span className="text-xs text-muted">Singer · {singer.track_count} songs</span>
-                  </a>
+                  </div>
                 ))}
               </div></div>
             </section>
@@ -273,10 +273,10 @@ export function SearchView() {
               <h3 className="text-lg font-bold text-cream mb-3">Genres</h3>
               <div className="flex gap-3 flex-wrap">
                 {genreResults.map((genre) => (
-                  <a key={genre.id} href={`/genre/${genre.id}/${genre.slug}`}
-                    className="px-4 py-2 rounded-full bg-coral/10 border border-coral/20 text-coral font-bold text-sm hover:bg-coral/20 transition-colors">
+                  <div key={genre.id} onClick={() => router.push(`/genre/${genre.id}/${genre.slug}`)}
+                    className="px-4 py-2 rounded-full bg-coral/10 border border-coral/20 text-coral font-bold text-sm hover:bg-coral/20 transition-colors cursor-pointer">
                     {genre.name}
-                  </a>
+                  </div>
                 ))}
               </div>
             </section>
@@ -287,11 +287,11 @@ export function SearchView() {
               <h3 className="text-lg font-bold text-cream mb-3">Languages</h3>
               <div className="flex gap-3 flex-wrap">
                 {languageResults.map((lang) => (
-                  <a key={lang.id} href={`/language/${lang.id}/${lang.slug}`}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-green/10 border border-green/20 text-green font-bold text-sm hover:bg-green/20 transition-colors">
+                  <div key={lang.id} onClick={() => router.push(`/language/${lang.id}/${lang.slug}`)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-green/10 border border-green/20 text-green font-bold text-sm hover:bg-green/20 transition-colors cursor-pointer">
                     {lang.name}
                     {lang.code && <span className="text-xs font-mono opacity-60 uppercase">{lang.code}</span>}
-                  </a>
+                  </div>
                 ))}
               </div>
             </section>

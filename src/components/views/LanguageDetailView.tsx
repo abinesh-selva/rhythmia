@@ -43,7 +43,7 @@ export function LanguageDetailView({ language, tracks }: { language: Language; t
         ) : (
           <div className="flex flex-col rounded-xl overflow-hidden border border-white/5">
             {activeTracks.map((t, idx) => (
-              <TrackRow key={t.id} track={t as any} index={idx} />
+              <TrackRow key={t.id} track={t as any} index={idx} playQueue={activeTracks.map(x => x.id as any)} />
             ))}
           </div>
         )}

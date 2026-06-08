@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
