@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useAudio } from "../../context/AudioContext";
 
@@ -49,7 +51,7 @@ export function LiveEventsView() {
           {liveTracks.map((track) => (
             <div
               key={track.id}
-              onClick={() => playTrack(track.id)}
+              onClick={() => playTrack(track.id, liveTracks.map(t => t.id))}
               className="group flex gap-4 p-4 bg-white/4 hover:bg-panel/60 rounded-2xl cursor-pointer transition-all border border-white/5 hover:border-cream/10"
             >
               <div

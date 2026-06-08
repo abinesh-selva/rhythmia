@@ -22,7 +22,7 @@ export function LanguageDetailView({ language, tracks }: { language: Language; t
         </div>
         <div className="flex flex-col gap-2 z-10">
           <span className="text-xs font-bold text-cream/60 uppercase tracking-widest">Language</span>
-          <h1 className="font-display font-black text-5xl md:text-7xl text-white tracking-tighter drop-shadow-lg">{language.name}</h1>
+          <h1 className="font-display font-black text-3xl sm:text-5xl md:text-7xl text-white tracking-tighter drop-shadow-lg">{language.name}</h1>
           {language.code && <span className="text-xs text-green/80 font-mono uppercase tracking-widest">{language.code}</span>}
           <p className="text-white/60 text-sm">{activeTracks.length} songs</p>
         </div>

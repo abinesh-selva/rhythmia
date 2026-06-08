@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { useAudio } from "../../context/AudioContext";
@@ -30,7 +32,7 @@ export function MobileNav() {
     view.startsWith("album:");
 
   return (
-    <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-white/5 py-3 px-4 z-40 select-none text-muted shrink-0">
+    <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-white/5 py-3 px-4 z-40 select-none text-muted shrink-0 pb-safe">
       <Link
         href="/"
         className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${

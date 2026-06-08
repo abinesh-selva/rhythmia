@@ -137,7 +137,7 @@ export function PlaylistView({ playlistId }: PlaylistViewProps) {
           </div>
           <h2
             onClick={handleRename}
-            className="font-display font-black text-5xl md:text-7xl lg:text-8xl text-white tracking-tighter truncate cursor-pointer hover:underline decoration-white/30 decoration-2 drop-shadow-lg py-2"
+            className="font-display font-black text-3xl sm:text-5xl md:text-7xl lg:text-8xl text-white tracking-tighter truncate cursor-pointer hover:underline decoration-white/30 decoration-2 drop-shadow-lg py-2"
             title="Click to rename"
           >
             {pl.name}

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Track, useAudio } from "../../context/AudioContext";
 import { useTrackMenu } from "../../context/TrackMenuContext";

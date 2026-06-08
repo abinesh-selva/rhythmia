@@ -107,8 +107,15 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
 
   const isPodcastMode = currentTrack?.type === "podcast" || currentTrack?.type === "audiobook";
 
+  const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
+
   return (
-    <footer className="w-full md:col-span-full h-player-sm md:h-player bg-forest-dark border-t border-white/5 flex items-center px-2 md:px-5 select-none relative z-40 shrink-0">
+    <footer className="w-full md:col-span-full h-player-sm md:h-player bg-forest-dark border-t border-white/5 flex flex-col items-stretch select-none relative z-40 shrink-0 pb-safe md:pb-0">
+      {/* Mobile-only thin progress line at top of player */}
+      <div className="md:hidden h-0.5 w-full bg-white/10 flex-none">
+        <div className="h-full bg-coral transition-all duration-300" style={{ width: `${progressPct}%` }} />
+      </div>
+      <div className="flex items-center px-2 md:px-5 flex-1">
       {/* Left: track info */}
       <div 
         onClick={() => {
@@ -527,6 +534,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
           <p className="text-xs text-muted/40 text-center">Multi-device streaming is not yet available</p>
         </div>
       )}
+      </div>
     </footer>
   );
 }

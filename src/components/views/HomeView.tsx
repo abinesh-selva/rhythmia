@@ -210,7 +210,8 @@ export function HomeView() {
         <Shelf title="Jump back in">
           {jumpBackInTracks.map(t => (
             <Card key={t.id} title={t.title} subtitle={t.artist} colors={t.cover_colors} type="track"
-              onClick={() => playTrack(t.id)} onPlay={(e) => { e.stopPropagation(); playTrack(t.id); }} />
+              onClick={() => playTrack(t.id, jumpBackInTracks.map(x => x.id))}
+              onPlay={(e) => { e.stopPropagation(); playTrack(t.id, jumpBackInTracks.map(x => x.id)); }} />
           ))}
         </Shelf>
       )}
@@ -234,7 +235,8 @@ export function HomeView() {
         <Shelf title="Made for you" subtitle="A heuristic mix based on your history">
           {madeForYou.map(t => (
             <Card key={t.id} title={t.title} subtitle={t.artist} colors={t.cover_colors} type="track"
-              onClick={() => playTrack(t.id)} onPlay={(e) => { e.stopPropagation(); playTrack(t.id); }} />
+              onClick={() => playTrack(t.id, madeForYou.map(x => x.id))}
+              onPlay={(e) => { e.stopPropagation(); playTrack(t.id, madeForYou.map(x => x.id)); }} />
           ))}
         </Shelf>
       )}

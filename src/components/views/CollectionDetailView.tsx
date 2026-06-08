@@ -57,7 +57,7 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
               <span className="text-xs text-muted font-mono bg-panel/40 px-2 py-0.5 rounded-full">{collection.source_folder}</span>
             )}
           </div>
-          <h1 className="font-display font-black text-4xl md:text-6xl lg:text-7xl text-white tracking-tighter drop-shadow-lg truncate">
+          <h1 className="font-display font-black text-2xl sm:text-4xl md:text-6xl lg:text-7xl text-white tracking-tighter drop-shadow-lg truncate">
             {collection.name}
           </h1>
           <p className="text-white/60 text-sm font-medium">{activeTracks.length} songs · Various Artists</p>

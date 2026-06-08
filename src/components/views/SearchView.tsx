@@ -216,7 +216,7 @@ export function SearchView() {
               <h3 className="text-lg font-bold text-cream mb-3">Tracks</h3>
               <div className="rounded-xl border border-white/5 overflow-hidden">
                 {trackResults.map((t, idx) => (
-                  <TrackRow key={t.id} track={t} index={idx} />
+                  <TrackRow key={t.id} track={t} index={idx} playQueue={trackResults.map(x => x.id)} />
                 ))}
               </div>
             </section>
@@ -324,7 +324,7 @@ export function SearchView() {
               {genreFilteredTracks.length > 0 ? (
                 <div className="rounded-xl overflow-hidden border border-white/5 mb-6">
                   {genreFilteredTracks.map((t, idx) => (
-                    <TrackRow key={t.id} track={t} index={idx} />
+                    <TrackRow key={t.id} track={t} index={idx} playQueue={genreFilteredTracks.map(x => x.id)} />
                   ))}
                 </div>
               ) : (

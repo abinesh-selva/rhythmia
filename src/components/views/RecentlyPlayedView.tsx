@@ -26,7 +26,7 @@ export function RecentlyPlayedView() {
         
         <div className="hero-info flex flex-col gap-2 z-10">
           <span className="text-sm font-bold tracking-wider text-white/80">Profile</span>
-          <h2 className="font-display font-black text-5xl md:text-7xl lg:text-8xl text-white tracking-tighter py-2 drop-shadow-lg">
+          <h2 className="font-display font-black text-3xl sm:text-5xl md:text-7xl lg:text-8xl text-white tracking-tighter py-2 drop-shadow-lg">
             Recently Played
           </h2>
           <div className="flex items-center gap-2 mt-2">

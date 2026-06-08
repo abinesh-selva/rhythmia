@@ -7,11 +7,10 @@ import { AuthModal } from "../auth/AuthModal";
 import { Sidebar } from "./Sidebar";
 import { TopNavigation } from "./TopNavigation";
 import { BottomPlayer } from "./BottomPlayer";
-import { NowPlayingSidebar } from "./NowPlayingSidebar";
+import { NowPlayingPanel } from "./NowPlayingPanel";
 import { FriendActivitySidebar } from "./FriendActivitySidebar";
 import { ChatDrawer } from "../chat/ChatDrawer";
 import { MobileNav } from "./MobileNav";
-import { MobileNowPlaying } from "./MobileNowPlaying";
 
 export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentTime, duration } = usePlaybackTime();
@@ -201,19 +200,13 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         <FriendActivitySidebar setIsFriendOpen={handleFriendToggle} />
       )}
 
-      {/* Now Playing panel */}
-      {isNPOpen && (
-        <>
-          <div className="hidden md:block">
-            <NowPlayingSidebar
-              setIsNPOpen={setIsNPOpen}
-              npTab={npTab}
-              setNpTab={setNpTab}
-            />
-          </div>
-          <MobileNowPlaying isOpen={isNPOpen} onClose={() => setIsNPOpen(false)} />
-        </>
-      )}
+      {/* Now Playing panel — unified responsive component */}
+      <NowPlayingPanel
+        isOpen={isNPOpen}
+        onClose={() => setIsNPOpen(false)}
+        npTab={npTab}
+        setNpTab={setNpTab}
+      />
 
       {/* Bottom player bar */}
       <BottomPlayer

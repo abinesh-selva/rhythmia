@@ -38,7 +38,7 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
 
         <div className="flex flex-col gap-2 z-10 flex-1 min-w-0">
           <span className="text-xs font-bold text-cream/60 uppercase tracking-widest">Singer</span>
-          <h1 className="font-display font-black text-5xl md:text-7xl text-white tracking-tighter drop-shadow-lg truncate">
+          <h1 className="font-display font-black text-3xl sm:text-5xl md:text-7xl text-white tracking-tighter drop-shadow-lg truncate">
             {singer.display_name}
           </h1>
           <p className="text-white/60 text-sm">{singer.track_count.toLocaleString()} songs</p>
