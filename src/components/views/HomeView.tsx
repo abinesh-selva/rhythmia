@@ -240,7 +240,7 @@ export function HomeView() {
       )}
 
       {shouldShow("artists") && userTopArtists.length > 0 && (
-        <Shelf title="Your top artists" onShowAll={() => setView("search")}>
+        <Shelf title="Your top artists" onShowAll={() => router.push("/artists")}>
           {userTopArtists.map(art => {
             const tr = tracks.filter(t => t.artist_id === art.id);
             return (
@@ -267,7 +267,7 @@ export function HomeView() {
       )}
 
       {shouldShow("albums") && popularAlbums.length > 0 && (
-        <Shelf title="Popular albums" onShowAll={() => setView("search")}>
+        <Shelf title="Popular albums" onShowAll={() => router.push("/albums")}>
           {popularAlbums.map(alb => {
             const [c1, c2] = getAlbumColors(alb);
             const artistName = Array.isArray(alb.artists) ? alb.artists[0]?.display_name : alb.artists?.display_name;
@@ -309,7 +309,7 @@ export function HomeView() {
       )}
 
       {shouldShow("albums") && newAlbums.length > 0 && (
-        <Shelf title="Recently added" onShowAll={() => setView("search")}>
+        <Shelf title="Recently added" onShowAll={() => router.push("/albums?sort=new")}>
           {newAlbums.map(alb => {
             const [c1, c2] = getAlbumColors(alb);
             const artistName = Array.isArray(alb.artists) ? alb.artists[0]?.display_name : alb.artists?.display_name;

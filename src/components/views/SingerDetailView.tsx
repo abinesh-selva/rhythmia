@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
 
@@ -14,6 +15,7 @@ interface SingerDetailViewProps {
 
 export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDetailViewProps) {
   const { playTrack } = useAudio();
+  const router = useRouter();
 
   const activeTracks = tracks.filter((t) => t.is_active !== false);
 
@@ -47,7 +49,7 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
       {activeTracks.length > 0 && (
         <div className="px-6 md:px-8 py-6 flex items-center gap-4">
           <button
-            onClick={() => playTrack(activeTracks[0].id as any)}
+            onClick={() => playTrack(activeTracks[0].id as any, activeTracks.map(t => t.id as any), activeTracks[0] as any)}
             className="w-14 h-14 rounded-full bg-coral hover:bg-coral-bright flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all"
           >
             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
@@ -75,7 +77,7 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
             {appearsOnAlbums.map((album) => {
               const c = Array.isArray(album.cover_colors) ? album.cover_colors : ["#F0824E", "#1E9E54"];
               return (
-                <div key={album.id} className="flex flex-col gap-2 min-w-40 p-3 bg-white/4 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
+                <div key={album.id} onClick={() => router.push(`/album/${album.id}/${album.slug}`)} className="flex flex-col gap-2 min-w-40 p-3 bg-white/4 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
                   <div className="w-full aspect-square rounded-md" style={{ background: `linear-gradient(135deg, ${c[0]}, ${c[1]})` }} />
                   <span className="text-sm font-bold text-cream truncate">{album.title}</span>
                   <span className="text-xs text-muted truncate">{album.artist_name}</span>

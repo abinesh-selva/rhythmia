@@ -337,7 +337,14 @@ export async function POST(_req: Request) {
       : { data: [], error: null };
     if (colErr) throw new Error(`Collection upsert: ${colErr.message}`);
 
+    // Merge upserted rows with all existing collections so a partial Cloudinary
+    // fetch (pagination gap) never orphans a collection's track links.
+    const { data: allExistingCollections } = await db.from("collections").select("id, source_folder");
     const collectionIdByFolder = new Map<string, string>();
+    for (const row of allExistingCollections ?? []) {
+      if (row.source_folder) collectionIdByFolder.set(row.source_folder as string, row.id as string);
+    }
+    // Upserted rows take precedence (they have the latest IDs)
     for (const row of upsertedCollections ?? []) {
       if (row.source_folder) collectionIdByFolder.set(row.source_folder, row.id as string);
     }
@@ -424,10 +431,10 @@ export async function POST(_req: Request) {
     const { data: dbRows } = await db.from("tracks").select("asset_id").eq("source", "cloudinary_sync").not("asset_id", "is", null);
     const toDeactivate = (dbRows ?? []).map((r: { asset_id: string }) => r.asset_id).filter((id: string) => !cloudinaryAssetIds.has(id));
     let deactivatedCount = 0;
-    if (toDeactivate.length > 0) {
-      const { error } = await db.from("tracks").update({ is_active: false }).in("asset_id", toDeactivate);
-      if (error) throw new Error(`Inactive sweep: ${error.message}`);
-      deactivatedCount = toDeactivate.length;
+    for (let i = 0; i < toDeactivate.length; i += BATCH) {
+      const { error } = await db.from("tracks").update({ is_active: false }).in("asset_id", toDeactivate.slice(i, i + BATCH));
+      if (error) throw new Error(`Inactive sweep batch ${i / BATCH}: ${error.message}`);
+      deactivatedCount += Math.min(BATCH, toDeactivate.length - i);
     }
 
     // ── Step 11: Metadata — singers / genre / language (+ artist/title/album for collection tracks) ──

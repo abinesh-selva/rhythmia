@@ -276,7 +276,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
           console.warn("Track metadata query failed (migrations pending?), falling back to basic query.", dbError.message);
           const fallback1 = await supabase
             .from("tracks")
-            .select("id, title, artist, album, audio_url, cover_colors, duration_sec, artist_id, album_id, track_number, is_active, asset_id, folder_type")
+            .select("id, title, artist, album, audio_url, cover_colors, duration_sec, artist_id, album_id, track_number, is_active, asset_id, folder_type, lyrics")
             .order("title");
           if (!fallback1.error) {
             dbTracks = fallback1.data as any;
@@ -1191,13 +1191,18 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const deletePlaylist = async (playlistId: string) => {
+    const snapshot = playlists.find((p) => p.id === playlistId);
     setPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
-    if (view === `playlist:${playlistId}`) {
-      setView("home");
-    }
+    if (view === `playlist:${playlistId}`) setView("home");
 
     if (isSupabaseConfigured && supabase && user) {
-      await supabase.from("playlists").delete().eq("id", playlistId);
+      try {
+        const { error } = await supabase.from("playlists").delete().eq("id", playlistId);
+        if (error) throw error;
+      } catch (e) {
+        if (snapshot) setPlaylists((prev) => [...prev, snapshot]);
+        console.error("deletePlaylist failed:", e);
+      }
     } else {
       const updated = playlists.filter((p) => p.id !== playlistId);
       localStorage.setItem("vibeblower_local_playlists", JSON.stringify(updated));
@@ -1207,14 +1212,22 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const toggleCollaborative = async (playlistId: string) => {
     const pl = playlists.find((p) => p.id === playlistId);
     if (!pl) return;
-    
+
     const updatedCollab = !pl.collaborative;
     setPlaylists((prev) =>
       prev.map((p) => (p.id === playlistId ? { ...p, collaborative: updatedCollab } : p))
     );
 
     if (isSupabaseConfigured && supabase && user) {
-      await supabase.from("playlists").update({ collaborative: updatedCollab }).eq("id", playlistId);
+      try {
+        const { error } = await supabase.from("playlists").update({ collaborative: updatedCollab }).eq("id", playlistId);
+        if (error) throw error;
+      } catch (e) {
+        setPlaylists((prev) =>
+          prev.map((p) => (p.id === playlistId ? { ...p, collaborative: pl.collaborative } : p))
+        );
+        console.error("toggleCollaborative failed:", e);
+      }
     } else {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, collaborative: updatedCollab } : p
@@ -1224,12 +1237,21 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const renamePlaylist = async (playlistId: string, name: string) => {
+    const pl = playlists.find((p) => p.id === playlistId);
     setPlaylists((prev) =>
       prev.map((p) => (p.id === playlistId ? { ...p, name } : p))
     );
 
     if (isSupabaseConfigured && supabase && user) {
-      await supabase.from("playlists").update({ name }).eq("id", playlistId);
+      try {
+        const { error } = await supabase.from("playlists").update({ name }).eq("id", playlistId);
+        if (error) throw error;
+      } catch (e) {
+        if (pl) setPlaylists((prev) =>
+          prev.map((p) => (p.id === playlistId ? { ...p, name: pl.name } : p))
+        );
+        console.error("renamePlaylist failed:", e);
+      }
     } else {
       const updated = playlists.map((p) => (p.id === playlistId ? { ...p, name } : p));
       localStorage.setItem("vibeblower_local_playlists", JSON.stringify(updated));

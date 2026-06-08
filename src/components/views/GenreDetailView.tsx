@@ -29,7 +29,7 @@ export function GenreDetailView({ genre, tracks }: { genre: Genre; tracks: Track
 
       {activeTracks.length > 0 && (
         <div className="px-6 md:px-8 py-6 flex items-center gap-4">
-          <button onClick={() => playTrack(activeTracks[0].id as any)}
+          <button onClick={() => playTrack(activeTracks[0].id as any, activeTracks.map(t => t.id as any), activeTracks[0] as any)}
             className="w-14 h-14 rounded-full bg-coral hover:bg-coral-bright flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all">
             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-forest-dark ml-1"><path d="M8 5v14l11-7z" /></svg>
           </button>

@@ -1,11 +1,13 @@
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAudio } from "../../context/AudioContext";
 import { useDialog } from "../../context/DialogContext";
 
 export function MobileNav() {
   const { view, setView, createPlaylist } = useAudio();
   const { showPrompt } = useDialog();
+  const pathname = usePathname();
 
   const handleCreatePlaylist = async () => {
     const pName = await showPrompt({
@@ -18,6 +20,10 @@ export function MobileNav() {
     const plId = await createPlaylist(pName);
     if (plId) setView(`playlist:${plId}`);
   };
+
+  const isLibraryActive = view.startsWith("playlist:") || view === "liked" || view === "library" ||
+    pathname.startsWith("/library") || pathname.startsWith("/collection") ||
+    pathname.startsWith("/artist") || pathname.startsWith("/album");
 
   return (
     <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-white/5 py-3 px-4 z-40 select-none text-muted shrink-0">
@@ -32,6 +38,7 @@ export function MobileNav() {
         </svg>
         Home
       </Link>
+
       <Link
         href="/search"
         className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${
@@ -43,23 +50,26 @@ export function MobileNav() {
         </svg>
         Search
       </Link>
+
       <Link
-        href="/liked"
+        href="/library"
         className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${
-          view === "liked" ? "text-coral" : "hover:text-cream text-muted"
+          isLibraryActive ? "text-coral" : "hover:text-cream text-muted"
         }`}
       >
         <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
-          <path d="M12 21l-1.45-1.32C5.4 15 2 11.9 2 8.1 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.1c0 3.8-3.4 6.9-8.55 11.58L12 21z" />
+          <path d="M4 19H2V5h2v14zm4 0H6V5h2v14zm1.75-1.12l-1.22-1.6 9.5-7.2 1.22 1.6-9.5 7.2zM22 5v14H10V5h12z" />
         </svg>
-        Liked
+        Library
       </Link>
 
       <button
         onClick={handleCreatePlaylist}
-        className="flex flex-col items-center gap-1 text-xs font-bold tracking-wider hover:text-cream text-muted cursor-pointer transition-colors"
+        className="flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider hover:text-cream text-muted cursor-pointer transition-colors"
       >
-        <span className="text-xl font-light leading-none h-6 flex items-center justify-center mb-0.5">+</span>
+        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+        </svg>
         Create
       </button>
     </div>
