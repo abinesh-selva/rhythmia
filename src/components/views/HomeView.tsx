@@ -81,8 +81,9 @@ export function HomeView() {
     if (isLoading) return;
     let cancelled = false;
     const done = () => { if (!cancelled) setCatalogLoading(false); };
-    const recentArtistIds = Array.from(new Set(historyTracks.map(t => t.artist_id).filter(Boolean))) as string[];
-    const recentAlbumIds  = Array.from(new Set(historyTracks.map(t => t.album_id).filter(Boolean)))  as string[];
+    // Cap at 50 — PostgREST encodes .in() as a query-string; 50 UUIDs ≈ 1.8 KB, well under the 8 KB limit
+    const recentArtistIds = Array.from(new Set(historyTracks.map(t => t.artist_id).filter(Boolean))).slice(0, 50) as string[];
+    const recentAlbumIds  = Array.from(new Set(historyTracks.map(t => t.album_id).filter(Boolean))).slice(0, 50)  as string[];
 
     const timeout = setTimeout(done, 10_000);
 

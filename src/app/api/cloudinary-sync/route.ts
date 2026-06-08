@@ -413,8 +413,9 @@ export async function POST(_req: Request) {
       }
 
       for (let i = 0; i < linkRows.length; i += BATCH) {
-        await db.from("collection_tracks")
+        const { error } = await db.from("collection_tracks")
           .upsert(linkRows.slice(i, i + BATCH), { onConflict: "collection_id,track_id", ignoreDuplicates: true });
+        if (error) throw new Error(`Collection-track link batch ${i / BATCH}: ${error.message}`);
       }
     }
 
@@ -462,22 +463,25 @@ export async function POST(_req: Request) {
       const key = name.toLowerCase();
       if (genreIdByName.has(key)) return genreIdByName.get(key)!;
       let slug = slugify(name, name); slug = uniqueSlug(slug, genreSlugsUsed); genreSlugsUsed.add(slug);
-      const { data } = await db.from("genres").upsert({ name, slug }, { onConflict: "slug" }).select("id").single();
-      const id = data?.id as string; genreIdByName.set(key, id); return id;
+      const { data, error } = await db.from("genres").upsert({ name, slug }, { onConflict: "slug" }).select("id").single();
+      if (error || !data?.id) throw new Error(`Genre upsert failed for "${name}": ${error?.message ?? "no id returned"}`);
+      const id = data.id as string; genreIdByName.set(key, id); return id;
     }
     async function ensureLanguage(name: string): Promise<string> {
       const key = name.toLowerCase();
       if (languageIdByName.has(key)) return languageIdByName.get(key)!;
       let slug = slugify(name, name); slug = uniqueSlug(slug, langSlugsUsed); langSlugsUsed.add(slug);
-      const { data } = await db.from("languages").upsert({ name, slug }, { onConflict: "slug" }).select("id").single();
-      const id = data?.id as string; languageIdByName.set(key, id); return id;
+      const { data, error } = await db.from("languages").upsert({ name, slug }, { onConflict: "slug" }).select("id").single();
+      if (error || !data?.id) throw new Error(`Language upsert failed for "${name}": ${error?.message ?? "no id returned"}`);
+      const id = data.id as string; languageIdByName.set(key, id); return id;
     }
     async function ensureSinger(name: string): Promise<string> {
       const key = name.toLowerCase();
       if (singerIdByName.has(key)) return singerIdByName.get(key)!;
       let slug = slugify(name, name); slug = uniqueSlug(slug, singerSlugsUsed); singerSlugsUsed.add(slug);
-      const { data } = await db.from("singers").upsert({ name, slug }, { onConflict: "slug" }).select("id").single();
-      const id = data?.id as string; singerIdByName.set(key, id); return id;
+      const { data, error } = await db.from("singers").upsert({ name, slug }, { onConflict: "slug" }).select("id").single();
+      if (error || !data?.id) throw new Error(`Singer upsert failed for "${name}": ${error?.message ?? "no id returned"}`);
+      const id = data.id as string; singerIdByName.set(key, id); return id;
     }
 
     let metadataParsedCount = 0;

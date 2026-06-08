@@ -29,6 +29,7 @@ export interface Track {
   singers?:      string[];    // vocal performer display names
   singer_ids?:   string[];
   folder_type?:  string;     // 'artist_album' | 'collection'
+  lyrics?:       string | null;
 }
 
 export interface Playlist {
@@ -254,6 +255,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const isGraphInitialized = useRef(false);
 
   const loadTracksAndLibrary = async () => {
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
     setIsLoading(true);
     try {
       if (isSupabaseConfigured && supabase) {
@@ -261,7 +264,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
           .from("tracks")
           .select(`
             id, title, artist, album, audio_url, cover_colors, duration_sec,
-            artist_id, album_id, track_number, is_active, asset_id, language_id, folder_type,
+            artist_id, album_id, track_number, is_active, asset_id, language_id, folder_type, lyrics,
             languages(id, name),
             track_singers(singers(id, name, slug)),
             track_genres(genres(id, name, slug)),
@@ -310,6 +313,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
             genre: (t.track_genres ?? [])[0]?.genres?.name ?? undefined,
             genre_id: (t.track_genres ?? [])[0]?.genres?.id ?? undefined,
             folder_type: t.folder_type ?? undefined,
+            lyrics: t.lyrics ?? null,
           }));
           setTracks(formatted);
         }
@@ -387,6 +391,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (e) {
       console.error("Vibeblower: Failed to load library", e);
     } finally {
+      isSyncingRef.current = false;
       setIsLoading(false);
     }
   };
@@ -669,7 +674,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     }
     setCurrentTrack(nextTrack);
     setDuration(nextTrack.duration_sec);
-    setLyrics(localStorage.getItem(`vibeblower_lyrics_${nextTrack.id}`) || "");
+    setLyrics(nextTrack.lyrics ?? localStorage.getItem(`vibeblower_lyrics_${nextTrack.id}`) ?? "");
     setActivePlayer(nextPlayer);
 
     // Write play history log
@@ -759,7 +764,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     setCurrentTrack(track);
     setDuration(track.duration_sec);
     setIsPlaying(true);
-    setLyrics(localStorage.getItem(`vibeblower_lyrics_${track.id}`) || "");
+    setLyrics(track.lyrics ?? localStorage.getItem(`vibeblower_lyrics_${track.id}`) ?? "");
 
     // Apply baseline gains
     if (isGraphInitialized.current) {
@@ -1006,6 +1011,10 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!currentTrack) return;
     setLyrics(text);
     localStorage.setItem(`vibeblower_lyrics_${currentTrack.id}`, text);
+    if (isSupabaseConfigured && supabase) {
+      supabase.from("tracks").update({ lyrics: text }).eq("id", currentTrack.id)
+        .then(({ error }) => { if (error) console.warn("updateLyrics:", error.message); });
+    }
   };
 
   const addToQueue = useCallback((trackId: string) => {
@@ -1086,41 +1095,46 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const logPlayHistory = async (trackId: string) => {
     if (isPrivateSession) return;
 
-    // Client history state update
     setRecentlyPlayed((prev) => [trackId, ...prev.filter((id) => id !== trackId)].slice(0, 20));
 
     if (isSupabaseConfigured && supabase && user) {
-      await supabase.from("play_history").insert({
-        user_id: user.id,
-        track_id: trackId,
-      });
+      supabase.from("play_history").insert({ user_id: user.id, track_id: trackId })
+        .then(({ error }) => { if (error) console.warn("logPlayHistory:", error.message); });
     } else {
-      // Offline local history persistence
       const historyArr = [trackId, ...recentlyPlayed.filter((id) => id !== trackId)].slice(0, 20);
       localStorage.setItem("vibeblower_local_history", JSON.stringify(historyArr));
     }
   };
 
   const toggleLike = async (trackId: string) => {
-    const updated = new Set(likedSongs);
-    if (updated.has(trackId)) {
-      updated.delete(trackId);
-    } else {
-      updated.add(trackId);
-    }
-    setLikedSongs(updated);
+    const wasLiked = likedSongs.has(trackId);
+    // Optimistic update
+    setLikedSongs((prev) => {
+      const next = new Set(prev);
+      wasLiked ? next.delete(trackId) : next.add(trackId);
+      return next;
+    });
 
     if (isSupabaseConfigured && supabase && user) {
-      if (likedSongs.has(trackId)) {
-        await supabase.from("likes").delete().eq("user_id", user.id).eq("track_id", trackId);
-      } else {
-        await supabase.from("likes").insert({
-          user_id: user.id,
-          track_id: trackId,
+      try {
+        const { error } = wasLiked
+          ? await supabase.from("likes").delete().eq("user_id", user.id).eq("track_id", trackId)
+          : await supabase.from("likes").insert({ user_id: user.id, track_id: trackId });
+        if (error) throw error;
+      } catch (e) {
+        // Rollback optimistic update
+        setLikedSongs((prev) => {
+          const rolled = new Set(prev);
+          wasLiked ? rolled.add(trackId) : rolled.delete(trackId);
+          return rolled;
         });
+        console.error("toggleLike failed:", e);
       }
     } else {
-      localStorage.setItem("vibeblower_local_likes", JSON.stringify(Array.from(updated)));
+      setLikedSongs((prev) => {
+        localStorage.setItem("vibeblower_local_likes", JSON.stringify(Array.from(prev)));
+        return prev;
+      });
     }
   };
 
@@ -1227,16 +1241,26 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!pl || pl.songs.includes(trackId)) return;
 
     const updatedSongs = [...pl.songs, trackId];
+    // Optimistic update
     setPlaylists((prev) =>
       prev.map((p) => (p.id === playlistId ? { ...p, songs: updatedSongs } : p))
     );
 
     if (isSupabaseConfigured && supabase && user) {
-      await supabase.from("playlist_tracks").insert({
-        playlist_id: playlistId,
-        track_id: trackId,
-        position: updatedSongs.length - 1,
-      });
+      try {
+        const { error } = await supabase.from("playlist_tracks").insert({
+          playlist_id: playlistId,
+          track_id: trackId,
+          position: updatedSongs.length - 1,
+        });
+        if (error) throw error;
+      } catch (e) {
+        // Rollback
+        setPlaylists((prev) =>
+          prev.map((p) => (p.id === playlistId ? { ...p, songs: pl.songs } : p))
+        );
+        console.error("addTrackToPlaylist failed:", e);
+      }
     } else {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, songs: updatedSongs } : p
@@ -1250,12 +1274,24 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     if (!pl) return;
 
     const updatedSongs = pl.songs.filter((id) => id !== trackId);
+    // Optimistic update
     setPlaylists((prev) =>
       prev.map((p) => (p.id === playlistId ? { ...p, songs: updatedSongs } : p))
     );
 
     if (isSupabaseConfigured && supabase && user) {
-      await supabase.from("playlist_tracks").delete().eq("playlist_id", playlistId).eq("track_id", trackId);
+      try {
+        const { error } = await supabase
+          .from("playlist_tracks").delete()
+          .eq("playlist_id", playlistId).eq("track_id", trackId);
+        if (error) throw error;
+      } catch (e) {
+        // Rollback
+        setPlaylists((prev) =>
+          prev.map((p) => (p.id === playlistId ? { ...p, songs: pl.songs } : p))
+        );
+        console.error("removeTrackFromPlaylist failed:", e);
+      }
     } else {
       const updated = playlists.map((p) =>
         p.id === playlistId ? { ...p, songs: updatedSongs } : p
