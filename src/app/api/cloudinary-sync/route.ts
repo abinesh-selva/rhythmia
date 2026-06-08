@@ -391,34 +391,30 @@ export async function POST(_req: Request) {
 
     // ── Step 9: Link collection tracks ─────────────────────────────────────
     if (collectionMap.size > 0) {
-      // Fetch track ids for collection tracks by audio_url
-      const collectionAudioUrls = videoResources
-        .filter((r) => collectionFolders.has(getFolder(r).split("/")[1]))
-        .map((r) => r.secure_url);
+      // Query by folder_type — avoids a huge .in(audio_url) that exceeds PostgREST URL limits
+      const { data: collectionTrackRows } = await db
+        .from("tracks")
+        .select("id, source_folder")
+        .eq("folder_type", "collection")
+        .eq("source", "cloudinary_sync")
+        .eq("is_active", true);
 
-      if (collectionAudioUrls.length > 0) {
-        const { data: collectionTrackRows } = await db
-          .from("tracks")
-          .select("id, audio_url, source_folder")
-          .in("audio_url", collectionAudioUrls);
+      const linkRows: { collection_id: string; track_id: string; position: number }[] = [];
+      const positionByCollection = new Map<string, number>();
 
-        const linkRows: { collection_id: string; track_id: string; position: number }[] = [];
-        const positionByCollection = new Map<string, number>();
+      for (const row of collectionTrackRows ?? []) {
+        const parts = (row.source_folder as string ?? "").split("/");
+        const l1 = parts[1];
+        const collId = collectionIdByFolder.get(l1);
+        if (!collId) continue;
+        const pos = (positionByCollection.get(collId) ?? 0);
+        positionByCollection.set(collId, pos + 1);
+        linkRows.push({ collection_id: collId, track_id: row.id as string, position: pos });
+      }
 
-        for (const row of collectionTrackRows ?? []) {
-          const parts = (row.source_folder as string ?? "").split("/");
-          const l1 = parts[1];
-          const collId = collectionIdByFolder.get(l1);
-          if (!collId) continue;
-          const pos = (positionByCollection.get(collId) ?? 0);
-          positionByCollection.set(collId, pos + 1);
-          linkRows.push({ collection_id: collId, track_id: row.id as string, position: pos });
-        }
-
-        for (let i = 0; i < linkRows.length; i += BATCH) {
-          await db.from("collection_tracks")
-            .upsert(linkRows.slice(i, i + BATCH), { onConflict: "collection_id,track_id", ignoreDuplicates: true });
-        }
+      for (let i = 0; i < linkRows.length; i += BATCH) {
+        await db.from("collection_tracks")
+          .upsert(linkRows.slice(i, i + BATCH), { onConflict: "collection_id,track_id", ignoreDuplicates: true });
       }
     }
 
