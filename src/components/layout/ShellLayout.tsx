@@ -132,7 +132,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <div
       suppressHydrationWarning
-      className={`app flex flex-col md:grid h-full gap-1.5 p-1.5 bg-black overflow-hidden font-sans text-cream relative ${
+      className={`app flex flex-col md:grid h-full gap-0 md:gap-1.5 p-0 md:p-1.5 bg-black overflow-hidden font-sans text-cream relative ${
         mounted && isFriendOpen ? "shell-grid-3" : "shell-grid-2"
       }`}
       style={mounted ? {
@@ -184,7 +184,7 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         )}
       </div>
 
-      <main className="main bg-forest-dark/80 backdrop-blur-md border border-white/5 rounded-xl overflow-y-auto min-h-0 flex flex-col relative shadow-2xl transition-all">
+      <main className="main bg-forest-dark/80 backdrop-blur-md border-0 md:border border-white/5 rounded-none md:rounded-xl overflow-y-auto min-h-0 flex flex-col relative shadow-2xl transition-all">
         <div className="flex-1 min-h-0 relative">
           {children}
         </div>

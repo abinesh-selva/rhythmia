@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAudio, Track } from "@/context/AudioContext";
 import { TrackRow } from "@/components/ui/TrackRow";
@@ -45,7 +45,15 @@ const fmtTotal = (seconds: number) => {
 
 export function AlbumDetailView({ album, tracks }: AlbumDetailViewProps) {
   const router = useRouter();
-  const { playTrack, toggleShuffle } = useAudio();
+  const { playTrack, toggleShuffle, registerTracks } = useAudio();
+
+  const activeTracks  = tracks.filter((t) => t.is_active !== false);
+
+  useEffect(() => {
+    if (activeTracks.length > 0) {
+      registerTracks(activeTracks);
+    }
+  }, [activeTracks, registerTracks]);
 
   const artist = Array.isArray(album.artists) ? album.artists[0] : album.artists;
   const colors: string[] = Array.isArray(album.cover_colors)
@@ -55,7 +63,6 @@ export function AlbumDetailView({ album, tracks }: AlbumDetailViewProps) {
       : ["#F0824E", "#1E9E54"];
 
   const totalDuration = tracks.reduce((s, t) => s + (t.duration_sec ?? 0), 0);
-  const activeTracks  = tracks.filter((t) => t.is_active !== false);
 
   const handlePlayAll = () => {
     if (activeTracks.length === 0) return;

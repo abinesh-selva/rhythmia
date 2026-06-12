@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAudio, Track } from "@/context/AudioContext";
 import { TrackRow } from "@/components/ui/TrackRow";
@@ -37,9 +37,15 @@ const fmt = (s: number) => {
 
 export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewProps) {
   const router = useRouter();
-  const { playTrack } = useAudio();
+  const { playTrack, registerTracks } = useAudio();
 
   const [showAllTracks, setShowAllTracks] = useState(false);
+
+  useEffect(() => {
+    if (tracks.length > 0) {
+      registerTracks(tracks);
+    }
+  }, [tracks, registerTracks]);
 
   const handlePlayAll = () => {
     if (tracks.length === 0) return;

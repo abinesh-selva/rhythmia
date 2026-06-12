@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect } from "react";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
 
@@ -7,9 +8,15 @@ interface Language { id: string; name: string; code: string | null; slug: string
 interface TrackItem { id: string; title: string; artist: string; album: string; audio_url: string; cover_colors: string[]; duration_sec: number; is_active: boolean; singers?: string[] }
 
 export function LanguageDetailView({ language, tracks }: { language: Language; tracks: TrackItem[] }) {
-  const { playTrack } = useAudio();
+  const { playTrack, registerTracks } = useAudio();
 
   const activeTracks = tracks.filter((t) => t.is_active !== false);
+
+  useEffect(() => {
+    if (activeTracks.length > 0) {
+      registerTracks(activeTracks as any);
+    }
+  }, [activeTracks, registerTracks]);
 
   return (
     <div className="flex flex-col min-h-full pb-20">

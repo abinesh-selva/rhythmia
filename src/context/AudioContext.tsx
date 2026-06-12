@@ -147,6 +147,7 @@ interface AudioContextType {
   toggleCollaborative: (playlistId: string) => Promise<void>;
   setView: (viewName: string) => void;
   refreshTracks: () => Promise<void>;
+  registerTracks: (newTracks: Track[]) => void;
   addLocalFiles: (files: FileList | File[]) => Promise<void>;
   isLoading: boolean;
 }
@@ -419,6 +420,15 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       setTracks((prev) => [...prev, ...newTracks]);
     }
   };
+  
+  const registerTracks = useCallback((newTracks: Track[]) => {
+    setTracks((prev) => {
+      const existingIds = new Set(prev.map((t) => t.id));
+      const toAdd = newTracks.filter((t) => !existingIds.has(t.id));
+      if (toAdd.length === 0) return prev;
+      return [...prev, ...toAdd];
+    });
+  }, []);
 
   useEffect(() => {
     if (audioRefA.current) audioRefA.current.playbackRate = playbackSpeed;
@@ -1387,6 +1397,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     playbackHistory,
     setPlaybackContext,
     refreshTracks: loadTracksAndLibrary,
+    registerTracks,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [
     tracks,
@@ -1419,6 +1430,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     playbackContext,
     playbackHistory,
     isLoading,
+    registerTracks,
   ]);
 
   return (

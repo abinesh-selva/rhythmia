@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
@@ -14,10 +15,16 @@ interface SingerDetailViewProps {
 }
 
 export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDetailViewProps) {
-  const { playTrack } = useAudio();
+  const { playTrack, registerTracks } = useAudio();
   const router = useRouter();
 
   const activeTracks = tracks.filter((t) => t.is_active !== false);
+
+  useEffect(() => {
+    if (activeTracks.length > 0) {
+      registerTracks(activeTracks as any);
+    }
+  }, [activeTracks, registerTracks]);
 
   return (
     <div className="flex flex-col min-h-full pb-20">

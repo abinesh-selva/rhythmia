@@ -123,7 +123,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
             setIsNPOpen(true);
           }
         }}
-        className="flex items-center gap-2 md:gap-3 w-[30%] min-w-0 cursor-pointer md:cursor-default"
+        className="flex items-center gap-2 md:gap-3 w-3/5 md:w-3/10 min-w-0 cursor-pointer md:cursor-default"
       >
         {currentTrack ? (
           <>
@@ -304,7 +304,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
       </div>
 
       {/* Right: extra controls */}
-      <div className="hidden md:flex items-center justify-end gap-2.5 w-[30%]">
+      <div className="hidden md:flex items-center justify-end gap-2.5 w-3/10">
         {/* Now Playing panel toggle */}
         <button
           onClick={() => setIsNPOpen(!isNPOpen)}

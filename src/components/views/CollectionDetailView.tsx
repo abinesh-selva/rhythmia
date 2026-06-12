@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAudio } from "../../context/AudioContext";
 import { TrackRow } from "../ui/TrackRow";
 
@@ -16,10 +16,16 @@ interface CollectionDetailProps {
 }
 
 export function CollectionDetailView({ collection, tracks }: CollectionDetailProps) {
-  const { playTrack } = useAudio();
+  const { playTrack, registerTracks } = useAudio();
   const [searchQuery, setSearchQuery] = useState("");
 
   const activeTracks = tracks.filter((t) => t.is_active !== false);
+
+  useEffect(() => {
+    if (activeTracks.length > 0) {
+      registerTracks(activeTracks as any);
+    }
+  }, [activeTracks, registerTracks]);
   const filteredTracks = activeTracks.filter(
     (t) =>
       !searchQuery ||
