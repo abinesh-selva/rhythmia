@@ -33,11 +33,66 @@ interface TrackMetadata {
 }
 
 
+const safeFetch = async (
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> => {
+  let attempts = 3;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fetch(input, init);
+    } catch {
+      if (attempt === attempts) {
+        return new Response(JSON.stringify({ message: "Network unavailable" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json;charset=UTF-8" },
+        });
+      }
+      await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+    }
+  }
+  return new Response(JSON.stringify({ message: "Network unavailable" }), {
+    status: 503,
+    headers: { "Content-Type": "application/json;charset=UTF-8" },
+  });
+};
+
 function getServiceClient() {
   const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
   const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
   if (!url || !key) throw new Error("Supabase service role credentials not configured");
-  return createClient(url, key, { auth: { persistSession: false } });
+  return createClient(url, key, {
+    auth: { persistSession: false },
+    global: { fetch: safeFetch }
+  });
+}
+
+async function fetchAllFromTable<T = any>(
+  db: any,
+  table: string,
+  selectStr: string,
+  configureQuery?: (query: any) => any
+): Promise<T[]> {
+  const all: T[] = [];
+  let page = 0;
+  const PAGE_SIZE = 1000;
+  let hasMore = true;
+
+  while (hasMore) {
+    let query = db.from(table).select(selectStr).range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (configureQuery) {
+      query = configureQuery(query);
+    }
+    const { data, error } = await query;
+    if (error) throw new Error(`Fetch error on table ${table}: ${error.message}`);
+    all.push(...(data ?? []));
+    if (!data || data.length < PAGE_SIZE) {
+      hasMore = false;
+    } else {
+      page++;
+    }
+  }
+  return all;
 }
 
 
@@ -317,7 +372,7 @@ export async function POST(_req: Request) {
 
     // Merge upserted rows with all existing collections so a partial Cloudinary
     // fetch (pagination gap) never orphans a collection's track links.
-    const { data: allExistingCollections } = await db.from("collections").select("id, source_folder");
+    const allExistingCollections = await fetchAllFromTable<{ id: string; source_folder: string | null }>(db, "collections", "id, source_folder");
     const collectionIdByFolder = new Map<string, string>();
     for (const row of allExistingCollections ?? []) {
       if (row.source_folder) collectionIdByFolder.set(row.source_folder as string, row.id as string);
@@ -366,18 +421,33 @@ export async function POST(_req: Request) {
     }).filter((r): r is NonNullable<typeof r> => r !== null);
 
     for (let i = 0; i < trackRows.length; i += BATCH) {
-      const { error } = await db.from("tracks").upsert(trackRows.slice(i, i + BATCH), { onConflict: "audio_url", ignoreDuplicates: false });
+      const { error } = await db.from("tracks").upsert(trackRows.slice(i, i + BATCH), { onConflict: "asset_id", ignoreDuplicates: false });
       if (error) throw new Error(`Track upsert batch ${i / BATCH}: ${error.message}`);
       trackCount += Math.min(BATCH, trackRows.length - i);
     }
     if (collectionMap.size > 0) {
       // Query by folder_type — avoids a huge .in(audio_url) that exceeds PostgREST URL limits
-      const { data: collectionTrackRows } = await db
-        .from("tracks")
-        .select("id, source_folder")
-        .eq("folder_type", "collection")
-        .eq("source", "cloudinary_sync")
-        .eq("is_active", true);
+      const collectionTrackRows = await fetchAllFromTable<{ id: string; source_folder: string | null }>(
+        db,
+        "tracks",
+        "id, source_folder",
+        (q) => q.eq("folder_type", "collection").eq("source", "cloudinary_sync").eq("is_active", true)
+      );
+
+      // Clear all existing collection_tracks for active sync tracks to prevent stale/duplicate links when folders are renamed.
+      const activeSyncTracks = await fetchAllFromTable<{ id: string }>(
+        db,
+        "tracks",
+        "id",
+        (q) => q.eq("source", "cloudinary_sync").eq("is_active", true)
+      );
+      
+      const activeSyncTrackIds = activeSyncTracks?.map(r => r.id as string) ?? [];
+      if (activeSyncTrackIds.length > 0) {
+        for (let i = 0; i < activeSyncTrackIds.length; i += BATCH) {
+          await db.from("collection_tracks").delete().in("track_id", activeSyncTrackIds.slice(i, i + BATCH));
+        }
+      }
 
       const linkRows: { collection_id: string; track_id: string; position: number }[] = [];
       const positionByCollection = new Map<string, number>();
@@ -399,13 +469,52 @@ export async function POST(_req: Request) {
       }
     }
     const cloudinaryAssetIds = new Set(videoResources.map((r) => r.asset_id));
-    const { data: dbRows } = await db.from("tracks").select("asset_id").eq("source", "cloudinary_sync").not("asset_id", "is", null);
-    const toDeactivate = (dbRows ?? []).map((r: { asset_id: string }) => r.asset_id).filter((id: string) => !cloudinaryAssetIds.has(id));
+    const dbRows = await fetchAllFromTable<{ id: string; asset_id: string }>(
+      db,
+      "tracks",
+      "id, asset_id",
+      (q) => q.eq("source", "cloudinary_sync").not("asset_id", "is", null)
+    );
+    const activeDbRows = dbRows ?? [];
+    const toDeactivateAssetIds = activeDbRows.filter((r) => !cloudinaryAssetIds.has(r.asset_id)).map(r => r.asset_id);
+    const toDeactivateTrackIds = activeDbRows.filter((r) => !cloudinaryAssetIds.has(r.asset_id)).map(r => r.id);
+
     let deactivatedCount = 0;
-    for (let i = 0; i < toDeactivate.length; i += BATCH) {
-      const { error } = await db.from("tracks").update({ is_active: false }).in("asset_id", toDeactivate.slice(i, i + BATCH));
+
+    if (toDeactivateTrackIds.length > 0) {
+      for (let i = 0; i < toDeactivateTrackIds.length; i += BATCH) {
+        const batchTrackIds = toDeactivateTrackIds.slice(i, i + BATCH);
+        await Promise.all([
+          db.from("track_singers").delete().in("track_id", batchTrackIds),
+          db.from("track_genres").delete().in("track_id", batchTrackIds),
+          db.from("collection_tracks").delete().in("track_id", batchTrackIds),
+        ]);
+      }
+    }
+
+    for (let i = 0; i < toDeactivateAssetIds.length; i += BATCH) {
+      const { error } = await db.from("tracks").update({ is_active: false }).in("asset_id", toDeactivateAssetIds.slice(i, i + BATCH));
       if (error) throw new Error(`Inactive sweep batch ${i / BATCH}: ${error.message}`);
-      deactivatedCount += Math.min(BATCH, toDeactivate.length - i);
+      deactivatedCount += Math.min(BATCH, toDeactivateAssetIds.length - i);
+    }
+
+    // Clean up relation tables for all inactive tracks in the database to prevent count mismatches
+    const allInactiveTracks = await fetchAllFromTable<{ id: string }>(
+      db,
+      "tracks",
+      "id",
+      (q) => q.eq("is_active", false)
+    );
+    const allInactiveTrackIds = allInactiveTracks?.map((r) => r.id as string) ?? [];
+    if (allInactiveTrackIds.length > 0) {
+      for (let i = 0; i < allInactiveTrackIds.length; i += BATCH) {
+        const batchTrackIds = allInactiveTrackIds.slice(i, i + BATCH);
+        await Promise.all([
+          db.from("track_singers").delete().in("track_id", batchTrackIds),
+          db.from("track_genres").delete().in("track_id", batchTrackIds),
+          db.from("collection_tracks").delete().in("track_id", batchTrackIds),
+        ]);
+      }
     }
     const { data: unparsedRows } = await db
       .from("tracks")
@@ -508,14 +617,14 @@ export async function POST(_req: Request) {
         }
       }
     );
-    const { data: allAlbums } = await db.from("albums").select("id");
-    for (const { id } of allAlbums ?? []) {
+    const allAlbums = await fetchAllFromTable<{ id: string }>(db, "albums", "id");
+    for (const { id } of allAlbums) {
       const { count } = await db.from("tracks").select("id", { count: "exact", head: true }).eq("album_id", id).eq("is_active", true);
       await db.from("albums").update({ track_count: count ?? 0 }).eq("id", id);
     }
 
-    const { data: allArtists } = await db.from("artists").select("id");
-    for (const { id } of allArtists ?? []) {
+    const allArtists = await fetchAllFromTable<{ id: string }>(db, "artists", "id");
+    for (const { id } of allArtists) {
       const [{ count: tc }, { count: ac }] = await Promise.all([
         db.from("tracks").select("id", { count: "exact", head: true }).eq("artist_id", id).eq("is_active", true),
         db.from("albums").select("id",  { count: "exact", head: true }).eq("artist_id", id),
@@ -523,21 +632,47 @@ export async function POST(_req: Request) {
       await db.from("artists").update({ track_count: tc ?? 0, album_count: ac ?? 0 }).eq("id", id);
     }
 
-    const { data: allSingers } = await db.from("singers").select("id");
-    for (const { id } of allSingers ?? []) {
+    const allSingers = await fetchAllFromTable<{ id: string }>(db, "singers", "id");
+    for (const { id } of allSingers) {
       const { count } = await db.from("track_singers").select("track_id", { count: "exact", head: true }).eq("singer_id", id);
       await db.from("singers").update({ track_count: count ?? 0 }).eq("id", id);
     }
 
-    const { data: allCollections } = await db.from("collections").select("id");
-    for (const { id } of allCollections ?? []) {
+    const allCollections = await fetchAllFromTable<{ id: string }>(db, "collections", "id");
+    for (const { id } of allCollections) {
       const { count } = await db.from("collection_tracks").select("track_id", { count: "exact", head: true }).eq("collection_id", id);
-      await db.from("collections").update({ track_count: count ?? 0 }).eq("id", id);
+      if (count === 0) {
+        await db.from("collections").delete().eq("id", id);
+      } else {
+        await db.from("collections").update({ track_count: count ?? 0 }).eq("id", id);
+      }
     }
+
+    const allGenres = await fetchAllFromTable<{ id: string; slug: string }>(db, "genres", "id, slug");
+    for (const { id, slug } of allGenres) {
+      if (slug === "unknown") continue;
+      const { count } = await db.from("track_genres").select("track_id", { count: "exact", head: true }).eq("genre_id", id);
+      if (count === 0) {
+        await db.from("genres").delete().eq("id", id);
+      }
+    }
+
+    const allLanguages = await fetchAllFromTable<{ id: string; slug: string }>(db, "languages", "id, slug");
+    for (const { id, slug } of allLanguages) {
+      if (slug === "unknown") continue;
+      const { count } = await db.from("tracks").select("id", { count: "exact", head: true }).eq("language_id", id).eq("is_active", true);
+      if (count === 0) {
+        await db.from("languages").delete().eq("id", id);
+      }
+    }
+
     // Albums with zero active tracks were either never populated or belong to a renamed folder.
     await db.from("albums").delete().eq("track_count", 0);
     // After album cleanup, artists with zero tracks AND zero albums are safe to remove.
     await db.from("artists").delete().eq("track_count", 0).eq("album_count", 0);
+    // Clean up empty collections and empty singers.
+    await db.from("collections").delete().eq("track_count", 0);
+    await db.from("singers").delete().eq("track_count", 0);
 
     return NextResponse.json({
       success:          true,

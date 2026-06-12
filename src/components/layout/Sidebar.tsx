@@ -15,7 +15,7 @@ interface AlbumRow  { id: string; title: string; slug: string; cover_colors: str
 export function Sidebar() {
   const router   = useRouter();
   const pathname = usePathname();
-  const { view, setView, playlists, collections, createPlaylist, likedSongs, addLocalFiles, tracks } = useAudio();
+  const { view, setView, playlists, collections, createPlaylist, likedSongs, addLocalFiles, tracks, refreshTracks } = useAudio();
   const { theme, setTheme } = useTheme();
   const { addToast } = useToast();
   const { showPrompt } = useDialog();
@@ -48,10 +48,11 @@ export function Sidebar() {
     try {
       const res = await fetch("/api/cloudinary-sync", { method: "POST" });
       const data = await res.json();
-      if (res.ok) {
-        addToast(`Sync complete! Added ${data.added} tracks, skipped ${data.skipped}.`, "success");
+      if (res.ok && data.success) {
+        await refreshTracks();
+        addToast(`Sync complete! Processed ${data.trackCount} tracks across ${data.albumCount} albums.`, "success");
       } else {
-        addToast("Error: " + data.error, "error");
+        addToast("Error: " + (data.error || "Failed to sync"), "error");
       }
     } catch (err: any) {
       addToast("Error: " + err.message, "error");
