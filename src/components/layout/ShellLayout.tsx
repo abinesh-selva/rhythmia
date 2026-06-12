@@ -34,6 +34,20 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   const [sidebarWidth, setSidebarWidth] = useState(260);
   const [mounted, setMounted] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [offlineDismissed, setOfflineDismissed] = useState(false);
+
+  useEffect(() => {
+    setIsOnline(navigator.onLine);
+    const handleOnline  = () => { setIsOnline(true);  setOfflineDismissed(false); };
+    const handleOffline = () => { setIsOnline(false); setOfflineDismissed(false); };
+    window.addEventListener("online",  handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online",  handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -90,14 +104,28 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
-      if (
+      const inInput =
         activeEl &&
         (activeEl.tagName === "INPUT" ||
           activeEl.tagName === "TEXTAREA" ||
-          activeEl.getAttribute("contenteditable") === "true")
-      ) {
+          activeEl.getAttribute("contenteditable") === "true");
+
+      // Ctrl/Cmd+F → focus search (always, even from input)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        const searchEl = document.getElementById("global-search-input") as HTMLInputElement | null;
+        if (searchEl) { searchEl.focus(); searchEl.select(); }
         return;
       }
+
+      // Escape → close NP panel / auth modal / blur active input
+      if (e.key === "Escape") {
+        if (isAuthOpen) { setIsAuthOpen(false); return; }
+        if (isNPOpen)   { setIsNPOpen(false);   return; }
+        if (inInput && activeEl instanceof HTMLElement) { activeEl.blur(); return; }
+      }
+
+      if (inInput) return;
 
       if (e.code === "Space") {
         e.preventDefault();
@@ -116,13 +144,17 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleShuffle();
       } else if (e.key.toLowerCase() === "m") {
         toggleMute();
+      } else if (/^[0-9]$/.test(e.key) && duration > 0) {
+        // 0–9 keys seek to 0%–90% of current track
+        const pct = parseInt(e.key, 10) / 10;
+        seek(duration * pct);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTrack, duration, currentTime, isMuted, isShuffle]);
+  }, [currentTrack, duration, currentTime, isMuted, isShuffle, isAuthOpen, isNPOpen]);
 
   const handleFriendToggle = (val: boolean) => {
     setIsFriendOpen(val);
@@ -148,6 +180,31 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         className="absolute inset-0 opacity-20 blur-[100px] pointer-events-none transition-colors duration-1000" 
         style={{ background: "radial-gradient(circle at 50% 0%, var(--bg-color-1), transparent 50%), radial-gradient(circle at 0% 100%, var(--bg-color-2), transparent 50%)" }}
       />
+
+      {/* Offline network banner — shown when browser loses internet (separate from Supabase offline mode) */}
+      {!isOnline && !offlineDismissed && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className="md:col-span-full flex items-center justify-between gap-3 px-4 py-2.5 bg-amber-900/80 border-b border-amber-600/40 text-amber-100 text-xs font-semibold animate-slide-up z-50 backdrop-blur-sm"
+        >
+          <div className="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current flex-none text-amber-300">
+              <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 0 0-6 0zm-4-4 2 2a7.074 7.074 0 0 1 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" />
+            </svg>
+            <span>You&apos;re offline — audio playback continues but library changes won&apos;t sync until you reconnect.</span>
+          </div>
+          <button
+            onClick={() => setOfflineDismissed(true)}
+            className="flex-none text-amber-300 hover:text-amber-100 transition-colors p-1 rounded"
+            aria-label="Dismiss offline notification"
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+              <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <TopNavigation
         isFriendOpen={isFriendOpen}

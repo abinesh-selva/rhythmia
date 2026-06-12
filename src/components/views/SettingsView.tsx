@@ -6,8 +6,9 @@ import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useDialog } from "../../context/DialogContext";
 import { useToast } from "../../context/ToastContext";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
-type Section = "account" | "playback" | "display" | "social" | "storage" | "about";
+type Section = "account" | "playback" | "display" | "social" | "storage" | "data" | "about";
 
 function Toggle({ on, onToggle, id }: { on: boolean; onToggle: () => void; id: string }) {
   return (
@@ -59,6 +60,7 @@ const NAV: { key: Section; label: string; icon: React.ReactNode }[] = [
   { key: "display",  label: "Display",  icon: <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM8 15c0-1.66 1.34-3 3-3 .35 0 .69.07 1 .18V6h5v2h-3v7.03A3.001 3.001 0 0 1 11 18c-1.66 0-3-1.34-3-3z" /> },
   { key: "social",   label: "Social",   icon: <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" /> },
   { key: "storage",  label: "Storage",  icon: <path d="M20 8H4V6h16v2zm-2-6H6v2h12V2zm4 10v8c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2v-8c0-1.1.9-2 2-2h16c1.1 0 2 .9 2 2zm-6 4l-6-3.27v6.53L16 16z" /> },
+  { key: "data",     label: "Data",     icon: <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z" /> },
   { key: "about",    label: "About",    icon: <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" /> },
 ];
 
@@ -86,6 +88,10 @@ export function SettingsView() {
   const [nameInput, setNameInput] = useState(profile?.display_name || "");
   const [savingName, setSavingName] = useState(false);
   const [friendActivityOn, setFriendActivityOn] = useState(true);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteStep, setDeleteStep] = useState<0 | 1 | 2>(0);
+  const [deleting, setDeleting] = useState(false);
+  const [exportingHistory, setExportingHistory] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -129,6 +135,56 @@ export function SettingsView() {
       localStorage.clear();
       window.location.href = window.location.origin;
     }
+  };
+
+  const handleExportHistory = async () => {
+    setExportingHistory(true);
+    try {
+      let historyData: unknown[] = [];
+      if (!isSupabaseConfigured) {
+        const raw = localStorage.getItem("vibeblower_local_history");
+        historyData = raw ? JSON.parse(raw) : [];
+      } else if (supabase && user) {
+        const { data } = await supabase
+          .from("play_history")
+          .select("track_id, played_at, play_count")
+          .eq("user_id", user.id)
+          .order("played_at", { ascending: false });
+        historyData = data ?? [];
+      }
+      const blob = new Blob([JSON.stringify(historyData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `vibeblower-history-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addToast("History exported successfully!", "success");
+    } catch {
+      addToast("Failed to export history.", "error");
+    }
+    setExportingHistory(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== "DELETE") return;
+    setDeleting(true);
+    try {
+      if (!isOffline && supabase && user) {
+        await supabase.from("likes").delete().eq("user_id", user.id);
+        await supabase.from("play_history").delete().eq("user_id", user.id);
+        await supabase.from("playlists").delete().eq("user_id", user.id);
+      }
+      localStorage.clear();
+      await signOut();
+      addToast("Your data has been cleared. Goodbye!", "info");
+      setView("home");
+    } catch {
+      addToast("Failed to delete account data. Please try again.", "error");
+    }
+    setDeleting(false);
   };
 
   const initials = (profile?.display_name || user?.email || "V").substring(0, 2).toUpperCase();
@@ -331,6 +387,81 @@ export function SettingsView() {
                     Clear cache
                   </button>
                 </SettingRow>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "data" && (
+            <div>
+              <h3 className="text-2xl font-bold text-cream mb-8">Data</h3>
+              <div className="flex flex-col gap-6">
+                {/* Export */}
+                <div className="p-5 bg-white/5 border border-white/8 rounded-2xl flex flex-col gap-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-cream">Export Listening History</h4>
+                    <p className="text-xs text-muted mt-1">Download your play history as a JSON file. Contains track IDs, play counts, and timestamps.</p>
+                  </div>
+                  <button
+                    onClick={handleExportHistory}
+                    disabled={exportingHistory}
+                    className="self-start flex items-center gap-2 px-4 py-2 bg-coral/10 hover:bg-coral/20 border border-coral/30 text-coral text-sm font-semibold rounded-full transition-all disabled:opacity-50"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                      <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z" />
+                    </svg>
+                    {exportingHistory ? "Exporting…" : "Download history"}
+                  </button>
+                </div>
+
+                {/* Delete Account — 2-step */}
+                {!isGuest && (
+                  <div className="p-5 bg-pink/5 border border-pink/20 rounded-2xl flex flex-col gap-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-pink">Delete Account Data</h4>
+                      <p className="text-xs text-muted mt-1">This permanently erases your likes, playlists, and history from Vibeblower. Your account email remains registered but all app data is cleared.</p>
+                    </div>
+
+                    {deleteStep === 0 && (
+                      <button
+                        onClick={() => setDeleteStep(1)}
+                        className="self-start px-4 py-2 border border-pink/40 text-pink text-sm font-bold rounded-full hover:bg-pink/10 transition-all"
+                      >
+                        Delete my data
+                      </button>
+                    )}
+
+                    {deleteStep === 1 && (
+                      <div className="flex flex-col gap-3">
+                        <p className="text-xs text-cream font-semibold">
+                          Type <span className="font-mono text-pink">DELETE</span> to confirm:
+                        </p>
+                        <input
+                          value={deleteConfirmText}
+                          onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                          placeholder="Type DELETE"
+                          className="bg-white/10 border border-pink/30 focus:border-pink/60 text-cream text-sm rounded-lg px-3 py-2 outline-none font-mono transition-colors"
+                          maxLength={10}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleDeleteAccount}
+                            disabled={deleteConfirmText !== "DELETE" || deleting}
+                            className="px-4 py-2 bg-pink text-forest-dark text-sm font-bold rounded-full hover:bg-pink/80 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            {deleting ? "Deleting…" : "Confirm Delete"}
+                          </button>
+                          <button
+                            onClick={() => { setDeleteStep(0); setDeleteConfirmText(""); }}
+                            className="px-4 py-2 border border-white/20 text-cream text-sm font-semibold rounded-full hover:bg-white/8 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

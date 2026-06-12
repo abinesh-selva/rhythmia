@@ -137,6 +137,7 @@ interface AudioContextType {
   removeFromQueue: (index: number) => void;
   reorderQueue: (sourceIndex: number, destinationIndex: number) => void;
   clearQueue: () => void;
+  clearRecentlyPlayed: () => void;
   toggleLike: (trackId: string) => void;
   createPlaylist: (name: string) => Promise<string | null>;
   deletePlaylist: (playlistId: string) => Promise<void>;
@@ -996,6 +997,15 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     setQueue([]);
   }, []);
 
+  const clearRecentlyPlayed = useCallback(() => {
+    setRecentlyPlayed([]);
+    if (!isSupabaseConfigured) {
+      localStorage.removeItem("vibeblower_local_history");
+    } else if (supabase && user) {
+      supabase.from("play_history").delete().eq("user_id", user.id).then(() => {});
+    }
+  }, [user]);
+
   const reorderQueue = useCallback((sourceIndex: number, destinationIndex: number) => {
     setQueue((prev) => {
       const newQueue = [...prev];
@@ -1375,6 +1385,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     removeFromQueue,
     reorderQueue,
     clearQueue,
+    clearRecentlyPlayed,
     toggleLike,
     createPlaylist,
     deletePlaylist,

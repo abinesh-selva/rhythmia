@@ -39,10 +39,36 @@ function getAlbumColors(album: AlbumResult): [string, string] {
   return ["#F0824E", "#1E9E54"];
 }
 
+const RECENT_SEARCHES_KEY = "vibeblower_recent_searches";
+const MAX_RECENT = 10;
+
+function loadRecentSearches(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_SEARCHES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveRecentSearch(query: string) {
+  try {
+    const existing = loadRecentSearches().filter((q) => q !== query);
+    const updated = [query, ...existing].slice(0, MAX_RECENT);
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+  } catch {}
+}
+
+function removeRecentSearch(query: string) {
+  try {
+    const updated = loadRecentSearches().filter((q) => q !== query);
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+  } catch {}
+}
+
 export function SearchView() {
   const router = useRouter();
   const { tracks, libraryTracks, searchQuery, setSearchQuery, isLoading } = useAudio();
   const [activeGenre, setActiveGenre] = useState<(typeof GENRES)[number] | null>(null);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   const [artistResults,   setArtistResults]   = useState<ArtistResult[]>([]);
   const [albumResults,    setAlbumResults]    = useState<AlbumResult[]>([]);
@@ -53,6 +79,19 @@ export function SearchView() {
   const [languageResults, setLanguageResults] = useState<LanguageResult[]>([]);
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setRecentSearches(loadRecentSearches());
+  }, []);
+
+  const handleDeleteRecent = (query: string) => {
+    removeRecentSearch(query);
+    setRecentSearches(loadRecentSearches());
+  };
+
+  const handleRecentSearchClick = (query: string) => {
+    setSearchQuery(query);
+  };
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -105,6 +144,8 @@ export function SearchView() {
       setGenreResults((genRes.data as GenreResult[]) ?? []);
       setLanguageResults((langRes.data as LanguageResult[]) ?? []);
       setSearching(false);
+      saveRecentSearch(q);
+      setRecentSearches(loadRecentSearches());
     }, 300);
 
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
@@ -154,6 +195,51 @@ export function SearchView() {
             : "Search artists, albums, tracks, playlists"}
         </p>
       </div>
+
+      {/* Recent searches — shown when no active query */}
+      {!hasQuery && !activeGenre && recentSearches.length > 0 && (
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold text-cream uppercase tracking-wider">Recent Searches</h3>
+            <button
+              onClick={() => {
+                try { localStorage.removeItem(RECENT_SEARCHES_KEY); } catch {}
+                setRecentSearches([]);
+              }}
+              className="text-xs text-muted hover:text-cream transition-colors"
+            >
+              Clear all
+            </button>
+          </div>
+          <div className="flex flex-col gap-1">
+            {recentSearches.map((q) => (
+              <div
+                key={q}
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/6 transition-colors cursor-pointer"
+              >
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-muted flex-none">
+                  <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+                </svg>
+                <span
+                  className="flex-1 text-sm text-cream"
+                  onClick={() => handleRecentSearchClick(q)}
+                >
+                  {q}
+                </span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDeleteRecent(q); }}
+                  aria-label={`Remove "${q}" from recent searches`}
+                  className="opacity-0 group-hover:opacity-100 text-muted hover:text-cream transition-all p-1 rounded"
+                >
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+                    <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {hasQuery && (
         <div className="flex flex-col gap-8">

@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  manifest: "/manifest.json",
 };
 
 import { Providers } from "@/components/providers/Providers";
