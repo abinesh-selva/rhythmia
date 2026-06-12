@@ -32,8 +32,7 @@ export default async function ArtistPage({
     .eq("artist_id", id)
     .eq("is_active", true)
     .order("track_number", { ascending: true, nullsFirst: true })
-    .order("title", { ascending: true })
-    .limit(50);
+    .order("title", { ascending: true });
 
   return (
     <ArtistDetailView

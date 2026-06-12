@@ -39,6 +39,8 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
   const router = useRouter();
   const { playTrack } = useAudio();
 
+  const [showAllTracks, setShowAllTracks] = useState(false);
+
   const handlePlayAll = () => {
     if (tracks.length === 0) return;
     playTrack(tracks[0].id, tracks.map((t) => t.id), tracks[0]);
@@ -95,7 +97,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
         <div className="px-6 md:px-8 mb-8">
           <h2 className="text-lg font-bold text-cream mb-3">Popular</h2>
           <div className="flex flex-col rounded-xl border border-white/5 overflow-hidden">
-            {tracks.slice(0, 10).map((t, idx) => (
+            {(showAllTracks ? tracks : tracks.slice(0, 10)).map((t, idx) => (
               <TrackRow
                 key={t.id}
                 track={t}
@@ -104,6 +106,14 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
               />
             ))}
           </div>
+          {tracks.length > 10 && (
+            <button
+              onClick={() => setShowAllTracks(!showAllTracks)}
+              className="mt-4 text-xs font-bold uppercase tracking-widest text-muted hover:text-white transition-colors py-2 px-3 rounded hover:bg-white/5 transition-all"
+            >
+              {showAllTracks ? "Show less" : "Show more"}
+            </button>
+          )}
         </div>
       )}
 
