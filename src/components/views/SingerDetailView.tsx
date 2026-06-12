@@ -21,7 +21,6 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
 
   return (
     <div className="flex flex-col min-h-full pb-20">
-      {/* Hero */}
       <div className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 overflow-hidden bg-gradient-to-b from-blue/40 to-forest-dark">
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark to-transparent z-0" />
 
@@ -45,7 +44,6 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
         </div>
       </div>
 
-      {/* Play all */}
       {activeTracks.length > 0 && (
         <div className="px-6 md:px-8 py-6 flex items-center gap-4">
           <button
@@ -57,7 +55,6 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
         </div>
       )}
 
-      {/* Songs */}
       {activeTracks.length > 0 && (
         <div className="px-6 md:px-8 mb-8">
           <h2 className="text-xl font-bold text-cream mb-4">Songs</h2>
@@ -69,7 +66,6 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
         </div>
       )}
 
-      {/* Appears On */}
       {appearsOnAlbums.length > 0 && (
         <div className="px-6 md:px-8">
           <h2 className="text-xl font-bold text-cream mb-4">Appears On</h2>

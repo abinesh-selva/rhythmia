@@ -44,11 +44,9 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
   const [messages, setMessages] = useState<Message[]>([]);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
   
-  // Chat UI state
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeChatUser, setActiveChatUser] = useState<string | null>(null);
 
-  // Load initial messages when activeChatUser changes
   useEffect(() => {
     if (!user || !activeChatUser || !supabase) return;
     const sb = supabase;
@@ -71,7 +69,6 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase || !user || !profile) return;
 
-    // 1. Setup Presence Channel
     const room = supabase.channel('vibeblower_activity');
      
     setChannel(room);
@@ -88,7 +85,6 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
           }
         });
         
-        // Filter out ourselves
         setOnlineUsers(users.filter(u => u.user_id !== user.id));
       })
       .subscribe(async (status) => {
@@ -105,7 +101,6 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
         }
       });
 
-    // 2. Setup Postgres Changes for Messages
     const messageListener = supabase
       .channel('public:messages')
       .on(
@@ -118,7 +113,6 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
         },
         (payload) => {
           const newMessage = payload.new as Message;
-          // Add message to state if we are currently chatting with them
           setMessages((prev) => [...prev, newMessage]);
         }
       )
@@ -132,7 +126,6 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
         },
         (payload) => {
            const newMessage = payload.new as Message;
-           // If we sent it from another tab, add it
            setMessages((prev) => {
              if (!prev.find(m => m.id === newMessage.id)) {
                return [...prev, newMessage];
@@ -150,7 +143,6 @@ export const RealtimeProvider = ({ children }: { children: React.ReactNode }) =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile]);
 
-  // Track updates for Presence
   useEffect(() => {
     if (channel && user && profile && channel.state === 'joined') {
       channel.track({

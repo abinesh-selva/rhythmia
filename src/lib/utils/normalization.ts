@@ -23,10 +23,8 @@ const STRIP_SUFFIXES = new Set([
 export function normalizeArtistName(folderName: string): string {
   const trimmed = folderName.trim();
 
-  // 1. Alias map wins — exact match on the full folder name
   if (ALIAS_MAP[trimmed]) return ALIAS_MAP[trimmed];
 
-  // 2. Strip a single trailing suffix token if present and list is multi-word
   const parts = trimmed.split(/\s+/);
   if (parts.length > 1 && STRIP_SUFFIXES.has(parts[parts.length - 1])) {
     return parts.slice(0, -1).join(" ");

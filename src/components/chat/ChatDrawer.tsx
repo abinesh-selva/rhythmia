@@ -12,7 +12,6 @@ export function ChatDrawer() {
 
   const activeFriend = onlineUsers.find(u => u.user_id === activeChatUser);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isChatOpen]);
@@ -29,7 +28,6 @@ export function ChatDrawer() {
 
   return (
     <div className="fixed right-0 bottom-24 top-0 w-full md:w-80 bg-panel border-l border-white/5 shadow-2xl flex flex-col z-50 animate-fade-in">
-      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-white/5 bg-forest-dark/50 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -55,7 +53,6 @@ export function ChatDrawer() {
         </button>
       </div>
 
-      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar bg-black/20">
         {messages.length === 0 ? (
           <div className="text-center text-muted text-xs my-auto italic">
@@ -76,7 +73,6 @@ export function ChatDrawer() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
       <form onSubmit={handleSend} className="p-3 border-t border-white/5 bg-forest-dark flex gap-2">
         <input 
           type="text" 

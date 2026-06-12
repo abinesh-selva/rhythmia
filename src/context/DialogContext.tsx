@@ -93,7 +93,6 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleKeyDown}
           >
-            {/* Icon strip */}
             <div className={`h-1.5 w-full ${
               dialog.type === "confirm" && (dialog.options as ConfirmOptions).variant === "danger"
                 ? "bg-pink"
@@ -101,7 +100,6 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
             }`} />
 
             <div className="p-6 flex flex-col gap-5">
-              {/* Title */}
               <div className="flex flex-col gap-1.5">
                 <h3 className="font-display font-bold text-lg text-cream">
                   {dialog.options.title}
@@ -113,7 +111,6 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
                 )}
               </div>
 
-              {/* Prompt input */}
               {dialog.type === "prompt" && (
                 <input
                   ref={inputRef}
@@ -125,7 +122,6 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
                 />
               )}
 
-              {/* Action buttons */}
               <div className="flex gap-3">
                 <button
                   onClick={handleCancel}

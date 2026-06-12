@@ -24,7 +24,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// LocalStorage mock key names
 const LOCAL_USER_KEY = "vibeblower_local_user";
 const LOCAL_PROFILE_KEY = "vibeblower_local_profile";
 
@@ -44,12 +43,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
 
       if (error) {
-        // Profile might not be created yet, let's poll or wait
         throw error;
       }
       setProfile(data);
     } catch {
-      // Create fallback profile from metadata
       setProfile({
         id: userId,
         display_name: user?.email ? user.email.split("@")[0] : "Amigo",
@@ -60,10 +57,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Initialize and load auth state
   useEffect(() => {
     if (!isOffline && supabase) {
-      // 1. Supabase Mode
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
           setUser(session.user);
@@ -90,7 +85,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         subscription.unsubscribe();
       };
     } else {
-      // 2. Offline Fallback Mode
       const localUser = localStorage.getItem(LOCAL_USER_KEY);
       const localProfile = localStorage.getItem(LOCAL_PROFILE_KEY);
 
@@ -99,7 +93,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(JSON.parse(localUser));
         setProfile(JSON.parse(localProfile));
       } else {
-        // Seed default guest user
         const guestId = "00000000-0000-0000-0000-000000000000";
         const dummyUser = {
           id: guestId,
@@ -135,7 +128,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       return { error };
     } else {
-      // Mock Offline Login: Create user matching this email
       const localUserId = email === "guest@vibeblower.com" ? "00000000-0000-0000-0000-000000000000" : `user-${Math.random().toString(36).substring(2, 10)}`;
       const mockUser = {
         id: localUserId,
@@ -172,7 +164,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       return { data, error };
     } else {
-      // Mock Offline Signup
       const localUserId = `user-${Math.random().toString(36).substring(2, 10)}`;
       const mockUser = {
         id: localUserId,
@@ -214,7 +205,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!isOffline && supabase) {
       await supabase.auth.signOut();
     } else {
-      // Clear offline user and restore default Guest
       localStorage.removeItem(LOCAL_USER_KEY);
       localStorage.removeItem(LOCAL_PROFILE_KEY);
       
@@ -252,7 +242,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       return { error };
     } else {
-      // Offline update
       setProfile((prev) => {
         if (!prev) return null;
         const updated = { ...prev, display_name: name, avatar_url: avatar };

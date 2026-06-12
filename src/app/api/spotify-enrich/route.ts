@@ -15,7 +15,6 @@ export async function POST() {
     let artistsUpdated = 0;
     let albumsUpdated = 0;
 
-    // 1. Fetch artists with missing images
     const { data: artists, error: artErr } = await db
       .from("artists")
       .select("id, display_name")
@@ -24,7 +23,6 @@ export async function POST() {
 
     if (artErr) throw new Error(`Artist fetch error: ${artErr.message}`);
 
-    // Enrich artists
     if (artists && artists.length > 0) {
       for (const artist of artists) {
         const imageUrl = await searchSpotifyArtist(artist.display_name);
@@ -41,8 +39,6 @@ export async function POST() {
       }
     }
 
-    // 2. Fetch albums with missing covers
-    // We also need the artist name to search effectively, so we join artists
     const { data: albums, error: albErr } = await db
       .from("albums")
       .select("id, title, artists(display_name)")
@@ -51,7 +47,6 @@ export async function POST() {
 
     if (albErr) throw new Error(`Album fetch error: ${albErr.message}`);
 
-    // Enrich albums
     if (albums && albums.length > 0) {
       for (const album of albums) {
         const artistInfo = Array.isArray(album.artists) ? album.artists[0] : album.artists;

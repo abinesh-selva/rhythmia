@@ -32,14 +32,12 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
 
   return (
     <div className="flex flex-col min-h-full pb-20">
-      {/* Hero */}
       <div
         className="relative p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 overflow-hidden"
         style={{ background: `linear-gradient(to bottom, ${colors[0]}55, var(--theme-forest-dark))` }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark to-transparent z-0" />
 
-        {/* Cover art */}
         <div
           className="w-40 h-40 md:w-56 md:h-56 rounded-2xl shadow-2xl z-10 flex-none flex items-center justify-center"
           style={{ background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]})` }}
@@ -49,7 +47,6 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
           </svg>
         </div>
 
-        {/* Info */}
         <div className="flex flex-col gap-2 z-10 flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-widest text-cream/60">Collection</span>
@@ -64,7 +61,6 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
         </div>
       </div>
 
-      {/* Controls */}
       {activeTracks.length > 0 && (
         <div className="px-6 md:px-10 py-6 flex items-center gap-4 flex-wrap">
           <button
@@ -79,7 +75,6 @@ export function CollectionDetailView({ collection, tracks }: CollectionDetailPro
         </div>
       )}
 
-      {/* Search + tracks */}
       <div className="px-6 md:px-10 flex flex-col gap-4 flex-1">
         {activeTracks.length > 0 && (
           <div className="flex items-center justify-between gap-4">

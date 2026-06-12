@@ -69,7 +69,6 @@ export function PlaylistView({ playlistId }: PlaylistViewProps) {
     addToast("Share link copied to clipboard!", "success");
   };
 
-  // Drag handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = "move";
@@ -101,11 +100,9 @@ export function PlaylistView({ playlistId }: PlaylistViewProps) {
 
   return (
     <div className="flex flex-col min-h-full pb-20">
-      {/* Header Hero */}
       <div
         className="hero p-6 md:p-10 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 transition-all relative overflow-hidden"
       >
-        {/* Dynamic Background Blur */}
         <div 
           className="absolute inset-0 opacity-40 z-0 transition-colors duration-1000"
           style={{
@@ -153,7 +150,6 @@ export function PlaylistView({ playlistId }: PlaylistViewProps) {
         </div>
       </div>
 
-      {/* Play Controls Row */}
       <div className="px-6 md:px-8 py-6 flex items-center gap-6 relative z-10">
         {plTracks.length > 0 && (
           <button
@@ -166,7 +162,6 @@ export function PlaylistView({ playlistId }: PlaylistViewProps) {
           </button>
         )}
         
-        {/* Actions */}
         <div className="flex items-center gap-4 ml-auto md:ml-0">
           <button
             onClick={handleSharePlaylist}
@@ -178,7 +173,6 @@ export function PlaylistView({ playlistId }: PlaylistViewProps) {
             </svg>
           </button>
           
-          {/* Options Menu Trigger placeholder (You could expand this into a real dropdown) */}
           <div className="relative group cursor-pointer">
              <button className="text-muted hover:text-white transition-colors">
                <svg viewBox="0 0 24 24" className="w-8 h-8 fill-current">
@@ -212,11 +206,9 @@ export function PlaylistView({ playlistId }: PlaylistViewProps) {
         </div>
       </div>
 
-      {/* Playlist search & tracks (Reorderable) */}
       <div className="px-6 md:px-8 flex flex-col gap-3 flex-1 mt-2">
         {plTracks.length > 0 && (
           <div className="flex items-center justify-between gap-4 pb-4">
-            {/* Inline Playlist search bar */}
             <div className="relative max-w-xs w-full group">
               <input
                 value={playlistSearchQuery}

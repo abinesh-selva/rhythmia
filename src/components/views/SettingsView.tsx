@@ -135,7 +135,6 @@ export function SettingsView() {
 
   return (
     <div className="flex h-full min-h-0">
-      {/* ── Left sticky nav */}
       <aside className="hidden md:flex w-52 flex-none border-r border-white/8 flex-col py-8 gap-0.5 px-3 overflow-y-auto shrink-0 self-stretch">
         <h2 className="text-2xl font-bold text-cream tracking-tight px-3 mb-6">Settings</h2>
 
@@ -171,11 +170,9 @@ export function SettingsView() {
         )}
       </aside>
 
-      {/* ── Right scrollable content */}
       <div ref={contentRef} className="flex-1 overflow-y-auto">
         <div className="px-6 md:px-10 py-8 max-w-2xl">
 
-          {/* Mobile section tabs */}
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-4 md:hidden">
             {visibleNav.map((item) => (
               <button key={item.key} onClick={() => setActiveSection(item.key)}
@@ -187,7 +184,6 @@ export function SettingsView() {
             ))}
           </div>
 
-          {/* ── ACCOUNT */}
           {activeSection === "account" && (
             <div>
               <h3 className="text-2xl font-bold text-cream mb-8">Account</h3>
@@ -244,7 +240,6 @@ export function SettingsView() {
             </div>
           )}
 
-          {/* ── PLAYBACK */}
           {activeSection === "playback" && (
             <div>
               <h3 className="text-2xl font-bold text-cream mb-8">Playback</h3>
@@ -285,7 +280,6 @@ export function SettingsView() {
             </div>
           )}
 
-          {/* ── DISPLAY */}
           {activeSection === "display" && (
             <div>
               <h3 className="text-2xl font-bold text-cream mb-8">Display</h3>
@@ -310,7 +304,6 @@ export function SettingsView() {
             </div>
           )}
 
-          {/* ── SOCIAL */}
           {activeSection === "social" && (
             <div>
               <h3 className="text-2xl font-bold text-cream mb-8">Social</h3>
@@ -325,7 +318,6 @@ export function SettingsView() {
             </div>
           )}
 
-          {/* ── STORAGE */}
           {activeSection === "storage" && (
             <div>
               <h3 className="text-2xl font-bold text-cream mb-8">Storage</h3>
@@ -343,7 +335,6 @@ export function SettingsView() {
             </div>
           )}
 
-          {/* ── ABOUT */}
           {activeSection === "about" && (
             <div>
               <h3 className="text-2xl font-bold text-cream mb-8">About</h3>

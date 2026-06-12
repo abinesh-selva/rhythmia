@@ -50,7 +50,6 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
 
   return (
     <div className="flex flex-col min-h-full pb-20">
-      {/* Hero */}
       <div className="relative p-6 md:p-8 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark via-transparent to-transparent z-0" />
         <div className="absolute inset-0 opacity-20 z-0" style={{ background: heroGradient }} />
@@ -79,7 +78,6 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
         </div>
       </div>
 
-      {/* Controls */}
       <div className="px-6 md:px-8 py-5 flex items-center gap-3">
         {tracks.length > 0 && (
           <button
@@ -93,7 +91,6 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
         )}
       </div>
 
-      {/* Popular Tracks */}
       {tracks.length > 0 && (
         <div className="px-6 md:px-8 mb-8">
           <h2 className="text-lg font-bold text-cream mb-3">Popular</h2>
@@ -110,7 +107,6 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
         </div>
       )}
 
-      {/* Albums */}
       {albums.length > 0 && (
         <div className="px-6 md:px-8 mb-8">
           <div className="flex items-center justify-between mb-3">

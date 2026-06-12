@@ -144,23 +144,19 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         "--bg-color-2": "var(--theme-forest-dark)",
       } as React.CSSProperties}
     >
-      {/* Dynamic Background Blur */}
-      <div 
+      <div
         className="absolute inset-0 opacity-20 blur-[100px] pointer-events-none transition-colors duration-1000" 
         style={{ background: "radial-gradient(circle at 50% 0%, var(--bg-color-1), transparent 50%), radial-gradient(circle at 0% 100%, var(--bg-color-2), transparent 50%)" }}
       />
 
-      {/* Top Header Navigation (spans full width) */}
       <TopNavigation
         isFriendOpen={isFriendOpen}
         setIsFriendOpen={handleFriendToggle}
         setIsAuthOpen={setIsAuthOpen}
       />
 
-      {/* Sidebar Area */}
       <div className="relative hidden md:flex min-h-0">
         <Sidebar />
-        {/* Resize bar — mouse drag + keyboard-accessible range input */}
         {!isSidebarCollapsed && (
           <div
             role="separator"
@@ -188,19 +184,16 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         )}
       </div>
 
-      {/* Main content area */}
       <main className="main bg-forest-dark/80 backdrop-blur-md border border-white/5 rounded-xl overflow-y-auto min-h-0 flex flex-col relative shadow-2xl transition-all">
         <div className="flex-1 min-h-0 relative">
           {children}
         </div>
       </main>
 
-      {/* Friend Activity sidebar */}
       {mounted && isFriendOpen && (
         <FriendActivitySidebar setIsFriendOpen={handleFriendToggle} />
       )}
 
-      {/* Now Playing panel — unified responsive component */}
       <NowPlayingPanel
         isOpen={isNPOpen}
         onClose={() => setIsNPOpen(false)}
@@ -208,16 +201,12 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         setNpTab={setNpTab}
       />
 
-      {/* Bottom player bar */}
       <BottomPlayer
         isNPOpen={isNPOpen}
         setIsNPOpen={setIsNPOpen}
       />
 
-      {/* Mobile navigation */}
       <MobileNav />
-
-      {/* Modals */}
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
 
       <ChatDrawer />

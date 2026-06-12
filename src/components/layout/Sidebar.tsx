@@ -141,9 +141,7 @@ export function Sidebar() {
     if (!playlistId.startsWith("playlist:")) return;
     const plId = playlistId.replace("playlist:", "");
     const newFolders = folders.map(f => {
-      // Remove from old folders
       const cleanedIds = f.playlistIds.filter(id => id !== plId);
-      // Add to new folder
       if (f.id === folderId) {
         cleanedIds.push(plId);
       }
@@ -160,7 +158,6 @@ export function Sidebar() {
     saveFolders(newFolders);
   };
 
-  // Determine which playlists are in folders
   const playlistsInFolders = new Set(folders.flatMap(f => f.playlistIds));
   const unassignedPlaylists = playlists.filter(pl => !playlistsInFolders.has(pl.id));
 
@@ -180,7 +177,6 @@ export function Sidebar() {
     window.dispatchEvent(new Event("sidebar-collapse-toggle"));
   };
 
-  // Determine active view
   const isArtistActive = (id: string) => pathname === `/artist/${id}` || pathname.startsWith(`/artist/${id}/`);
   const isAlbumActive  = (id: string) => pathname === `/album/${id}`  || pathname.startsWith(`/album/${id}/`);
 
@@ -211,7 +207,6 @@ export function Sidebar() {
     <aside className={`w-full h-full hidden md:flex flex-col bg-forest rounded-xl py-4 min-h-0 relative z-20 border border-white/5 transition-all duration-300 ${
       isLibraryCollapsed ? "px-2 gap-3" : "px-3 gap-4"
     }`}>
-      {/* Library Header */}
       <div className={`flex flex-none ${isLibraryCollapsed ? "flex-col items-center gap-4 px-0 pb-2" : "items-center justify-between px-2 pb-1.5"}`}>
         <button
           onClick={toggleLibraryCollapse}
@@ -237,7 +232,6 @@ export function Sidebar() {
           </button>
         ) : (
           <div className="flex items-center gap-0.5 flex-none">
-            {/* Create playlist */}
             <button
               onClick={handleCreatePlaylist}
               className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
@@ -249,7 +243,6 @@ export function Sidebar() {
               </svg>
             </button>
 
-            {/* Overflow utility menu */}
             <div className="relative group">
               <button
                 className="w-7 h-7 flex items-center justify-center rounded-full text-muted hover:text-cream hover:bg-white/10 transition-colors"
@@ -261,9 +254,7 @@ export function Sidebar() {
                 </svg>
               </button>
 
-              {/* Dropdown panel */}
               <div className="absolute right-0 top-8 w-52 bg-panel border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1.5">
-                {/* Create folder */}
                 <button
                   onClick={handleCreateFolder}
                   className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
@@ -274,7 +265,6 @@ export function Sidebar() {
                   Create folder
                 </button>
 
-                {/* Add local files */}
                 <label className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors cursor-pointer">
                   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-muted flex-none">
                     <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z" />
@@ -293,7 +283,6 @@ export function Sidebar() {
 
                 <div className="h-px bg-white/8 my-1 mx-3" />
 
-                {/* Sync from Cloudinary */}
                 <button
                   onClick={handleCloudinarySync}
                   disabled={isSyncing}
@@ -307,7 +296,6 @@ export function Sidebar() {
                   {isSyncing ? "Syncing…" : "Sync Library"}
                 </button>
 
-                {/* Enrich Metadata */}
                 <button
                   onClick={handleSpotifyEnrich}
                   disabled={isEnriching}
@@ -323,7 +311,6 @@ export function Sidebar() {
 
                 <div className="h-px bg-white/8 my-1 mx-3" />
 
-                {/* Theme cycle */}
                 <button
                   onClick={cycleTheme}
                   className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-cream hover:bg-white/8 transition-colors"
@@ -339,7 +326,6 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* Library Content */}
       <div className="flex-1 flex flex-col min-h-0">
           {!isLibraryCollapsed && (
             <div className="flex flex-wrap gap-1 px-2 pb-2">

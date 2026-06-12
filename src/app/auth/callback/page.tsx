@@ -22,7 +22,6 @@ function CallbackContent() {
           return;
         }
       }
-      // Redirect to home page
       router.push("/");
     };
 

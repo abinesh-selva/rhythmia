@@ -11,7 +11,6 @@ export default async function AlbumPage({
   const db = await createClient();
   if (!db) return notFound();
 
-  // Fetch album with artist
   const { data: album } = await db
     .from("albums")
     .select("id, title, slug, cover_image, cover_colors, track_count, year, artist_id, artists(id, display_name, slug, image)")
@@ -20,7 +19,6 @@ export default async function AlbumPage({
 
   if (!album) return notFound();
 
-  // Fetch tracks with singer/genre/language — ordered by track_number then title
   const { data: rawTracks } = await db
     .from("tracks")
     .select(`

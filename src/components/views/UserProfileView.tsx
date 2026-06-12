@@ -29,11 +29,9 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
         return;
       }
       
-      // Fetch Profile
       const { data: prof } = await supabase.from("profiles").select("*").eq("id", userId).single();
       if (prof) setProfile(prof);
 
-      // Fetch Public Playlists
       const { data: pls } = await supabase
         .from("playlists")
         .select("*")
@@ -63,7 +61,6 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
 
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar pb-32 animate-fade-in">
-      {/* Header */}
       <div className="h-64 bg-gradient-to-b from-forest-light to-forest p-8 flex items-end gap-6 relative border-b border-white/5">
         {profile.avatar_url ? (
           <img src={profile.avatar_url} alt={profile.display_name} className="w-48 h-48 rounded-full shadow-2xl object-cover z-10 border-4 border-forest" />
@@ -81,7 +78,6 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-8">
         <h2 className="text-2xl font-bold text-cream mb-6">Public Playlists</h2>
         

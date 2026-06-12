@@ -12,23 +12,21 @@ export interface Track {
   album: string;
   audio_url: string;
   cover_colors: string[];
-  cover_image?: string | null;  // album cover art from albums table
+  cover_image?: string | null;
   duration_sec: number;
   type?: "music" | "podcast" | "audiobook";
-  // catalog hierarchy
   artist_id?:    string;
   album_id?:     string;
   track_number?: number;
   is_active?:    boolean;
   asset_id?:     string;
-  // multi-dimensional metadata
   language_id?:  string;
-  language?:     string;      // human-readable language name
-  genre?:        string;      // primary genre name
+  language?:     string;
+  genre?:        string;
   genre_id?:     string;
-  singers?:      string[];    // vocal performer display names
+  singers?:      string[];
   singer_ids?:   string[];
-  folder_type?:  string;     // 'artist_album' | 'collection'
+  folder_type?:  string;
   lyrics?:       string | null;
 }
 
@@ -48,10 +46,9 @@ export interface Collection {
   source_folder: string | null;
   cover_colors: string[];
   track_count: number;
-  songs: string[];  // ordered track ids
+  songs: string[];
 }
 
-// Typed DB row shapes — eliminates `any` casts on Supabase responses
 interface DbTrack {
   id: string;
   title: string;
@@ -83,10 +80,10 @@ export const usePlaybackTime = () => useContext(PlaybackTimeContext);
 
 interface AudioContextType {
   tracks: Track[];
-  libraryTracks: Track[]; // tracks excluding folder_type='collection' — for search/home display
+  libraryTracks: Track[];
   playlists: Playlist[];
   collections: Collection[];
-  likedSongs: Set<string>; // Set of track IDs
+  likedSongs: Set<string>;
   currentTrack: Track | null;
   isPlaying: boolean;
   activePlayer: "A" | "B";
@@ -94,37 +91,32 @@ interface AudioContextType {
   isMuted: boolean;
   isShuffle: boolean;
   isSmartShuffle: boolean;
-  repeatMode: 0 | 1 | 2; // 0: off, 1: all, 2: one
+  repeatMode: 0 | 1 | 2;
   crossfadeSec: number;
   isPrivateSession: boolean;
-  sleepTimer: number | null; // minutes
-  sleepTimerRemaining: number | null; // seconds
+  sleepTimer: number | null;
+  sleepTimerRemaining: number | null;
   lyrics: string;
-  queue: string[]; // List of track IDs
-  recentlyPlayed: string[]; // List of track IDs
-  view: string; // "home", "search", "liked", "playlist:[id]", "queue"
+  queue: string[];
+  recentlyPlayed: string[];
+  view: string;
   currentViewPlaylistId: string | null;
   playbackContext: string[];
   playbackHistory: string[];
   setPlaybackContext: (queue: string[]) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  
   playbackSpeed: number;
   setPlaybackSpeed: (speed: number) => void;
   isAutoplay: boolean;
   setIsAutoplay: (autoplay: boolean) => void;
   audioNormalization: "quiet" | "normal" | "loud";
   setAudioNormalization: (level: "quiet" | "normal" | "loud") => void;
-  
-  // Audio EQ
-  eqLow: number; // dB (-12 to 12)
+  eqLow: number;
   eqMid: number;
   eqHigh: number;
   setEQ: (low: number, mid: number, high: number) => void;
   analyserNode: AnalyserNode | null;
-  
-  // Playback Operations
   playTrack: (trackId: string, customQueue?: string[], fallbackTrack?: Track, isUserClick?: boolean) => void;
   togglePlay: () => void;
   nextTrack: () => void;
@@ -145,8 +137,6 @@ interface AudioContextType {
   removeFromQueue: (index: number) => void;
   reorderQueue: (sourceIndex: number, destinationIndex: number) => void;
   clearQueue: () => void;
-  
-  // Database Operations
   toggleLike: (trackId: string) => void;
   createPlaylist: (name: string) => Promise<string | null>;
   deletePlaylist: (playlistId: string) => Promise<void>;
@@ -164,9 +154,6 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 
-// ── URL is the single source of truth for the active view ──────────────
-// `view` is derived from the current pathname (see pathToView); navigation
-// happens through the router (see viewToPath). There is no separate view state.
 function pathToView(pathname: string): string {
   if (pathname === "/") return "home";
   const seg = pathname.split("/").filter(Boolean);
@@ -197,7 +184,6 @@ function viewToPath(view: string): string {
   if (view === "home") return "/";
   if (view.startsWith("playlist:")) return `/playlist/${view.slice("playlist:".length)}`;
   if (view.startsWith("user:")) return `/u/${view.slice("user:".length)}`;
-  // search, liked, queue, recent, live, settings
   return `/${view}`;
 }
 
@@ -240,7 +226,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const [eqMid, setEqMid] = useState(0);
   const [eqHigh, setEqHigh] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [graphInitialized, setGraphInitialized] = useState(false);
 
   const audioRefA = useRef<HTMLAudioElement | null>(null);
   const audioRefB = useRef<HTMLAudioElement | null>(null);
@@ -358,7 +343,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }
 
-        // Load collections (public — available to all, no auth required)
         const { data: dbCollections } = await supabase
           .from("collections")
           .select("id, name, slug, source_folder, cover_colors, track_count, collection_tracks(track_id, position)")
@@ -456,19 +440,15 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       const ctx = new AudioCtx();
       audioCtxRef.current = ctx;
 
-      // 1. Create Media Sources for BOTH Audio elements
       sourceNodeRefA.current = ctx.createMediaElementSource(audioRefA.current!);
       sourceNodeRefB.current = ctx.createMediaElementSource(audioRefB.current!);
 
-      // 2. Create Gain Nodes for blending crossfade
       gainNodeRefA.current = ctx.createGain();
       gainNodeRefB.current = ctx.createGain();
 
-      // Set starting gain: A is full, B is muted
       gainNodeRefA.current.gain.value = volume;
       gainNodeRefB.current.gain.value = 0;
 
-      // 3. Create single 3-Band Equalizer Nodes (Chained)
       filterLowRef.current = ctx.createBiquadFilter();
       filterLowRef.current.type = "lowshelf";
       filterLowRef.current.frequency.value = 150;
@@ -485,18 +465,12 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       filterHighRef.current.frequency.value = 5000;
       filterHighRef.current.gain.value = eqHigh;
 
-      // 4. Create single Analyser Node
       analyserRef.current = ctx.createAnalyser();
       analyserRef.current.fftSize = 128;
 
-      // 5. Create Master Gain Node
       masterGainRef.current = ctx.createGain();
       masterGainRef.current.gain.value = 1.0;
 
-      // 6. Hook up the Graph Topology:
-      // Player A -> Gain A -\
-      //                      +-> EQ Low -> EQ Mid -> EQ High -> Analyser -> Master Gain -> Output
-      // Player B -> Gain B -/
       sourceNodeRefA.current.connect(gainNodeRefA.current);
       sourceNodeRefB.current.connect(gainNodeRefB.current);
 
@@ -510,7 +484,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       masterGainRef.current.connect(ctx.destination);
 
       isGraphInitialized.current = true;
-      setGraphInitialized(true);
     } catch (e) {
       console.warn("Failed to initialize Web Audio API graph. Degraded to default stereo audio.", e);
     }
@@ -529,11 +502,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const targetVolume = isMuted ? 0 : volume;
 
-    // Apply to standard audio elements as fallbacks
     if (audioRefA.current) audioRefA.current.volume = targetVolume;
     if (audioRefB.current) audioRefB.current.volume = targetVolume;
 
-    // Apply to active AudioContext gain nodes for precise transitions
     if (isGraphInitialized.current) {
       if (activePlayer === "A" && gainNodeRefA.current && gainNodeRefB.current) {
         gainNodeRefA.current.gain.value = targetVolume;
@@ -557,7 +528,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       setSleepTimerRemaining((prev) => {
         if (prev === null || prev <= 1) {
           clearInterval(timer);
-          // Pause audio playback
           const activeEl = activePlayer === "A" ? audioRefA.current : audioRefB.current;
           if (activeEl) {
             activeEl.pause();
@@ -589,9 +559,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
     const timeRemaining = activeEl.duration - activeEl.currentTime;
 
-    // Trigger crossfade when remaining time drops below crossfadeSec and no crossfade is active
     if (timeRemaining <= crossfadeSec && isPlaying) {
-      // Find what track is next
       const nextTrackId = getNextTrackId();
       if (!nextTrackId) return;
 
@@ -633,7 +601,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return contextIds[0];
     }
 
-    // Autoplay: pick a random library track (excluding collection tracks and current) when list ends
     if (isAutoplay && tracks.length > 0) {
       const candidates = tracks.filter((t) => t.id !== currentTrack?.id && t.folder_type !== "collection");
       if (candidates.length > 0) {
@@ -658,7 +625,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     const activeGain = activePlayer === "A" ? gainNodeRefA.current! : gainNodeRefB.current!;
     const nextGain = nextPlayer === "A" ? gainNodeRefA.current! : gainNodeRefB.current!;
 
-    // Set the path and prep next player at 0 volume
     const xDirectUrl = nextTrack.audio_url || `/api/audio/${nextTrack.id}`;
     const xProxyUrl  = `/api/audio/${nextTrack.id}`;
     nextEl.src = xDirectUrl;
@@ -671,7 +637,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    // Sync state metadata
     if (currentTrack) {
         setPlaybackHistory(prev => [...prev, currentTrack.id]);
     }
@@ -680,10 +645,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     setLyrics(nextTrack.lyrics ?? localStorage.getItem(`vibeblower_lyrics_${nextTrack.id}`) ?? "");
     setActivePlayer(nextPlayer);
 
-    // Write play history log
     logPlayHistory(nextTrack.id);
 
-    // Apply Web Audio crossfade volume curves
     if (isGraphInitialized.current && audioCtxRef.current) {
       const now = audioCtxRef.current.currentTime;
       const targetVolume = isMuted ? 0 : volume;
@@ -697,7 +660,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       nextGain.gain.setValueAtTime(0, now);
       nextGain.gain.linearRampToValueAtTime(targetVolume, now + crossfadeSec);
     } else {
-      // Degraded fallback volume crossfade
       const steps = 20;
       const intervalTime = (crossfadeSec * 1000) / steps;
       let step = 0;
@@ -716,7 +678,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       }, intervalTime);
     }
 
-    // Clean queue
     setQueue((prev) => {
       if (prev.length > 0 && prev[0] === nextTrack.id) return prev.slice(1);
       return prev;
@@ -735,7 +696,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     const activeEl = activePlayer === "A" ? audioRefA.current! : audioRefB.current!;
     const nextPlayer = activePlayer === "A" ? "B" : "A";
 
-    // If same track is tapped and is playing, toggle pause.
     if (currentTrack?.id === trackId) {
       togglePlay();
       return;
@@ -751,10 +711,8 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Standard Quick Play (Non-crossfading hard-transition)
     activeEl.pause();
-    
-    // Play on Player A
+
     const directUrl = track.audio_url || `/api/audio/${track.id}`;
     const proxyUrl  = `/api/audio/${track.id}`;
     audioRefA.current!.src = directUrl;
@@ -769,7 +727,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     setIsPlaying(true);
     setLyrics(track.lyrics ?? localStorage.getItem(`vibeblower_lyrics_${track.id}`) ?? "");
 
-    // Apply baseline gains
     if (isGraphInitialized.current) {
       gainNodeRefA.current!.gain.value = isMuted ? 0 : volume;
       gainNodeRefB.current!.gain.value = 0;
@@ -791,7 +748,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       setIsPlaying(false);
     });
 
-    // Write play history
     logPlayHistory(track.id);
 
     if (customQueue) {
@@ -838,7 +794,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // In structured views always navigate within the live view's tracks — never escape to stale playbackContext
     const liveViewTracks = getTracksForView();
     const viewIsStructured =
       view.startsWith("playlist:") ||
@@ -884,7 +839,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Non-structured view: use queue / playbackContext
     const nextId = getNextTrackId();
     if (nextId) {
       playTrack(nextId, playbackContext.length > 0 ? playbackContext : undefined, undefined, false);
@@ -914,11 +868,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
 
     const liveIds = liveViewTracks.map(t => t.id);
 
-    // In a structured view, always navigate within that view's track list — never escape to history.
     if (viewIsStructured && liveIds.length > 0) {
       const currentIndex = liveIds.indexOf(currentTrack?.id || "");
       if (currentIndex <= 0) {
-        // Wrap to last track in the playlist/album/etc.
         playTrack(liveIds[liveIds.length - 1], liveIds, undefined, false);
       } else {
         playTrack(liveIds[currentIndex - 1], liveIds, undefined, false);
@@ -926,7 +878,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Non-structured view: use stored playback context or live tracks
     const contextIds = playbackContext.length > 0 ? playbackContext : liveIds;
 
     if (contextIds.length === 0) {
@@ -945,7 +896,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // At the start: use history if available, else wrap
     if (currentIndex === 0 && playbackHistory.length > 0) {
       const historyCopy = [...playbackHistory];
       const lastPlayedId = historyCopy.pop()!;
@@ -1086,11 +1036,9 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       const langId = view.split(":")[1];
       return tracks.filter((t) => t.language_id === langId);
     }
-    // Default: use library tracks only (exclude raw collection tracks with numbered names)
     return tracks.filter(t => t.folder_type !== "collection");
   };
 
-  // `view` is derived from the URL, so navigating *is* setting the view.
   const setView = useCallback((viewName: string) => {
     router.push(viewToPath(viewName));
   }, [router]);
@@ -1470,7 +1418,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     audioNormalization,
     playbackContext,
     playbackHistory,
-    graphInitialized,
     isLoading,
   ]);
 
@@ -1479,7 +1426,6 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
     <AudioContext.Provider value={contextValue}>
       {children}
 
-      {/* DUAL `<audio>` nodes linking standard html listeners */}
       <audio
         ref={audioRefA}
         crossOrigin="anonymous"

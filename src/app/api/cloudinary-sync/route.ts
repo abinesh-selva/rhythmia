@@ -10,7 +10,6 @@ import {
   normalizeLanguageName,
 } from "@/lib/utils/singers";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface CloudinaryResource {
   asset_id: string;
@@ -33,7 +32,6 @@ interface TrackMetadata {
   singers:  string[];        // TPE1 — vocal performers (always separate from artist)
 }
 
-// ─── Supabase service-role client ────────────────────────────────────────────
 
 function getServiceClient() {
   const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
@@ -42,7 +40,6 @@ function getServiceClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-// ─── Cloudinary Admin API helpers ────────────────────────────────────────────
 
 const CLOUD_NAME  = (process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "").trim();
 const API_KEY     = (process.env.CLOUDINARY_API_KEY ?? "").trim();
@@ -87,7 +84,6 @@ async function fetchAllResources(
   return all;
 }
 
-// ─── ID3 tag parsing via ranged GET (first 256 KB only) ──────────────────────
 
 async function fetchId3Metadata(audioUrl: string): Promise<TrackMetadata> {
   const empty: TrackMetadata = { title: null, artist: null, album: null, genre: null, language: null, singers: [] };
@@ -129,7 +125,6 @@ async function fetchId3Metadata(audioUrl: string): Promise<TrackMetadata> {
   }
 }
 
-// ─── Cloudinary context/tags override ────────────────────────────────────────
 
 function extractContextMetadata(resource: CloudinaryResource): Partial<TrackMetadata> {
   const ctx = resource.context?.custom ?? {};
@@ -140,7 +135,6 @@ function extractContextMetadata(resource: CloudinaryResource): Partial<TrackMeta
   return result;
 }
 
-// ─── Concurrency-limited batch runner ────────────────────────────────────────
 
 async function pLimit<T, R>(items: T[], concurrency: number, fn: (item: T) => Promise<R>): Promise<R[]> {
   const results: R[] = new Array(items.length);
@@ -152,7 +146,6 @@ async function pLimit<T, R>(items: T[], concurrency: number, fn: (item: T) => Pr
   return results;
 }
 
-// ─── Filename parser ──────────────────────────────────────────────────────────
 
 const LEADING_NUMBER_RE = /^(\d{1,3})\s*[-–.)\s]\s*/;
 const SUFFIX_RE         = /_[a-zA-Z0-9]{4,8}$/;
@@ -176,13 +169,10 @@ function getFolder(res: CloudinaryResource & { asset_folder?: string }): string 
   return res.asset_folder || res.folder || res.public_id.split("/").slice(0, -1).join("/");
 }
 
-// ─── Main POST handler ────────────────────────────────────────────────────────
 
 export async function POST(_req: Request) {
   try {
     const db = getServiceClient();
-
-    // ── Step 1: Fetch resources ─────────────────────────────────────────────
     const [videoResources, imageResources] = await Promise.all([
       fetchAllResources("video"),
       fetchAllResources("image", `(filename:artist OR filename:cover)`).catch(() => [] as CloudinaryResource[]),
@@ -190,8 +180,6 @@ export async function POST(_req: Request) {
 
     if (videoResources.length === 0)
       return NextResponse.json({ success: true, message: "No audio resources found", trackCount: 0 });
-
-    // ── Step 2: Image lookup map ────────────────────────────────────────────
     const imageMap = new Map<string, { artist?: string; cover?: string }>();
     for (const img of imageResources) {
       const fp = getFolder(img);
@@ -200,8 +188,6 @@ export async function POST(_req: Request) {
       if (img.filename === "cover")  e.cover  = img.secure_url;
       imageMap.set(fp, e);
     }
-
-    // ── Step 3: Classify L1 folders — Artist vs Collection ─────────────────
     // A folder is an "artist" folder if it has any L2 (album) subfolders.
     // A folder with ONLY direct tracks and no album subfolders is a "collection".
     const l1WithSubfolders = new Set<string>(); // L1 folders that have L2 subfolders
@@ -221,8 +207,6 @@ export async function POST(_req: Request) {
         collectionFolders.add(parts[1]);
       }
     }
-
-    // ── Step 4: Build artist / album hierarchy (artist folders only) ────────
     interface ArtistMeta { sourceFolder: string; displayName: string; slug: string; image?: string }
     interface AlbumMeta  { artistSourceFolder: string; folderPath: string; title: string; slug: string; coverImage?: string; coverColors: [string, string] }
 
@@ -266,8 +250,6 @@ export async function POST(_req: Request) {
         });
       }
     }
-
-    // ── Step 5: Upsert artists ──────────────────────────────────────────────
     const { data: upsertedArtists, error: artistErr } = await db
       .from("artists")
       .upsert(
@@ -283,8 +265,6 @@ export async function POST(_req: Request) {
     for (const row of upsertedArtists ?? []) {
       if (row.source_folder) artistIdByFolder.set(row.source_folder, row.id as string);
     }
-
-    // ── Step 6: Upsert albums ───────────────────────────────────────────────
     const albumRows = Array.from(albumMap.values()).map((al) => {
       const artistId = artistIdByFolder.get(al.artistSourceFolder);
       if (!artistId) return null;
@@ -306,8 +286,6 @@ export async function POST(_req: Request) {
       const albumId = albumIdByKey.get(`${aId}/${al.slug}`);
       if (albumId) albumIdByFolder.set(fp, albumId);
     }
-
-    // ── Step 7: Build collections (flat Cloudinary folders) ────────────────
     interface CollectionMeta { sourceFolder: string; name: string; slug: string; coverColors: [string, string] }
     const collectionMap      = new Map<string, CollectionMeta>();
     const collectionSlugsUsed = new Set<string>();
@@ -344,12 +322,9 @@ export async function POST(_req: Request) {
     for (const row of allExistingCollections ?? []) {
       if (row.source_folder) collectionIdByFolder.set(row.source_folder as string, row.id as string);
     }
-    // Upserted rows take precedence (they have the latest IDs)
     for (const row of upsertedCollections ?? []) {
       if (row.source_folder) collectionIdByFolder.set(row.source_folder, row.id as string);
     }
-
-    // ── Step 8: Upsert tracks ───────────────────────────────────────────────
     const BATCH = 100;
     let trackCount = 0;
 
@@ -395,8 +370,6 @@ export async function POST(_req: Request) {
       if (error) throw new Error(`Track upsert batch ${i / BATCH}: ${error.message}`);
       trackCount += Math.min(BATCH, trackRows.length - i);
     }
-
-    // ── Step 9: Link collection tracks ─────────────────────────────────────
     if (collectionMap.size > 0) {
       // Query by folder_type — avoids a huge .in(audio_url) that exceeds PostgREST URL limits
       const { data: collectionTrackRows } = await db
@@ -425,8 +398,6 @@ export async function POST(_req: Request) {
         if (error) throw new Error(`Collection-track link batch ${i / BATCH}: ${error.message}`);
       }
     }
-
-    // ── Step 10: Inactive sweep ─────────────────────────────────────────────
     const cloudinaryAssetIds = new Set(videoResources.map((r) => r.asset_id));
     const { data: dbRows } = await db.from("tracks").select("asset_id").eq("source", "cloudinary_sync").not("asset_id", "is", null);
     const toDeactivate = (dbRows ?? []).map((r: { asset_id: string }) => r.asset_id).filter((id: string) => !cloudinaryAssetIds.has(id));
@@ -436,8 +407,6 @@ export async function POST(_req: Request) {
       if (error) throw new Error(`Inactive sweep batch ${i / BATCH}: ${error.message}`);
       deactivatedCount += Math.min(BATCH, toDeactivate.length - i);
     }
-
-    // ── Step 11: Metadata — singers / genre / language (+ artist/title/album for collection tracks) ──
     const { data: unparsedRows } = await db
       .from("tracks")
       .select("id, audio_url, asset_id, folder_type")
@@ -449,7 +418,6 @@ export async function POST(_req: Request) {
     const resourceByAssetId = new Map<string, CloudinaryResource>();
     for (const r of videoResources) resourceByAssetId.set(r.asset_id, r);
 
-    // Pre-load dimension caches
     const genreIdByName    = new Map<string, string>();
     const languageIdByName = new Map<string, string>();
     const singerIdByName   = new Map<string, string>();
@@ -514,7 +482,6 @@ export async function POST(_req: Request) {
           const [genreId, languageId] = await Promise.all([ensureGenre(genreName), ensureLanguage(languageName)]);
           const singerIds = await Promise.all(meta.singers.map(ensureSinger));
 
-          // Build track update payload
           const trackUpdate: Record<string, unknown> = { language_id: languageId, metadata_parsed: true };
 
           // For collection tracks: override artist, album, title from ID3 tags
@@ -541,8 +508,6 @@ export async function POST(_req: Request) {
         }
       }
     );
-
-    // ── Step 12: Recompute denormalized counts ──────────────────────────────
     const { data: allAlbums } = await db.from("albums").select("id");
     for (const { id } of allAlbums ?? []) {
       const { count } = await db.from("tracks").select("id", { count: "exact", head: true }).eq("album_id", id).eq("is_active", true);
@@ -569,8 +534,6 @@ export async function POST(_req: Request) {
       const { count } = await db.from("collection_tracks").select("track_id", { count: "exact", head: true }).eq("collection_id", id);
       await db.from("collections").update({ track_count: count ?? 0 }).eq("id", id);
     }
-
-    // ── Step 13: Prune orphaned albums and artists (from renamed/deleted folders) ──
     // Albums with zero active tracks were either never populated or belong to a renamed folder.
     await db.from("albums").delete().eq("track_count", 0);
     // After album cleanup, artists with zero tracks AND zero albums are safe to remove.

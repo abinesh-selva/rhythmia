@@ -38,7 +38,6 @@ export const TrackMenuProvider = ({ children }: { children: React.ReactNode }) =
 
       {trackId && (
         <>
-          {/* Click-away backdrop */}
           <div className="fixed inset-0 z-50" onClick={close} onContextMenu={(e) => { e.preventDefault(); close(); }} />
           <div
             className="fixed z-50 w-48 bg-panel border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-fade-in py-1"

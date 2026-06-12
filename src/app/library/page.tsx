@@ -61,7 +61,6 @@ export default function LibraryPage() {
 
   return (
     <div className="flex flex-col h-full bg-forest-dark min-h-0">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 pt-5 pb-3 flex-none">
         <h1 className="text-xl font-bold text-cream font-display">Your Library</h1>
         <button
@@ -75,7 +74,6 @@ export default function LibraryPage() {
         </button>
       </div>
 
-      {/* Filter chips */}
       <div className="flex gap-2 px-4 pb-3 flex-none overflow-x-auto scrollbar-none">
         {FILTERS.map((f) => (
           <button
@@ -90,10 +88,8 @@ export default function LibraryPage() {
         ))}
       </div>
 
-      {/* List */}
       <div className="flex-1 overflow-y-auto px-2 pb-32">
 
-        {/* Liked Songs */}
         {showPlaylists && (
           <LibraryRow
             active={view === "liked"}
@@ -110,7 +106,6 @@ export default function LibraryPage() {
           />
         )}
 
-        {/* Playlists */}
         {showPlaylists && playlists.map((pl) => (
           <LibraryRow
             key={pl.id}
@@ -131,7 +126,6 @@ export default function LibraryPage() {
           />
         ))}
 
-        {/* Collections */}
         {showCollections && collections.map((col) => (
           <LibraryRow
             key={col.id}
@@ -152,7 +146,6 @@ export default function LibraryPage() {
           />
         ))}
 
-        {/* Artists */}
         {showArtists && artists.map((artist) => (
           <LibraryRow
             key={artist.id}
@@ -174,7 +167,6 @@ export default function LibraryPage() {
           />
         ))}
 
-        {/* Albums */}
         {showAlbums && albums.map((album) => {
           const [c1, c2] = getAlbumColors(album);
           const artistInfo = Array.isArray(album.artists) ? album.artists[0] : album.artists;

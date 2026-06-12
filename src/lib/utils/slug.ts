@@ -20,7 +20,6 @@ export function slugify(text: string, fallbackId?: string): string {
 
   if (s) return s;
 
-  // Fallback: deterministic short hash of the fallbackId
   const seed = fallbackId ?? text;
   let h = 0;
   for (let i = 0; i < seed.length; i++) {

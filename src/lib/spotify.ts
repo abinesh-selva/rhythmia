@@ -6,7 +6,6 @@ export async function searchSpotifyArtist(artistName: string): Promise<string | 
   try {
     const query = encodeURIComponent(artistName);
     
-    // Use Deezer API for artist images
     const response = await fetch(`https://api.deezer.com/search/artist?q=${query}&limit=1`);
 
     if (!response.ok) return null;
@@ -25,7 +24,6 @@ export async function searchSpotifyArtist(artistName: string): Promise<string | 
 
 export async function searchSpotifyAlbum(albumTitle: string, artistName: string): Promise<string | null> {
   try {
-    // Use iTunes API for gorgeous high-res album covers
     const query = encodeURIComponent(`${albumTitle} ${artistName}`);
     
     const response = await fetch(`https://itunes.apple.com/search?term=${query}&entity=album&limit=1`);
@@ -36,7 +34,6 @@ export async function searchSpotifyAlbum(albumTitle: string, artistName: string)
     const album = data.results?.[0];
     
     if (album && album.artworkUrl100) {
-      // iTunes returns a 100x100 URL, but we can simply replace it with 1000x1000 for high-res
       return album.artworkUrl100.replace('100x100bb', '1000x1000bb');
     }
   } catch (err) {

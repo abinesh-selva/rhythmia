@@ -69,15 +69,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Overlay backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal Container */}
       <div className="relative w-full max-w-md bg-panel border border-white/10 rounded-2xl p-8 shadow-2xl flex flex-col z-10 overflow-hidden">
-        {/* Decorative leaf backdrop motif */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-coral/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-green/10 rounded-full blur-2xl pointer-events-none" />
 

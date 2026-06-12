@@ -3,11 +3,7 @@
  * "Singer" = vocal performer (TPE1), distinct from "Artist" = music director (L1 folder).
  */
 
-const SINGER_ALIAS_MAP: Record<string, string> = {
-  // Add canonical name mappings as the library grows, e.g.:
-  // "S.P.B": "S. P. Balasubrahmanyam",
-  // "Shreya": "Shreya Ghoshal",
-};
+const SINGER_ALIAS_MAP: Record<string, string> = {};
 
 /** Split a raw singer string (from ID3 TPE1 or Cloudinary context) into individual names. */
 export function splitSingerNames(raw: string): string[] {

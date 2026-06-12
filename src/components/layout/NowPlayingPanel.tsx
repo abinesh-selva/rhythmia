@@ -44,7 +44,6 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
     setSleepTimerOnTrackEnd,
   } = useAudio();
 
-  // Shared state
   const [isEditingLyrics, setIsEditingLyrics] = useState(false);
   const [mobileTab, setMobileTab] = useState<"song" | "lyrics">("song");
   const [showQueueSheet, setShowQueueSheet] = useState(false);
@@ -55,7 +54,6 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationRef = useRef<number | null>(null);
 
-  // Waveform visualizer (desktop)
   useEffect(() => {
     if (!canvasRef.current || !analyserNode || !isPlaying || !currentTrack) {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -91,7 +89,6 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
     return () => { if (animationRef.current) cancelAnimationFrame(animationRef.current); };
   }, [analyserNode, isPlaying, currentTrack]);
 
-  // Shared lyrics parsing
   const parsedLyrics = useMemo(() => {
     if (!lyrics) return { parsed: [], isSynced: false };
     const lines = lyrics.split("\n");
@@ -119,7 +116,6 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
     return idx;
   }, [currentTime, parsedLyrics]);
 
-  // Auto-scroll active lyric line
   useEffect(() => {
     if (!isEditingLyrics && parsedLyrics.isSynced && activeLineIndex !== -1) {
       [lyricsContainerRef, desktopLyricsRef].forEach((ref) => {
@@ -139,8 +135,6 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
 
   const coverColors = currentTrack.cover_colors || ["#0E3B35", "#0c332c"];
   const totalQueueCount = queue.length + upcomingFromContext.length;
-
-  // ─── Shared sub-renders ─────────────────────────────────────────────────────
 
   const lyricsContent = (compact: boolean) => (
     <div className={`flex-1 flex flex-col ${compact ? "min-h-48 bg-black/15 border border-white/8 rounded-xl p-3.5" : "bg-black/20 border border-white/6 rounded-2xl p-5"} relative`}>
@@ -226,8 +220,6 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
       ) : null}
     </div>
   );
-
-  // ─── MOBILE LAYOUT (< md) — full-screen overlay ──────────────────────────
 
   const mobileLayout = (
     <div className="fixed inset-0 z-50 flex flex-col bg-forest-dark text-cream overflow-hidden md:hidden animate-slide-up">
@@ -379,8 +371,6 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
     </div>
   );
 
-  // ─── DESKTOP LAYOUT (>= md) — sidebar panel ──────────────────────────────
-
   const desktopLayout = (
     <aside className="np fixed top-1.5 right-1.5 bottom-np-bottom w-72 bg-panel border border-white/8 rounded-xl z-40 overflow-hidden hidden md:flex flex-col shadow-2xl animate-slide-in-right">
       {/* Header */}
@@ -436,8 +426,6 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
     </>
   );
 }
-
-// ─── Shared queue row ─────────────────────────────────────────────────────────
 
 interface QueueRowProps extends Partial<React.HTMLAttributes<HTMLDivElement>> {
   track: Track;

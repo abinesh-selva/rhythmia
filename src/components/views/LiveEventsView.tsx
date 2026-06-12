@@ -10,7 +10,6 @@ export function LiveEventsView() {
 
   return (
     <div className="flex flex-col p-6 md:p-10 min-h-full pb-20">
-      {/* Header */}
       <div className="mb-8 relative">
         <div className="absolute -top-4 -left-4 w-48 h-48 bg-coral/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10">

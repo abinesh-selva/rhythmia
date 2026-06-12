@@ -77,7 +77,6 @@ export function AlbumDetailView({ album, tracks }: AlbumDetailViewProps) {
 
   return (
     <div className="flex flex-col min-h-full pb-20">
-      {/* Hero */}
       <div className="relative p-6 md:p-8 flex flex-col md:flex-row md:items-end gap-6 border-b border-white/5 overflow-hidden">
         <div className="absolute inset-0 z-0" style={{ background: `linear-gradient(160deg, ${colors[0]}30, transparent 60%)` }} />
         <div className="absolute inset-0 bg-gradient-to-t from-forest-dark via-transparent to-transparent z-0" />
@@ -112,7 +111,6 @@ export function AlbumDetailView({ album, tracks }: AlbumDetailViewProps) {
         </div>
       </div>
 
-      {/* Controls */}
       <div className="px-6 md:px-8 py-5 flex items-center gap-3">
         {activeTracks.length > 0 && (
           <>
@@ -146,7 +144,6 @@ export function AlbumDetailView({ album, tracks }: AlbumDetailViewProps) {
         </button>
       </div>
 
-      {/* Track list */}
       <div className="px-6 md:px-8">
         {tracks.length === 0 ? (
           <div className="p-12 text-center text-muted text-sm border border-white/5 rounded-xl bg-white/3">
