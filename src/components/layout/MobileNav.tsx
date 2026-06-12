@@ -32,11 +32,11 @@ export function MobileNav() {
     view.startsWith("album:");
 
   return (
-    <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-white/5 py-3 px-4 z-40 select-none text-muted shrink-0 pb-safe">
+    <div className="md:hidden flex justify-around items-center bg-forest-dark border-t border-white/10 py-4 px-2 z-40 select-none text-muted shrink-0 pb-safe gap-1">
       <Link
         href="/"
-        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${
-          view === "home" ? "text-coral" : "hover:text-cream text-muted"
+        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-all flex-1 py-2 px-3 rounded-lg ${
+          view === "home" ? "text-coral bg-coral/10" : "hover:text-cream hover:bg-white/8 text-muted"
         }`}
       >
         <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
@@ -47,8 +47,8 @@ export function MobileNav() {
 
       <Link
         href="/search"
-        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${
-          view === "search" ? "text-coral" : "hover:text-cream text-muted"
+        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-all flex-1 py-2 px-3 rounded-lg ${
+          view === "search" ? "text-coral bg-coral/10" : "hover:text-cream hover:bg-white/8 text-muted"
         }`}
       >
         <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
@@ -59,8 +59,8 @@ export function MobileNav() {
 
       <Link
         href="/library"
-        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-colors ${
-          isLibraryActive ? "text-coral" : "hover:text-cream text-muted"
+        className={`flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider cursor-pointer transition-all flex-1 py-2 px-3 rounded-lg ${
+          isLibraryActive ? "text-coral bg-coral/10" : "hover:text-cream hover:bg-white/8 text-muted"
         }`}
       >
         <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
@@ -71,7 +71,7 @@ export function MobileNav() {
 
       <button
         onClick={handleCreatePlaylist}
-        className="flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider hover:text-cream text-muted cursor-pointer transition-colors"
+        className="flex flex-col items-center gap-1.5 text-xs font-bold tracking-wider hover:text-cream hover:bg-white/8 text-muted cursor-pointer transition-all flex-1 py-2 px-3 rounded-lg active:scale-95"
       >
         <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
           <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />

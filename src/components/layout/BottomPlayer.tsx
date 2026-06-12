@@ -110,10 +110,10 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
   const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <footer className="w-full md:col-span-full h-player-sm md:h-player bg-forest-dark border-t border-white/5 flex flex-col items-stretch select-none relative z-40 shrink-0 pb-safe md:pb-0">
+    <footer className="w-full md:col-span-full h-player-sm md:h-player bg-forest-dark border-t border-white/10 flex flex-col items-stretch select-none relative z-40 shrink-0 pb-safe md:pb-0 shadow-2xl">
       {/* Mobile-only thin progress line at top of player */}
-      <div className="md:hidden h-0.5 w-full bg-white/10 flex-none">
-        <div className="h-full bg-coral transition-all duration-300" style={{ width: `${progressPct}%` }} />
+      <div className="md:hidden h-1 w-full bg-white/8 flex-none">
+        <div className="h-full bg-coral-bright transition-all duration-300" style={{ width: `${progressPct}%` }} />
       </div>
       <div className="flex items-center px-2 md:px-5 flex-1">
       {/* Left: track info */}
@@ -229,16 +229,16 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
 
           <button
             onClick={togglePlay}
-            className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-cream hover:bg-white text-forest-dark flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg flex-none"
+            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-coral hover:bg-coral-bright text-forest-dark flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg flex-none font-bold"
             aria-label={isPlaying ? "Pause" : "Play"}
             title={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-6 md:h-6 fill-current">
                 <path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current translate-x-0.5">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-6 md:h-6 fill-current translate-x-0.5">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -289,7 +289,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
         </div>
 
         {/* Progress bar */}
-        <div className="hidden md:flex items-center gap-2.5 w-full">
+        <div className="hidden md:flex items-center gap-3 w-full">
           <span className="text-sub text-muted/70 tabular-nums w-8 text-right">{fmt(currentTime)}</span>
           <input
             type="range"
@@ -297,7 +297,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
             max={duration || 100}
             value={currentTime}
             onChange={(e) => seek(Number(e.target.value))}
-            className="flex-1 cursor-pointer accent-cream hover:accent-coral transition-colors"
+            className="flex-1 cursor-pointer accent-coral hover:accent-coral-bright transition-colors"
           />
           <span className="text-sub text-muted/70 tabular-nums w-8 text-left">{fmt(duration)}</span>
         </div>

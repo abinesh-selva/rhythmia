@@ -167,37 +167,37 @@ export function HomeView() {
 
   return (
     <div className="flex flex-col min-h-full pb-10 overflow-x-hidden">
-      <div className="pt-5 px-6 md:px-8 sticky top-0 z-20 bg-forest-dark/95 backdrop-blur-md border-b border-white/5 pb-3.5">
-        <h2 className="font-display font-bold text-3xl md:text-4xl text-cream tracking-tight mb-3">{greeting}</h2>
+      <div className="pt-6 px-6 md:px-8 sticky top-0 z-20 bg-forest-dark/98 backdrop-blur-lg border-b border-white/10 pb-5">
+        <h2 className="font-display font-bold text-3xl md:text-4xl text-cream tracking-tight mb-4">{greeting}</h2>
         <div className="relative">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar">
             {(["All", "Music", "Albums", "Artists", "Playlists"] as const).map((chip) => (
               <button
                 key={chip}
                 onClick={() => setActiveFilter(chip)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all flex-none ${
-                  activeFilter === chip ? "bg-cream text-forest-dark" : "bg-white/6 text-muted hover:text-cream hover:bg-white/10"
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all flex-none ${
+                  activeFilter === chip ? "bg-coral text-forest-dark shadow-lg hover:bg-coral-bright" : "bg-panel hover:bg-panel-hover text-muted hover:text-cream"
                 }`}
               >
                 {chip}
               </button>
             ))}
           </div>
-          <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-l from-forest-dark/95 to-transparent" />
+          <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-10 bg-gradient-to-l from-forest-dark/98 to-transparent" />
         </div>
       </div>
 
       {shouldShow("playlists") && quickPicks.length > 0 && (
-        <div className="px-6 md:px-8 pt-6 grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="px-6 md:px-8 pt-8 grid grid-cols-2 md:grid-cols-3 gap-4">
           {quickPicks.map((qp) => (
-            <div key={qp.id} onClick={qp.onClick} className="group bg-white/8 hover:bg-white/14 rounded-md flex items-center gap-0 cursor-pointer transition-all relative overflow-hidden shadow-sm">
+            <div key={qp.id} onClick={qp.onClick} className="group bg-panel hover:bg-panel-hover rounded-lg flex items-center gap-0 cursor-pointer transition-all relative overflow-hidden shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
               {qp.image
                 ? <img src={qp.image} alt={qp.title} className="w-16 h-16 object-cover flex-none" />
                 : <div className="w-16 h-16 flex-none" style={{ background: `linear-gradient(135deg, ${qp.color1}, ${qp.color2})` }} />
               }
               <span className="font-bold text-cream text-sm truncate px-4 flex-1">{qp.title}</span>
               {qp.onPlay && (
-                <button onClick={qp.onPlay} className="w-10 h-10 bg-green rounded-full flex items-center justify-center shadow-xl opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all absolute right-4 hover:scale-110 active:scale-95">
+                <button onClick={qp.onPlay} className="w-10 h-10 bg-green hover:bg-green/90 rounded-full flex items-center justify-center shadow-lg opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all absolute right-4 hover:scale-110 active:scale-95">
                   <svg viewBox="0 0 24 24" className="w-5 h-5 fill-black ml-0.5"><path d="M8 5v14l11-7z" /></svg>
                 </button>
               )}
@@ -360,15 +360,15 @@ function useDragScroll() {
 const Shelf = React.memo(function Shelf({ title, subtitle, onShowAll, children }: { title: string; subtitle?: string; onShowAll?: () => void; children: React.ReactNode }) {
   const drag = useDragScroll();
   return (
-    <div className="px-6 md:px-8 pt-8">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <div className="px-6 md:px-8 pt-10 border-t border-white/8">
+      <div className="mb-6 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-xl font-bold tracking-tight text-cream">{title}</h3>
-          {subtitle && <p className="text-xs text-muted mt-0.5">{subtitle}</p>}
+          <h3 className="text-2xl font-bold tracking-tight text-cream">{title}</h3>
+          {subtitle && <p className="text-sm text-muted/80 mt-1.5 font-medium">{subtitle}</p>}
         </div>
         {onShowAll && (
-          <button onClick={onShowAll} className="text-xs font-bold text-muted hover:text-cream uppercase tracking-wider transition-colors flex-none">
-            Show all
+          <button onClick={onShowAll} className="text-sm font-bold text-coral hover:text-coral-bright uppercase tracking-wider transition-colors flex-none hover:scale-105 active:scale-95">
+            View all
           </button>
         )}
       </div>
@@ -380,7 +380,7 @@ const Shelf = React.memo(function Shelf({ title, subtitle, onShowAll, children }
           onMouseLeave={drag.onMouseLeave}
           onMouseMove={drag.onMouseMove}
           onClickCapture={drag.onClickCapture}
-          className="flex gap-3 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none pb-4 -mb-4"
+          className="flex gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none pb-4 -mb-4"
         >
           {children}
         </div>
@@ -405,28 +405,28 @@ const Card = React.memo(function Card({ title, subtitle, image, colors, type, on
   const c2 = colors?.[1] ?? "#111";
 
   return (
-    <div onClick={onClick} className="flex flex-col gap-2.5 min-w-card-sm md:min-w-card-lg max-w-card-sm md:max-w-card-lg p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer group transition-all">
+    <div onClick={onClick} className="flex flex-col gap-3 min-w-card-sm md:min-w-card-lg max-w-card-sm md:max-w-card-lg p-4 bg-panel hover:bg-panel-hover rounded-xl cursor-pointer group transition-all duration-200 hover:scale-105 active:scale-95">
       <div
-        className={`w-full aspect-square relative overflow-hidden flex items-center justify-center shadow-md ${isRounded ? "rounded-full" : "rounded-lg"}`}
+        className={`w-full aspect-square relative overflow-hidden flex items-center justify-center shadow-lg ${isRounded ? "rounded-full" : "rounded-lg"}`}
         style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
       >
         {image
           ? <img src={image} alt={title} className="w-full h-full object-cover" loading="lazy" />
-          : <svg viewBox="0 0 24 24" className={`fill-cream/40 ${isRounded ? "w-14 h-14" : "w-10 h-10"}`}>
+          : <svg viewBox="0 0 24 24" className={`fill-cream/50 ${isRounded ? "w-14 h-14" : "w-10 h-10"}`}>
               {isRounded
                 ? <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 : <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />}
             </svg>
         }
         {onPlay && (
-          <button onClick={onPlay} className="absolute right-3 bottom-3 w-12 h-12 bg-green rounded-full flex items-center justify-center shadow-xl translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 z-10 hover:scale-105 active:scale-95">
+          <button onClick={onPlay} className="absolute right-4 bottom-4 w-12 h-12 bg-green hover:bg-green/90 rounded-full flex items-center justify-center shadow-xl translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200 z-10 hover:scale-110 active:scale-95">
             <svg viewBox="0 0 24 24" className="w-6 h-6 fill-black ml-0.5"><path d="M8 5v14l11-7z" /></svg>
           </button>
         )}
       </div>
       <div className="min-w-0">
-        <span className="text-sm font-semibold text-cream truncate block leading-tight">{title}</span>
-        {subtitle && <span className="text-xs text-muted truncate block mt-0.5">{subtitle}</span>}
+        <span className="text-sm font-semibold text-cream truncate block leading-snug">{title}</span>
+        {subtitle && <span className="text-xs text-muted/70 truncate block mt-1">{subtitle}</span>}
       </div>
     </div>
   );

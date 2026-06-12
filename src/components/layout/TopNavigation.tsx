@@ -29,18 +29,18 @@ export function TopNavigation({
   };
 
   return (
-    <header className="w-full md:col-span-full flex items-center justify-between gap-4 py-3 px-6 bg-forest-dark text-cream border-b border-white/5 relative z-40 select-none transition-all duration-300">
+    <header className="w-full md:col-span-full flex items-center justify-between gap-4 py-3.5 px-6 bg-forest-dark text-cream border-b border-white/10 relative z-40 select-none transition-all duration-300 shadow-md">
       {/* Left side: Brand Logo */}
       <div 
         onClick={handleHomeClick}
-        className="flex items-center gap-2 cursor-pointer transition-transform hover:scale-[1.02]"
+        className="flex items-center gap-2.5 cursor-pointer transition-transform hover:scale-[1.05] active:scale-95"
       >
         <img
           src="/logo.png"
           alt="Vibeblower"
-          className="w-8 h-8 rounded-lg object-cover flex-none shadow-md"
+          className="w-8 h-8 rounded-lg object-cover flex-none shadow-lg"
         />
-        <span className="font-display font-bold text-lg tracking-tight text-cream hidden sm:inline">Vibeblower</span>
+        <span className="font-display font-bold text-lg tracking-tight text-cream hidden sm:inline hover:text-coral transition-colors">Vibeblower</span>
       </div>
 
       {/* Center navigation: Home Button + Search input pill (hidden on mobile, search page has its own input) */}
@@ -48,10 +48,10 @@ export function TopNavigation({
         {/* Home Button (Circle) */}
         <button
           onClick={handleHomeClick}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all font-bold ${
             view === "home"
-              ? "bg-white text-black hover:scale-105 active:scale-95"
-              : "bg-white/8 text-cream hover:bg-white/12 hover:scale-105 active:scale-95"
+              ? "bg-coral text-forest-dark hover:bg-coral-bright hover:scale-110 active:scale-95 shadow-lg"
+              : "bg-panel text-cream hover:bg-panel-hover hover:scale-105 active:scale-95"
           }`}
           aria-label="Home"
           title="Home"
@@ -62,8 +62,8 @@ export function TopNavigation({
         </button>
 
         {/* Search input pill */}
-        <div className="flex-1 relative max-w-md flex items-center bg-white/8 hover:bg-white/12 hover:border-white/20 focus-within:bg-white/10 focus-within:border-white/30 border border-white/10 rounded-full px-3.5 py-2 transition-all">
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-muted mr-2 flex-none">
+        <div className="flex-1 relative max-w-md flex items-center bg-panel hover:bg-panel-hover focus-within:bg-panel-hover border border-white/15 rounded-full px-4 py-2.5 transition-all">
+          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-muted mr-2.5 flex-none">
             <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
           </svg>
           <input
@@ -73,10 +73,10 @@ export function TopNavigation({
             placeholder="What do you want to play?"
             className="flex-1 bg-transparent border-none outline-none text-cream text-sm placeholder-muted/60 focus:ring-0 p-0"
           />
-          <div className="h-4 w-px bg-white/15 mx-2 flex-none" />
+          <div className="h-4 w-px bg-white/20 mx-2.5 flex-none" />
           <button 
             onClick={handleSearchFocus}
-            className="text-muted hover:text-cream flex items-center justify-center p-0.5 transition-colors flex-none"
+            className="text-muted hover:text-coral transition-colors flex items-center justify-center p-0.5 flex-none hover:scale-110"
             title="Browse all categories"
           >
             <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

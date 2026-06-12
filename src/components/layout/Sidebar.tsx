@@ -204,16 +204,16 @@ export function Sidebar() {
   ] as const;
 
   return (
-    <aside className={`w-full h-full hidden md:flex flex-col bg-forest rounded-xl py-4 min-h-0 relative z-20 border border-white/5 transition-all duration-300 ${
-      isLibraryCollapsed ? "px-2 gap-3" : "px-3 gap-4"
+    <aside className={`w-full h-full hidden md:flex flex-col bg-forest-dark rounded-xl py-5 min-h-0 relative z-20 border border-white/8 transition-all duration-300 ${
+      isLibraryCollapsed ? "px-2 gap-3" : "px-4 gap-5"
     }`}>
-      <div className={`flex flex-none ${isLibraryCollapsed ? "flex-col items-center gap-4 px-0 pb-2" : "items-center justify-between px-2 pb-1.5"}`}>
+      <div className={`flex flex-none ${isLibraryCollapsed ? "flex-col items-center gap-4 px-0 pb-2" : "items-center justify-between px-1 pb-3 border-b border-white/10"}`}>
         <button
           onClick={toggleLibraryCollapse}
-          className="flex items-center gap-2 font-semibold text-sm text-muted hover:text-cream transition-colors group/lib"
+          className="flex items-center gap-2 font-bold text-base text-cream hover:text-coral transition-colors group/lib"
           title={isLibraryCollapsed ? "Expand Library" : "Collapse Library"}
         >
-          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current text-muted group-hover/lib:text-cream transition-colors flex-none">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current group-hover/lib:text-coral transition-colors flex-none">
             <path d="M4 19H2V5h2v14zm4 0H6V5h2v14zm1.75-1.12l-1.22-1.6 9.5-7.2 1.22 1.6-9.5 7.2zM22 5v14H10V5h12z" />
           </svg>
           {!isLibraryCollapsed && <span className="truncate">Your Library</span>}
