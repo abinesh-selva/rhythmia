@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["music-metadata"],
   images: {
+    unoptimized: process.env.NODE_ENV === 'development',
     remotePatterns: [
       {
         protocol: "https",
@@ -21,6 +22,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
+      {
+        protocol: "https",
+        hostname: "cdn-images.dzcdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "e-cdns-images.dzcdn.net",
+      },
     ],
   },
   async headers() {
@@ -35,7 +44,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline'",
               "font-src 'self' data:",
-              "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co https://lh3.googleusercontent.com https://*.mzstatic.com",
+              "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co https://lh3.googleusercontent.com https://*.mzstatic.com https://cdn-images.dzcdn.net https://e-cdns-images.dzcdn.net",
               "media-src 'self' blob: https://res.cloudinary.com",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com",
               "frame-src 'none'",

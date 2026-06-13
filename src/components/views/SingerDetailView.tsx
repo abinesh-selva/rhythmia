@@ -34,7 +34,7 @@ export function SingerDetailView({ singer, tracks, appearsOnAlbums }: SingerDeta
 
         <div className="w-40 h-40 md:w-52 md:h-52 rounded-full shadow-2xl z-10 flex-none overflow-hidden flex items-center justify-center bg-gradient-to-br from-blue to-panel border-4 border-cream/10">
           {singer.image ? (
-            <Image width={400} height={400} src={singer.image} alt={singer.display_name} className="w-full h-full object-cover" />
+            <Image width={400} height={400} src={singer.image} alt={singer.display_name} className="w-full h-full object-cover" priority />
           ) : (
             <svg viewBox="0 0 24 24" className="w-20 h-20 fill-cream/50">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />

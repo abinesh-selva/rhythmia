@@ -94,7 +94,7 @@ export function AlbumDetailView({ album, tracks }: AlbumDetailViewProps) {
           style={{ background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]})` }}
         >
           {album.cover_image ? (
-            <Image width={400} height={400} src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />
+            <Image width={400} height={400} src={album.cover_image} alt={album.title} className="w-full h-full object-cover" priority />
           ) : (
             <svg viewBox="0 0 24 24" className="w-14 h-14 fill-cream/60">
               <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
