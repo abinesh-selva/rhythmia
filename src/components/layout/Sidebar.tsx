@@ -8,6 +8,7 @@ import { supabase } from "../../lib/supabase";
 import { useTheme } from "../../context/ThemeContext";
 import { useToast } from "../../context/ToastContext";
 import { useDialog } from "../../context/DialogContext";
+import Image from "next/image";
 
 interface ArtistRow { id: string; display_name: string; slug: string; image: string | null; track_count: number }
 interface AlbumRow  { id: string; title: string; slug: string; cover_colors: string[]; artist_id: string; artists: { display_name: string } | null }
@@ -503,7 +504,7 @@ export function Sidebar() {
                   art={
                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center flex-none overflow-hidden relative">
                       {artist.image ? (
-                        <img src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
+                        <Image width={400} height={400} src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
                       ) : (
                         <svg viewBox="0 0 24 24" className="w-5 h-5 fill-muted">
                           <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />

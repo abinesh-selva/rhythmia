@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation";
 import { useAudio, Track } from "@/context/AudioContext";
 import { supabase } from "@/lib/supabase";
+import Image from "next/image";
 
 interface ArtistRow { id: string; display_name: string; slug: string; image: string | null; track_count: number; album_count: number }
 interface AlbumRow { id: string; title: string; slug: string; cover_image: string | null; cover_colors: string[]; track_count: number; artist_id: string; artists: { display_name: string; slug: string } | null }
@@ -192,7 +193,7 @@ export function HomeView() {
           {quickPicks.map((qp) => (
             <div key={qp.id} onClick={qp.onClick} className="group bg-white/8 hover:bg-white/14 rounded-md flex items-center gap-0 cursor-pointer transition-all relative overflow-hidden shadow-sm">
               {qp.image
-                ? <img src={qp.image} alt={qp.title} className="w-16 h-16 object-cover flex-none" />
+                ? <Image width={64} height={64} src={qp.image} alt={qp.title} className="w-16 h-16 object-cover flex-none" />
                 : <div className="w-16 h-16 flex-none" style={{ background: `linear-gradient(135deg, ${qp.color1}, ${qp.color2})` }} />
               }
               <span className="font-bold text-cream text-sm truncate px-4 flex-1">{qp.title}</span>
@@ -411,7 +412,7 @@ const Card = React.memo(function Card({ title, subtitle, image, colors, type, on
         style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
       >
         {image
-          ? <img src={image} alt={title} className="w-full h-full object-cover" loading="lazy" />
+          ? <Image width={400} height={400} src={image} alt={title} className="w-full h-full object-cover" loading="lazy" />
           : <svg viewBox="0 0 24 24" className={`fill-cream/40 ${isRounded ? "w-14 h-14" : "w-10 h-10"}`}>
               {isRounded
                 ? <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />

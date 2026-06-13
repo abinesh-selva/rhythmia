@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRealtime } from '../../context/RealtimeContext';
 import { useAuth } from '../../context/AuthContext';
+import Image from "next/image";
 
 export function ChatDrawer() {
   const { isChatOpen, setIsChatOpen, activeChatUser, onlineUsers, messages, sendMessage } = useRealtime();
@@ -32,7 +33,7 @@ export function ChatDrawer() {
         <div className="flex items-center gap-3">
           <div className="relative">
             {activeFriend?.avatar_url ? (
-               <img src={activeFriend.avatar_url} className="w-8 h-8 rounded-full object-cover" alt="Avatar"/>
+               <Image width={32} height={32} src={activeFriend.avatar_url} className="w-8 h-8 rounded-full object-cover" alt="Avatar"/>
             ) : (
                <div className="w-8 h-8 rounded-full bg-coral flex items-center justify-center text-xs font-bold text-forest-dark">
                  {activeFriend?.display_name?.substring(0, 2).toUpperCase() || '??'}

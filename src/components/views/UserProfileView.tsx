@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { useAudio } from "../../context/AudioContext";
 import { Track, Playlist as PlaylistRow } from "../../context/AudioContext";
+import Image from "next/image";
 
 interface ProfileRow {
   id: string;
@@ -63,7 +64,7 @@ export function UserProfileView({ userId }: UserProfileViewProps) {
     <div className="flex-1 overflow-y-auto no-scrollbar pb-32 animate-fade-in">
       <div className="h-64 bg-gradient-to-b from-forest-light to-forest p-8 flex items-end gap-6 relative border-b border-white/5">
         {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt={profile.display_name} className="w-48 h-48 rounded-full shadow-2xl object-cover z-10 border-4 border-forest" />
+          <Image width={400} height={400} src={profile.avatar_url} alt={profile.display_name} className="w-48 h-48 rounded-full shadow-2xl object-cover z-10 border-4 border-forest" />
         ) : (
           <div className="w-48 h-48 rounded-full shadow-2xl bg-coral flex items-center justify-center text-6xl font-bold text-forest-dark z-10 border-4 border-forest">
             {profile.display_name?.substring(0, 2).toUpperCase() || "??"}

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 
 function getColors(cover_colors: any): [string, string] {
   if (Array.isArray(cover_colors) && cover_colors.length >= 2) return [cover_colors[0], cover_colors[1]];
@@ -64,7 +65,7 @@ export default async function AlbumsPage({
               className="flex flex-col gap-2 p-3 rounded-xl bg-white/4 hover:bg-white/8 transition-all group cursor-pointer"
             >
               {alb.cover_image ? (
-                <img src={alb.cover_image} alt={alb.title} className="w-full aspect-square rounded-lg object-cover shadow-md" />
+                <Image width={400} height={400} src={alb.cover_image} alt={alb.title} className="w-full aspect-square rounded-lg object-cover shadow-md" />
               ) : (
                 <div className="w-full aspect-square rounded-lg shadow-md" style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }} />
               )}

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAudio, Track } from "@/context/AudioContext";
 import { TrackRow } from "@/components/ui/TrackRow";
+import Image from "next/image";
 
 interface Artist {
   id: string;
@@ -67,7 +68,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
           style={{ background: heroGradient }}
         >
           {artist.image ? (
-            <img src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
+            <Image width={400} height={400} src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
           ) : (
             <svg viewBox="0 0 24 24" className="w-16 h-16 fill-cream/60">
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
@@ -143,7 +144,7 @@ export function ArtistDetailView({ artist, albums, tracks }: ArtistDetailViewPro
                     style={{ background: `linear-gradient(135deg, ${colors[0]}, ${colors[1]})` }}
                   >
                     {album.cover_image ? (
-                      <img src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />
+                      <Image width={400} height={400} src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />
                     ) : (
                       <svg viewBox="0 0 24 24" className="w-10 h-10 fill-cream/50">
                         <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />

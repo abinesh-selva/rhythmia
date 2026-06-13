@@ -7,6 +7,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useDialog } from "../../context/DialogContext";
 import { useToast } from "../../context/ToastContext";
 import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import Image from "next/image";
 
 type Section = "account" | "playback" | "display" | "social" | "storage" | "data" | "about";
 
@@ -246,7 +247,7 @@ export function SettingsView() {
               <div className="flex items-center gap-5 p-5 bg-white/5 border border-white/8 rounded-2xl mb-8">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-coral to-pink flex items-center justify-center text-2xl font-bold text-forest-dark flex-none shadow-lg overflow-hidden">
                   {profile?.avatar_url
-                    ? <img src={profile.avatar_url} alt={initials} className="w-full h-full object-cover" />
+                    ? <Image width={400} height={400} src={profile.avatar_url} alt={initials} className="w-full h-full object-cover" />
                     : initials}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -471,7 +472,7 @@ export function SettingsView() {
               <h3 className="text-2xl font-bold text-cream mb-8">About</h3>
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-5 p-5 bg-white/5 border border-white/8 rounded-2xl">
-                  <img src="/logo.png" alt="Vibeblower" className="w-16 h-16 rounded-2xl shadow-lg object-cover flex-none" />
+                  <Image width={64} height={64} src="/logo.png" alt="Vibeblower" className="w-16 h-16 rounded-2xl shadow-lg object-cover flex-none" />
                   <div>
                     <h4 className="text-lg font-bold text-cream">Vibeblower</h4>
                     <p className="text-sm text-muted">Version 0.1.0</p>

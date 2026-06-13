@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAudio } from "../../context/AudioContext";
 import { useDialog } from "../../context/DialogContext";
 import { supabase } from "../../lib/supabase";
+import Image from "next/image";
 
 interface ArtistRow { id: string; display_name: string; slug: string; image: string | null; track_count: number }
 interface AlbumRow  { id: string; title: string; slug: string; cover_image: string | null; cover_colors: string[]; artist_id: string; artists: { display_name: string } | null }
@@ -166,7 +167,7 @@ export default function LibraryPage() {
             ))}
             {showArtists && filteredArtists.map((artist) => (
               <LibraryCard key={artist.id} onClick={() => router.push(`/artist/${artist.id}/${artist.slug}`)}
-                art={<div className="w-full aspect-square rounded-full bg-white/8 overflow-hidden flex items-center justify-center">{artist.image ? <img src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" /> : <svg viewBox="0 0 24 24" className="w-10 h-10 fill-muted"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>}</div>}
+                art={<div className="w-full aspect-square rounded-full bg-white/8 overflow-hidden flex items-center justify-center">{artist.image ? <Image width={400} height={400} src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" /> : <svg viewBox="0 0 24 24" className="w-10 h-10 fill-muted"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>}</div>}
                 title={artist.display_name} subtitle="Artist"
               />
             ))}
@@ -174,7 +175,7 @@ export default function LibraryPage() {
               const [c1, c2] = getAlbumColors(album);
               return (
                 <LibraryCard key={album.id} onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
-                  art={<div className="w-full aspect-square rounded-xl overflow-hidden shadow-sm" style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}>{album.cover_image && <img src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />}</div>}
+                  art={<div className="w-full aspect-square rounded-xl overflow-hidden shadow-sm" style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}>{album.cover_image && <Image width={400} height={400} src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />}</div>}
                   title={album.title} subtitle="Album"
                 />
               );
@@ -202,7 +203,7 @@ export default function LibraryPage() {
             ))}
             {showArtists && filteredArtists.map((artist) => (
               <LibraryRow key={artist.id} active={false} onClick={() => router.push(`/artist/${artist.id}/${artist.slug}`)}
-                art={<div className="w-12 h-12 rounded-full bg-white/8 flex items-center justify-center flex-none overflow-hidden">{artist.image ? <img src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" /> : <svg viewBox="0 0 24 24" className="w-6 h-6 fill-muted"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>}</div>}
+                art={<div className="w-12 h-12 rounded-full bg-white/8 flex items-center justify-center flex-none overflow-hidden">{artist.image ? <Image width={400} height={400} src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" /> : <svg viewBox="0 0 24 24" className="w-6 h-6 fill-muted"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>}</div>}
                 title={artist.display_name} subtitle={`Artist · ${artist.track_count} songs`}
               />
             ))}
@@ -211,7 +212,7 @@ export default function LibraryPage() {
               const artistInfo = Array.isArray(album.artists) ? album.artists[0] : album.artists;
               return (
                 <LibraryRow key={album.id} active={false} onClick={() => router.push(`/album/${album.id}/${album.slug}`)}
-                  art={<div className="w-12 h-12 rounded-xl flex-none shadow-sm overflow-hidden" style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}>{album.cover_image && <img src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />}</div>}
+                  art={<div className="w-12 h-12 rounded-xl flex-none shadow-sm overflow-hidden" style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}>{album.cover_image && <Image width={400} height={400} src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />}</div>}
                   title={album.title} subtitle={`Album${artistInfo ? ` · ${artistInfo.display_name}` : ""}`}
                 />
               );

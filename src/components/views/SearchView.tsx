@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAudio, Track } from "@/context/AudioContext";
 import { supabase } from "@/lib/supabase";
 import { TrackRow } from "@/components/ui/TrackRow";
+import Image from "next/image";
 
 interface ArtistResult   { id: string; display_name: string; slug: string; image: string | null; track_count: number }
 interface AlbumResult    { id: string; title: string; slug: string; cover_image: string | null; cover_colors: string[]; artists: { display_name: string; slug: string } | null }
@@ -255,7 +256,7 @@ export function SearchView() {
                   >
                     <div className="w-20 h-20 rounded-full bg-white/6 border border-white/8 overflow-hidden flex items-center justify-center">
                       {artist.image
-                        ? <img src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
+                        ? <Image width={400} height={400} src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
                         : <svg viewBox="0 0 24 24" className="w-10 h-10 fill-muted"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
                       }
                     </div>
@@ -284,7 +285,7 @@ export function SearchView() {
                         className="w-full aspect-square rounded-md overflow-hidden"
                         style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
                       >
-                        {album.cover_image && <img src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />}
+                        {album.cover_image && <Image width={400} height={400} src={album.cover_image} alt={album.title} className="w-full h-full object-cover" />}
                       </div>
                       <span className="text-sm font-bold text-cream truncate">{album.title}</span>
                       {artistInfo && <span className="text-xs text-muted truncate">{artistInfo.display_name}</span>}
@@ -338,7 +339,7 @@ export function SearchView() {
                     className="flex flex-col items-center gap-2 min-w-32 p-3 bg-panel/30 hover:bg-panel/60 rounded-xl cursor-pointer group transition-all">
                     <div className="w-20 h-20 rounded-full bg-white/6 border border-white/8 overflow-hidden flex items-center justify-center">
                       {singer.image
-                        ? <img src={singer.image} alt={singer.name} className="w-full h-full object-cover" />
+                        ? <Image width={400} height={400} src={singer.image} alt={singer.name} className="w-full h-full object-cover" />
                         : <svg viewBox="0 0 24 24" className="w-10 h-10 fill-muted">
                             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                             <path d="M19 10v2a7 7 0 0 1-14 0v-2H3v2a9 9 0 0 0 8 8.94V23h-3v2h8v-2h-3v-2.06A9 9 0 0 0 21 12v-2h-2z" />

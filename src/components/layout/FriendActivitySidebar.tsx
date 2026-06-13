@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { useAudio } from "../../context/AudioContext";
 import { useRealtime } from "../../context/RealtimeContext";
+import Image from "next/image";
 
 interface FriendActivitySidebarProps {
   setIsFriendOpen: (val: boolean) => void;
@@ -107,7 +108,7 @@ export function FriendActivitySidebar({ setIsFriendOpen }: FriendActivitySidebar
             >
               <div className="relative flex-none">
                 {friend.avatar_url ? (
-                  <img src={friend.avatar_url} alt={friend.display_name} className="w-10 h-10 rounded-full shadow-sm object-cover" />
+                  <Image width={40} height={40} src={friend.avatar_url} alt={friend.display_name} className="w-10 h-10 rounded-full shadow-sm object-cover" />
                 ) : (
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-forest-dark shadow-sm bg-coral"

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useAudio, usePlaybackTime, Track } from "../../context/AudioContext";
+import Image from "next/image";
 
 interface NowPlayingPanelProps {
   isOpen: boolean;
@@ -257,7 +258,7 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
           <div className="flex-1 flex items-center justify-center min-h-0">
             <div className="w-full aspect-square max-w-[320px] rounded-2xl shadow-2xl overflow-hidden" style={{ background: `linear-gradient(135deg, ${coverColors[0]}, ${coverColors[1] || coverColors[0]})` }}>
               {currentTrack.cover_image
-                ? <img src={currentTrack.cover_image} alt={currentTrack.title} className="w-full h-full object-cover" />
+                ? <Image width={400} height={400} src={currentTrack.cover_image} alt={currentTrack.title} className="w-full h-full object-cover" />
                 : <div className="w-full h-full flex items-center justify-center"><svg viewBox="0 0 24 24" className="w-24 h-24 fill-cream/20"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" /></svg></div>
               }
             </div>
@@ -388,7 +389,7 @@ export function NowPlayingPanel({ isOpen, onClose, npTab, setNpTab }: NowPlaying
         {/* Cover art */}
         <div className="w-full aspect-square rounded-xl shadow-xl overflow-hidden flex-none" style={{ background: `linear-gradient(135deg, ${coverColors[0]}, ${coverColors[1] || coverColors[0]})` }}>
           {currentTrack.cover_image
-            ? <img src={currentTrack.cover_image} alt={currentTrack.title} className="w-full h-full object-cover" />
+            ? <Image width={400} height={400} src={currentTrack.cover_image} alt={currentTrack.title} className="w-full h-full object-cover" />
             : <div className="w-full h-full flex items-center justify-center"><svg viewBox="0 0 24 24" className="w-14 h-14 fill-cream/70"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" /></svg></div>
           }
         </div>
@@ -450,7 +451,7 @@ function QueueRow({ track, compact, onRemove, draggable, onDragStart, onDragOver
       <div className={`${compact ? "w-9 h-9 rounded-md" : "w-10 h-10 rounded-lg"} flex-none shadow-sm overflow-hidden`}
         style={{ background: `linear-gradient(135deg, ${track.cover_colors[0]}, ${track.cover_colors[1]})` }}>
         {track.cover_image
-          ? <img src={track.cover_image} alt={track.title} className="w-full h-full object-cover" />
+          ? <Image width={400} height={400} src={track.cover_image} alt={track.title} className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center"><svg viewBox="0 0 24 24" className="w-4 h-4 fill-cream/70"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" /></svg></div>
         }
       </div>

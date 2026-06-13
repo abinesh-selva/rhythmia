@@ -3,6 +3,7 @@
 import React from "react";
 import { Track, useAudio } from "../../context/AudioContext";
 import { useTrackMenu } from "../../context/TrackMenuContext";
+import Image from "next/image";
 
 const fmt = (s: number) => {
   if (isNaN(s) || !isFinite(s)) return "0:00";
@@ -140,7 +141,7 @@ export const TrackRow = React.memo(function TrackRow({
           style={{ background: `linear-gradient(135deg, ${track.cover_colors[0]}, ${track.cover_colors[1]})` }}
         >
           {track.cover_image ? (
-            <img src={track.cover_image} alt={track.album} className="w-full h-full object-cover" />
+            <Image width={400} height={400} src={track.cover_image} alt={track.album} className="w-full h-full object-cover" />
           ) : (
             <svg viewBox="0 0 24 24" className="w-4 h-4 fill-cream/70">
               <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />

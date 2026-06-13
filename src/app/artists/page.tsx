@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 
 export default async function ArtistsPage() {
   const db = await createClient();
@@ -30,7 +31,7 @@ export default async function ArtistsPage() {
           >
             <div className="w-full aspect-square rounded-full bg-white/8 overflow-hidden shadow-md">
               {artist.image ? (
-                <img src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
+                <Image width={400} height={400} src={artist.image} alt={artist.display_name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <svg viewBox="0 0 24 24" className="w-12 h-12 fill-muted">

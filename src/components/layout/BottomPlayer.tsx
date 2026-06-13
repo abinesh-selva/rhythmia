@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useAudio, usePlaybackTime } from "../../context/AudioContext";
+import Image from "next/image";
 
 const fmt = (s: number) => {
   if (isNaN(s) || !isFinite(s)) return "0:00";
@@ -132,7 +133,7 @@ export function BottomPlayer({ isNPOpen, setIsNPOpen }: BottomPlayerProps) {
               style={{ background: `linear-gradient(135deg, ${currentTrack.cover_colors[0]}, ${currentTrack.cover_colors[1]})` }}
             >
               {currentTrack.cover_image ? (
-                <img src={currentTrack.cover_image} alt={currentTrack.album} className="w-full h-full object-cover" />
+                <Image width={400} height={400} src={currentTrack.cover_image} alt={currentTrack.album} className="w-full h-full object-cover" />
               ) : (
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-cream/80">
                   <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
